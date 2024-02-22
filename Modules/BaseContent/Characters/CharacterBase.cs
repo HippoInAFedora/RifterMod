@@ -114,9 +114,9 @@ namespace RifterMod.Modules.Characters
         public float crit = 1f;
 
         //misc stats
-        public float moveSpeed = 5f; // changed from 7 to 5
+        public float moveSpeed = 7f; // changed from 7 to 5
         public float acceleration = 80f;
-        public float jumpPower = 10f; // changed from 15 to 10
+        public float jumpPower = 15f; // changed from 15 to 10
 
         //stat growth
         /// <summary>

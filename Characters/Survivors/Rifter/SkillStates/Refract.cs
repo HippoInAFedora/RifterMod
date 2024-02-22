@@ -2,6 +2,7 @@
 using EntityStates.Commando.CommandoWeapon;
 using RifterMod.Modules.BaseStates;
 using RoR2;
+using RoR2.Skills;
 using System;
 using UnityEngine;
 
@@ -41,10 +42,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         // added vars for teleporting
         public GameObject hitEffectPrefab = FireBarrage.hitEffectPrefab;
         public GameObject tracerEffectPrefab = FireBarrage.tracerEffectPrefab;
-
-
-
-
 
         //OnEnter() runs once at the start of the skill
         //All we do here is create a BulletAttack and fire it
@@ -152,7 +149,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         //Here, we are doing nothing
         public override void OnExit()
         {
+            if (base.characterBody.GetBuffCount(Rifter.RifterBuffs.riftTeleportableBuff) > 0)
+            {
+                base.characterBody.RemoveBuff(Rifter.RifterBuffs.riftTeleportableBuff);
+            }
             base.OnExit();
+           
         }
 
 
@@ -187,7 +189,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
                                 break;
                             }
-                            if (hit.hurtBox != null)
+                            if (hit.hurtBox != null && base.characterBody.GetBuffCount(Rifter.RifterBuffs.riftTeleportableBuff) > 0)
                             {
                                 HealthComponent enemyHit = hit.hurtBox.healthComponent;
                                 if (enemyHit == null)
@@ -197,7 +199,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                                 }
                                 Vector3 enemyAngleVector = base.GetAimRay().direction * Vector3.Angle(base.GetAimRay().origin, hit.hitPosition);
                                 Ray enemyRayHit = new Ray(base.GetAimRay().origin, enemyAngleVector);
-                                Vector3 enemyTeleportTo = enemyRayHit.GetPoint(riftPrimaryDistance2);
+                                Vector3 enemyTeleportTo = enemyRayHit.GetPoint(riftPrimaryDistance2 - 1f);
 
                                 ModifiedTeleport teleport = enemyHit.gameObject.AddComponent<ModifiedTeleport>(); ;
                                 teleport.body = enemyHit.body;
@@ -211,8 +213,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                                         Destroy(teleport);
                                     }
                                 }
-
-
+                               
                             }
                         }
                     }

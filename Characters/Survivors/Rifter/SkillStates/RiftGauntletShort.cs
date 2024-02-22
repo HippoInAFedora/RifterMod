@@ -10,19 +10,20 @@ using IL.RoR2.Skills;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
-    public class RiftGauntlet : BaseSkillState
+    public class RiftGauntletShort : BaseSkillState
     {
         public static float damageCoefficient = RifterStaticValues.gunDamageCoefficient;
         public static float procCoefficient = 1f;
-        public static float baseDuration = 0.8f;
+        public static float baseDuration = 1.0f;
         //delay on firing is usually ass-feeling. only set this if you know what you're doing
-        public static float firePercentTime = 0.0f;
-        public static float force = 800f;
-        public static float recoil = 3f;
-        public static float range = 256f;
         public static GameObject tracerEffectPrefab = LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/Tracers/TracerGoldGat");
 
         private float duration;
+
+        //added vars for bulletAttack
+        private Vector3 forwardBackwardAmount;
+        public float riftPrimaryDistance1;
+        public float riftPrimaryDistance2;
 
         //added vars for blastAttack
 
@@ -52,7 +53,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 EffectManager.SimpleMuzzleFlash(FireBarrage.effectPrefab, base.gameObject, "MuzzleRight", false);
             }
 
-
             if (base.isAuthority)
             {
 
@@ -64,7 +64,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 bulletAttack.aimVector = aimRay.direction;
                 bulletAttack.minSpread = 0f;
                 bulletAttack.maxSpread = base.characterBody.spreadBloomAngle;
-                bulletAttack.damage = base.characterBody.damage * .7f;
+                bulletAttack.damage = base.characterBody.damage * .8f;
                 bulletAttack.bulletCount = 1U;
                 bulletAttack.procCoefficient = .5f;
                 bulletAttack.falloffModel = BulletAttack.FalloffModel.None;
@@ -76,28 +76,28 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 bulletAttack.HitEffectNormal = false;
                 bulletAttack.stopperMask = LayerIndex.world.mask;
                 bulletAttack.smartCollision = true;
-                bulletAttack.maxDistance = RifterStaticValues.riftPrimaryDistance;
+                bulletAttack.maxDistance = RifterStaticValues.riftSecondaryDistance;
 
 
 
 
                 //Blast Attack Stuff
-                Vector3 vector = aimRay.GetPoint(RifterStaticValues.riftPrimaryDistance);
+                Vector3 vector = aimRay.GetPoint(RifterStaticValues.riftSecondaryDistance);
 
-                if (Physics.Raycast(aimRay, out var endPoint, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.UseGlobal))
+                if (Physics.Raycast(aimRay, out var endPoint, RifterStaticValues.riftSecondaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.UseGlobal))
                 {
                     float hit = endPoint.distance;
                     vector = aimRay.GetPoint(hit);
                 }
-                float radius = 7f;
+                float radius = 6.5f;
                 float vectorDistance = Vector3.Distance(aimRay.origin, vector);
                 float isRiftHitGround;
-                if (vectorDistance + radius < RifterStaticValues.riftPrimaryDistance)
+                if (vectorDistance + radius < RifterStaticValues.riftSecondaryDistance)
                 {
-                    float float1 = RifterStaticValues.riftPrimaryDistance - vectorDistance + 1.1f;
+                    float float1 = RifterStaticValues.riftSecondaryDistance - vectorDistance + 1.1f;
                     decimal dec = new decimal(float1);
                     double d = (double)dec;
-                    double isRiftHitGroundDouble = 1/Math.Log(d , 2.5);
+                    double isRiftHitGroundDouble = 1 / Math.Log(d, 4.5);
                     isRiftHitGround = (float)isRiftHitGroundDouble;
                 }
                 else
@@ -114,7 +114,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 blastAttack.teamIndex = TeamIndex.None;
                 blastAttack.radius = radius;
                 blastAttack.falloffModel = BlastAttack.FalloffModel.None;
-                blastAttack.baseDamage = base.characterBody.damage * 4.2f * isRiftHitGround;
+                blastAttack.baseDamage = base.characterBody.damage * 4f * isRiftHitGround;
                 blastAttack.crit = base.RollCrit();
                 blastAttack.procCoefficient = 1f;
                 blastAttack.canRejectForce = false;
@@ -143,6 +143,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     componentWeight = rigidbody.mass;
 
 
+                    if (Math.Abs(hitInfo.distance) < Math.Abs(RifterStaticValues.riftSecondaryDistance)/2)
+                    {
+                        damageInfo.force *= 28 * componentWeight / (1 + Math.Abs(hitInfo.distance) / 2);
+                    }
+
+
                     ModelLocator modelLocator = hitInfo.entityObject.GetComponent<ModelLocator>();
                             if (modelLocator == null)
                             {
@@ -158,18 +164,16 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                                 }
                                 Vector3 enemyAngleVector = base.GetAimRay().direction * Vector3.Angle(base.GetAimRay().origin, hitInfo.point);
                                 Ray enemyRayHit = new Ray(base.GetAimRay().origin, enemyAngleVector);
-                                Vector3 enemyTeleportTo = enemyRayHit.GetPoint(RifterStaticValues.riftPrimaryDistance);
-                                 if (Physics.Raycast(enemyRayHit, out var hitPoint, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.UseGlobal))
-                                 {
-                                      float hit = endPoint.distance;
-                                        enemyTeleportTo = aimRay.GetPoint(hit);
-                                 }
+                                Vector3 enemyTeleportTo = enemyRayHit.GetPoint(RifterStaticValues.riftSecondaryDistance);
+                        if (Physics.Raycast(enemyRayHit, out var hitPoint, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.UseGlobal))
+                        {
+                            float hit = endPoint.distance;
+                            enemyTeleportTo = aimRay.GetPoint(hit);
+                        }
 
-                                 ModifiedTeleport teleport = enemyHit.gameObject.AddComponent<ModifiedTeleport>(); ;
+                        ModifiedTeleport teleport = enemyHit.gameObject.AddComponent<ModifiedTeleport>(); ;
                                 teleport.body = enemyHit.body;
                                 teleport.targetFootPosition = enemyTeleportTo;
-
-
                             }
                         
                     
@@ -219,7 +223,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         //GetMinimumInterruptPriority() returns the InterruptPriority required to interrupt this skill
         public override InterruptPriority GetMinimumInterruptPriority()
         {
-            return InterruptPriority.Skill;
+            return InterruptPriority.PrioritySkill;
         }
 
 

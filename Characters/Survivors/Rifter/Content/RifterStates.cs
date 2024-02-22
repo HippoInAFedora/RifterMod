@@ -12,7 +12,15 @@ namespace RifterMod.Survivors.Rifter
 
             Modules.Content.AddEntityState(typeof(Slipstream));
 
-            Modules.Content.AddEntityState(typeof(ThrowBomb));
+            Modules.Content.AddEntityState(typeof(RiftSpecialStateSwap));
+
+            Modules.Content.AddEntityState(typeof(RiftPrimarySpecial));
+
+            Modules.Content.AddEntityState(typeof(RiftSecondarySpecial));
+
+            Modules.Content.AddEntityState(typeof(RiftUtilitySpecialLocate));
+
+            Modules.Content.AddEntityState(typeof(RiftUtilitySpecialTeleport));
         }
     }
 }

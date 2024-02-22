@@ -1,5 +1,4 @@
-﻿
-using RoR2;
+﻿using RoR2;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -12,17 +11,14 @@ public class ModifiedTeleport : MonoBehaviour
     public float teleportWaitDuration = .5f;
     public bool teleportOut;
 
-    
-
     private void OnEnable()
-    { 
+    {
         if (!NetworkServer.active)
         {
             UnityEngine.Debug.Log("network server not active");
         }
         ModifiedTeleportBody(body, targetFootPosition);
         teleportTimer = 0f;
-        
     }
 
     private void FixedUpdate()
@@ -34,8 +30,8 @@ public class ModifiedTeleport : MonoBehaviour
             if (teleportTimer >= teleportWaitDuration)
             {
                 TeleportOut();
-                teleportOut = true;
-                enabled = false;
+                Destroy(this);
+                return;
             }
         }
     }

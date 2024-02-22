@@ -1,4 +1,5 @@
 ﻿using EntityStates;
+using IL.RoR2.Skills;
 using RifterMod.Survivors.Rifter;
 using RoR2;
 using UnityEngine;
@@ -8,93 +9,87 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 {
     public class Slipstream : BaseSkillState
     {
-        public static float duration = 0.5f;
-        public static float initialSpeedCoefficient = 5f;
-        public static float finalSpeedCoefficient = 2.5f;
+        public static float duration = 0.3f;
 
-        public static string dodgeSoundString = "RifterRoll";
+        public static string dodgeSoundString = "HenryRoll";
         public static float dodgeFOV = global::EntityStates.Commando.DodgeState.dodgeFOV;
 
-        private float rollSpeed;
+        private Vector3 finalPosition;
         private Vector3 forwardDirection;
         private Animator animator;
-        private Vector3 previousPosition;
+        private Vector3 startPosition;
+
+        private CharacterModel characterModel;
+        private HurtBoxGroup hurtboxGroup;
+        private Transform modelTransform;
+
+        private float stopwatch;
 
         public override void OnEnter()
         {
             base.OnEnter();
             animator = GetModelAnimator();
-
-            if (isAuthority && inputBank && characterDirection)
+            modelTransform = GetModelTransform();
+            base.characterBody.AddBuff(Rifter.RifterBuffs.riftTeleportableBuff);
+            if ((bool)modelTransform)
             {
-                forwardDirection = (inputBank.moveVector == Vector3.zero ? characterDirection.forward : inputBank.moveVector).normalized;
+                characterModel = modelTransform.GetComponent<CharacterModel>();
+                hurtboxGroup = modelTransform.GetComponent<HurtBoxGroup>();
+            }
+            if ((bool)characterModel)
+            {
+                characterModel.invisibilityCount++;
+            }
+            if ((bool)hurtboxGroup)
+            {
+                HurtBoxGroup hurtBoxGroup = hurtboxGroup;
+                int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter + 1;
+                hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
+            }
+            if (base.isAuthority)
+            {
+                if ((bool)base.characterMotor)
+                {
+                    forwardDirection = inputBank.aimDirection.normalized;
+                }
+                finalPosition = base.transform.position + (forwardDirection * RifterStaticValues.riftSecondaryDistance);
+                startPosition = base.transform.position;
             }
 
-            Vector3 rhs = characterDirection ? characterDirection.forward : forwardDirection;
-            Vector3 rhs2 = Vector3.Cross(Vector3.up, rhs);
-
-            float num = Vector3.Dot(forwardDirection, rhs);
-            float num2 = Vector3.Dot(forwardDirection, rhs2);
-
-            RecalculateRollSpeed();
-
-            if (characterMotor && characterDirection)
-            {
-                characterMotor.velocity.y = 0f;
-                characterMotor.velocity = forwardDirection * rollSpeed;
-            }
-
-            Vector3 b = characterMotor ? characterMotor.velocity : Vector3.zero;
-            previousPosition = transform.position - b;
-
-            PlayAnimation("FullBody, Override", "Roll", "Roll.playbackRate", duration);
-            Util.PlaySound(dodgeSoundString, gameObject);
-
-            if (NetworkServer.active)
-            {
-                characterBody.AddTimedBuff(RifterBuffs.armorBuff, 3f * duration);
-                characterBody.AddTimedBuff(RoR2Content.Buffs.HiddenInvincibility, 0.5f * duration);
-            }
-        }
-
-        private void RecalculateRollSpeed()
-        {
-            rollSpeed = moveSpeedStat * Mathf.Lerp(initialSpeedCoefficient, finalSpeedCoefficient, fixedAge / duration);
         }
 
         public override void FixedUpdate()
         {
-            base.FixedUpdate();
-            RecalculateRollSpeed();
-
-            if (characterDirection) characterDirection.forward = forwardDirection;
-            if (cameraTargetParams) cameraTargetParams.fovOverride = Mathf.Lerp(dodgeFOV, 60f, fixedAge / duration);
-
-            Vector3 normalized = (transform.position - previousPosition).normalized;
-            if (characterMotor && characterDirection && normalized != Vector3.zero)
+            stopwatch += Time.fixedDeltaTime;
+            if ((bool)base.characterMotor && (bool)base.characterDirection)
             {
-                Vector3 vector = normalized * rollSpeed;
-                float d = Mathf.Max(Vector3.Dot(vector, forwardDirection), 0f);
-                vector = forwardDirection * d;
-                vector.y = 0f;
-
-                characterMotor.velocity = vector;
+                base.characterMotor.velocity = Vector3.zero;
+                base.characterMotor.rootMotion += forwardDirection * (RifterStaticValues.riftSecondaryDistance/duration * Time.fixedDeltaTime);
             }
-            previousPosition = transform.position;
-
-            if (isAuthority && fixedAge >= duration)
+            if (stopwatch >= duration && base.isAuthority)
             {
                 outer.SetNextStateToMain();
-                return;
             }
         }
 
         public override void OnExit()
         {
             if (cameraTargetParams) cameraTargetParams.fovOverride = -1f;
+            if ((bool)characterModel)
+            {
+                characterModel.invisibilityCount--;
+            }
+            if ((bool)hurtboxGroup)
+            {
+                HurtBoxGroup hurtBoxGroup = hurtboxGroup;
+                int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter - 1;
+                hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
+            }
+            if ((bool)base.characterMotor)
+            {
+                base.characterMotor.disableAirControlUntilCollision = false;
+            }
             base.OnExit();
-
-            characterMotor.disableAirControlUntilCollision = false;
         }
 
         public override void OnSerialize(NetworkWriter writer)
@@ -109,4 +104,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             forwardDirection = reader.ReadVector3();
         }
     }
+
 }
+    
+
