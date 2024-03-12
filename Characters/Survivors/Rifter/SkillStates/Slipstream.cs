@@ -1,18 +1,19 @@
 ﻿using EntityStates;
-using IL.RoR2.Skills;
+using RoR2.Skills;
 using RifterMod.Survivors.Rifter;
 using RoR2;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace RifterMod.Survivors.Rifter.SkillStates
+namespace RifterMod.Characters.Survivors.Rifter.SkillStates
 {
     public class Slipstream : BaseSkillState
     {
-        public static float duration = 0.3f;
+        public static float duration = 0.15f;
+        private float speed = 12f;
 
         public static string dodgeSoundString = "HenryRoll";
-        public static float dodgeFOV = global::EntityStates.Commando.DodgeState.dodgeFOV;
+        public static float dodgeFOV = EntityStates.Commando.DodgeState.dodgeFOV;
 
         private Vector3 finalPosition;
         private Vector3 forwardDirection;
@@ -25,12 +26,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         private float stopwatch;
 
+
         public override void OnEnter()
         {
             base.OnEnter();
             animator = GetModelAnimator();
             modelTransform = GetModelTransform();
-            base.characterBody.AddBuff(Rifter.RifterBuffs.riftTeleportableBuff);
             if ((bool)modelTransform)
             {
                 characterModel = modelTransform.GetComponent<CharacterModel>();
@@ -48,25 +49,26 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             }
             if (base.isAuthority)
             {
-                if ((bool)base.characterMotor)
+                if ((bool)characterMotor)
                 {
-                    forwardDirection = inputBank.aimDirection.normalized;
+                    forwardDirection = ((base.inputBank.moveVector == Vector3.zero) ? base.characterDirection.forward : base.inputBank.moveVector).normalized; ;
                 }
-                finalPosition = base.transform.position + (forwardDirection * RifterStaticValues.riftSecondaryDistance);
-                startPosition = base.transform.position;
+                finalPosition = transform.position + forwardDirection * speed;
+                startPosition = transform.position;
             }
+
 
         }
 
         public override void FixedUpdate()
         {
             stopwatch += Time.fixedDeltaTime;
-            if ((bool)base.characterMotor && (bool)base.characterDirection)
+            if (stopwatch < duration && (bool)characterMotor && (bool)characterDirection)
             {
-                base.characterMotor.velocity = Vector3.zero;
-                base.characterMotor.rootMotion += forwardDirection * (RifterStaticValues.riftSecondaryDistance/duration * Time.fixedDeltaTime);
+                characterMotor.velocity = Vector3.zero;
+                characterMotor.rootMotion += forwardDirection * (speed / duration * Time.fixedDeltaTime);
             }
-            if (stopwatch >= duration && base.isAuthority)
+            if (stopwatch > duration && base.isAuthority)
             {
                 outer.SetNextStateToMain();
             }
@@ -78,33 +80,26 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             if ((bool)characterModel)
             {
                 characterModel.invisibilityCount--;
-            }
+             }
             if ((bool)hurtboxGroup)
             {
                 HurtBoxGroup hurtBoxGroup = hurtboxGroup;
                 int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter - 1;
                 hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
             }
-            if ((bool)base.characterMotor)
+            if ((bool)characterMotor)
             {
-                base.characterMotor.disableAirControlUntilCollision = false;
+                characterMotor.disableAirControlUntilCollision = false;
             }
             base.OnExit();
         }
 
-        public override void OnSerialize(NetworkWriter writer)
+        public override InterruptPriority GetMinimumInterruptPriority()
         {
-            base.OnSerialize(writer);
-            writer.Write(forwardDirection);
-        }
-
-        public override void OnDeserialize(NetworkReader reader)
-        {
-            base.OnDeserialize(reader);
-            forwardDirection = reader.ReadVector3();
+            return InterruptPriority.Death;
         }
     }
 
 }
-    
+
 

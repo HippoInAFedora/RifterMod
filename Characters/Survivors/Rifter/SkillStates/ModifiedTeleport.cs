@@ -1,100 +1,124 @@
 ﻿using RoR2;
+using EntityStates;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class ModifiedTeleport : MonoBehaviour
+public class ModifiedTeleport : BaseState
 {
-    public CharacterBody body;
     public Vector3 targetFootPosition;
 
+    private Transform modelTransform;
+
+    private CharacterModel characterModel;
+
+    private HurtBoxGroup hurtboxGroup;
+
+    public EntityState setNextState = null;
+
+    private float stopwatch;
     public float teleportTimer;
     public float teleportWaitDuration = .5f;
     public bool teleportOut;
 
-    private void OnEnable()
+    public override void OnEnter()
     {
-        if (!NetworkServer.active)
+        base.OnEnter();
+        Debug.Log("began teleport");
+        modelTransform = GetModelTransform();
+        if ((bool)modelTransform)
         {
-            UnityEngine.Debug.Log("network server not active");
+            characterModel = modelTransform.GetComponent<CharacterModel>();
+            hurtboxGroup = modelTransform.GetComponent<HurtBoxGroup>();
         }
-        ModifiedTeleportBody(body, targetFootPosition);
-        teleportTimer = 0f;
+        if ((bool)characterModel)
+        {
+            characterModel.invisibilityCount++;
+        }
+        if ((bool)hurtboxGroup)
+        {
+            HurtBoxGroup hurtBoxGroup = hurtboxGroup;
+            int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter + 1;
+            hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
+        }
+        if (base.isAuthority)
+        {
+            if ((bool)characterBody)
+            {
+                TeleportHelper.TeleportBody(base.characterBody, targetFootPosition);
+            }
+        }       
     }
 
-    private void FixedUpdate()
+    public override void FixedUpdate()
     {
-        if (NetworkServer.active)
+        base.FixedUpdate();
+        stopwatch += Time.deltaTime;
+        if ((bool)base.characterMotor)
         {
-            
-            teleportTimer += Time.fixedDeltaTime;
-            if (teleportTimer >= teleportWaitDuration)
+            base.characterMotor.velocity = Vector3.zero;
+        }
+        else if ((bool)base.rigidbodyMotor)
+        {
+            base.rigidbodyMotor.moveVector = Vector3.zero;
+        }
+        else
+        {
+            base.transform.position = Vector3.zero;
+        }
+
+        if (stopwatch >= teleportWaitDuration && base.isAuthority)
+        {
+            if (characterBody.modelLocator.name == "FlyingVermin(Clone)")
             {
-                TeleportOut();
-                Destroy(this);
-                return;
+                outer.SetNextState(new EntityStates.FlyingVermin.Mode.GrantFlight());
+            }
+            else 
+            {
+                outer.SetNextStateToMain();
             }
         }
     }
-    private void TeleportOut()
+
+    public override void OnExit()
     {
-        body.characterMotor.enabled = true;
-        CharacterModel characterModel = body.modelLocator.modelTransform.GetComponent<CharacterModel>();
-        if (characterModel == null)
+        if (!outer.destroying)
         {
-            UnityEngine.Debug.Log("null");
+            modelTransform = GetModelTransform();
+            if ((bool)modelTransform)
+            {
+                TemporaryOverlay temporaryOverlay = modelTransform.gameObject.AddComponent<TemporaryOverlay>();
+                temporaryOverlay.duration = 0.6f;
+                temporaryOverlay.animateShaderAlpha = true;
+                temporaryOverlay.alphaCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
+                temporaryOverlay.destroyComponentOnEnd = true;
+                temporaryOverlay.originalMaterial = LegacyResourcesAPI.Load<Material>("Materials/matHuntressFlashBright");
+                temporaryOverlay.AddToCharacerModel(modelTransform.GetComponent<CharacterModel>());
+                TemporaryOverlay temporaryOverlay2 = modelTransform.gameObject.AddComponent<TemporaryOverlay>();
+                temporaryOverlay2.duration = 0.7f;
+                temporaryOverlay2.animateShaderAlpha = true;
+                temporaryOverlay2.alphaCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
+                temporaryOverlay2.destroyComponentOnEnd = true;
+                temporaryOverlay2.originalMaterial = LegacyResourcesAPI.Load<Material>("Materials/matHuntressFlashExpanded");
+                temporaryOverlay2.AddToCharacerModel(modelTransform.GetComponent<CharacterModel>());
+            }
         }
-        if (characterModel != null)
+        if ((bool)characterModel)
         {
             characterModel.invisibilityCount--;
-            UnityEngine.Debug.Log("cmodelOut");
-        }
-        HurtBoxGroup hurtboxGroup = body.hurtBoxGroup;
-
-        if (hurtboxGroup == null)
-        {
-            UnityEngine.Debug.Log("hboxnull");
         }
         if ((bool)hurtboxGroup)
         {
             HurtBoxGroup hurtBoxGroup = hurtboxGroup;
             int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter - 1;
             hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
-            UnityEngine.Debug.Log("hurtBoxOut");
         }
+        Debug.Log("got out of teleport");
+        base.OnExit();
     }
-    
-    private void ModifiedTeleportBody(CharacterBody body, Vector3 targetFootPosition)
+
+    public override InterruptPriority GetMinimumInterruptPriority()
     {
-
-        if ((bool)body)
-        {
-
-            body.characterMotor.enabled = false;
-            CharacterModel characterModel = body.modelLocator.modelTransform.GetComponent<CharacterModel>();
-            if (characterModel == null)
-            {
-                UnityEngine.Debug.Log("null");
-            }
-            if (characterModel != null)
-            {
-                characterModel.invisibilityCount++;
-                UnityEngine.Debug.Log("cmodel");
-            }
-            HurtBoxGroup hurtboxGroup = body.hurtBoxGroup;
-
-            if (hurtboxGroup == null)
-            {
-                UnityEngine.Debug.Log("hboxnull");
-            }
-            if ((bool)hurtboxGroup)
-            {
-                HurtBoxGroup hurtBoxGroup = hurtboxGroup;
-                int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter + 1;
-                hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
-                UnityEngine.Debug.Log("hurtBox");
-            }
-            TeleportHelper.TeleportBody(body, targetFootPosition);
-        }
+        return InterruptPriority.Frozen;
     }
 }
 

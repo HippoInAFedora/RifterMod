@@ -7,28 +7,29 @@ using RoR2;
 using UnityEngine;
 using System;
 using IL.RoR2.Skills;
+using RifterMod.Modules;
+using static UnityEngine.SendMouseEvents;
+using R2API;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
-    public class RiftGauntlet : BaseSkillState
+    public class RiftGauntlet : RiftBase
     {
-        public static float damageCoefficient = RifterStaticValues.gunDamageCoefficient;
-        public static float procCoefficient = 1f;
-        public static float baseDuration = 0.8f;
-        //delay on firing is usually ass-feeling. only set this if you know what you're doing
-        public static float firePercentTime = 0.0f;
-        public static float force = 800f;
-        public static float recoil = 3f;
-        public static float range = 256f;
+        public float baseDuration = 0.75f;
+        public bool blasted = false;
+        public bool shot = false;
+
+        public bool isBlastOvercharge = false;
         public static GameObject tracerEffectPrefab = LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/Tracers/TracerGoldGat");
 
-        private float duration;
+        public float duration;
 
         //added vars for blastAttack
 
         //Interface stuff
         public int currentTeleportActive { get; set; }
 
+        public RifterStep rifterStep;
 
         public GameObject hitEffectPrefab = FireBarrage.hitEffectPrefab;
 
@@ -41,7 +42,10 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             base.OnEnter();
 
-            this.duration = RiftGauntlet.baseDuration / base.attackSpeedStat;
+
+            rifterStep = base.GetComponent<RifterStep>();
+
+            this.duration = baseDuration / base.attackSpeedStat;
             Ray aimRay = base.GetAimRay();
             base.StartAimMode(aimRay, 2f, false);
             base.PlayAnimation("Gesture Additive, Right", "FirePistol, Right");
@@ -55,49 +59,24 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
             if (base.isAuthority)
             {
-
-
-                BulletAttack bulletAttack = new BulletAttack();
-                bulletAttack.owner = base.gameObject;
-                bulletAttack.weapon = base.gameObject;
-                bulletAttack.origin = aimRay.origin;
-                bulletAttack.aimVector = aimRay.direction;
-                bulletAttack.minSpread = 0f;
-                bulletAttack.maxSpread = base.characterBody.spreadBloomAngle;
-                bulletAttack.damage = base.characterBody.damage * .7f;
-                bulletAttack.bulletCount = 1U;
-                bulletAttack.procCoefficient = .5f;
-                bulletAttack.falloffModel = BulletAttack.FalloffModel.None;
-                bulletAttack.radius = 1f;
-                bulletAttack.tracerEffectPrefab = RiftGauntlet.tracerEffectPrefab;
-                bulletAttack.muzzleName = "MuzzleRight";
-                bulletAttack.hitEffectPrefab = this.hitEffectPrefab;
-                bulletAttack.isCrit = false;
-                bulletAttack.HitEffectNormal = false;
-                bulletAttack.stopperMask = LayerIndex.world.mask;
-                bulletAttack.smartCollision = true;
-                bulletAttack.maxDistance = RifterStaticValues.riftPrimaryDistance;
-
-
-
-
                 //Blast Attack Stuff
-                Vector3 vector = aimRay.GetPoint(RifterStaticValues.riftPrimaryDistance);
+                Vector3 vector = aimRay.GetPoint(RiftDistance());
 
-                if (Physics.Raycast(aimRay, out var endPoint, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.UseGlobal))
+                if (Physics.Raycast(aimRay, out var endPoint, RiftDistance(), LayerIndex.world.mask, QueryTriggerInteraction.UseGlobal))
                 {
                     float hit = endPoint.distance;
                     vector = aimRay.GetPoint(hit);
                 }
-                float radius = 7f;
+
+
                 float vectorDistance = Vector3.Distance(aimRay.origin, vector);
                 float isRiftHitGround;
-                if (vectorDistance + radius < RifterStaticValues.riftPrimaryDistance)
+                if (vectorDistance + BlastRadius() < RiftDistance())
                 {
-                    float float1 = RifterStaticValues.riftPrimaryDistance - vectorDistance + 1.1f;
+                    float float1 = RiftDistance() - vectorDistance + 1.1f;
                     decimal dec = new decimal(float1);
                     double d = (double)dec;
-                    double isRiftHitGroundDouble = 1/Math.Log(d , 2.5);
+                    double isRiftHitGroundDouble = 1 / Math.Log(d, 6.7);
                     isRiftHitGround = (float)isRiftHitGroundDouble;
                 }
                 else
@@ -105,82 +84,100 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     isRiftHitGround = 1f;
                 }
 
-                bool blasted = false;
+
                 HurtBox component1;
 
                 BlastAttack blastAttack = new BlastAttack();
                 blastAttack.attacker = base.gameObject;
                 blastAttack.inflictor = base.gameObject;
                 blastAttack.teamIndex = TeamIndex.None;
-                blastAttack.radius = radius;
+                blastAttack.radius = BlastRadius();
                 blastAttack.falloffModel = BlastAttack.FalloffModel.None;
-                blastAttack.baseDamage = base.characterBody.damage * 4.2f * isRiftHitGround;
+                blastAttack.baseDamage = BlastDamage() * isRiftHitGround;
                 blastAttack.crit = base.RollCrit();
                 blastAttack.procCoefficient = 1f;
                 blastAttack.canRejectForce = false;
                 blastAttack.position = vector;
                 blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
+                blastAttack.AddModdedDamageType(Damage.overchargedDamageType);
                 var result = blastAttack.Fire();
 
                 EffectData effectData2 = new EffectData();
                 effectData2.origin = blastAttack.position;
                 EffectManager.SpawnEffect(GlobalEventManager.CommonAssets.igniteOnKillExplosionEffectPrefab, effectData2, transmit: false);
 
-
                 foreach (var hit in result.hitPoints)
                 {
-                    if (hit.hurtBox != null)
+                    if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
                     {
                         blasted = true;
+
+                        if (IsOvercharged() || hurtBox.healthComponent.body.HasBuff(RifterBuffs.unstableDebuff))
+                        {
+                            if (IsOvercharged()) 
+                            {
+                                ApplyUnstableDebuff(hurtBox.healthComponent.body);
+                            }   
+                            if (isBlastOvercharge || IsOvercharged())
+                            {
+                                BlastOvercharge(result);
+                            }
+                            
+                        }
                     }
+
                 };
+
+
+
+
+                
+
+                BulletAttack bulletAttack = new BulletAttack();
+                bulletAttack.owner = base.gameObject;
+                bulletAttack.weapon = base.gameObject;
+                bulletAttack.origin = vector;
+                bulletAttack.aimVector = -aimRay.direction;
+                bulletAttack.minSpread = 0f;
+                bulletAttack.maxSpread = base.characterBody.spreadBloomAngle;
+                bulletAttack.damage = base.characterBody.damage * 1.2f;
+                bulletAttack.bulletCount = 1U;
+                bulletAttack.procCoefficient = .5f;
+                bulletAttack.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
+                bulletAttack.radius = .75f;
+                bulletAttack.tracerEffectPrefab = RiftGauntlet.tracerEffectPrefab;
+                bulletAttack.muzzleName = "MuzzleRight";
+                bulletAttack.hitEffectPrefab = this.hitEffectPrefab;
+                bulletAttack.isCrit = false;
+                bulletAttack.HitEffectNormal = false;
+                bulletAttack.stopperMask = LayerIndex.playerBody.mask;
+                bulletAttack.smartCollision = true;
+                bulletAttack.maxDistance = vectorDistance;
+
 
                 bulletAttack.modifyOutgoingDamageCallback = delegate (BulletAttack _bulletAttack, ref BulletAttack.BulletHit hitInfo, DamageInfo damageInfo) //changed to _bulletAttack
                 {
-                    float componentWeight;
-                    damageInfo.canRejectForce = false;
-                    Rigidbody rigidbody = hitInfo.entityObject.GetComponent<Rigidbody>();
-                    componentWeight = rigidbody.mass;
-
-
-                    ModelLocator modelLocator = hitInfo.entityObject.GetComponent<ModelLocator>();
-                            if (modelLocator == null)
+                    if (hitInfo.hitHurtBox.TryGetComponent(out HurtBox hurtBox))
+                    {
+                        shot = true;
+                        if (IsOvercharged() || hurtBox.healthComponent.body.HasBuff(RifterBuffs.unstableDebuff))
+                        {
+                            if (IsOvercharged())
                             {
-                                return;
-                            }
-                            if (modelLocator != null && base.characterBody.GetBuffCount(Rifter.RifterBuffs.riftTeleportableBuff) > 0)
-                            {
-                                HealthComponent enemyHit = modelLocator.gameObject.GetComponent<HealthComponent>();
-                                if (enemyHit == null)
-                                {
-                                    UnityEngine.Debug.Log("null");
-                                    return;
-                                }
-                                Vector3 enemyAngleVector = base.GetAimRay().direction * Vector3.Angle(base.GetAimRay().origin, hitInfo.point);
-                                Ray enemyRayHit = new Ray(base.GetAimRay().origin, enemyAngleVector);
-                                Vector3 enemyTeleportTo = enemyRayHit.GetPoint(RifterStaticValues.riftPrimaryDistance);
-                                 if (Physics.Raycast(enemyRayHit, out var hitPoint, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.UseGlobal))
-                                 {
-                                      float hit = endPoint.distance;
-                                        enemyTeleportTo = aimRay.GetPoint(hit);
-                                 }
-
-                                 ModifiedTeleport teleport = enemyHit.gameObject.AddComponent<ModifiedTeleport>(); ;
-                                teleport.body = enemyHit.body;
-                                teleport.targetFootPosition = enemyTeleportTo;
-
-
-                            }
-                        
+                                ApplyUnstableDebuff(hurtBox.healthComponent.body);
+                            }                        
+                            Overcharge(hitInfo, hurtBox);
+                        }
+                    }
                     
                 };
 
                 bulletAttack.filterCallback = delegate (BulletAttack _bulletAttack, ref BulletAttack.BulletHit hitInfo) //changed to _bulletAttack
                 {
-                    component1 = hitInfo.collider.GetComponent<HurtBox>();
-                    if (component1 && blasted == true)
+                    if (hitInfo.hitHurtBox.TryGetComponent(out HurtBox hurtBox) && blasted == true)
                     {
                         return false;
+                        
                     }
                     return (!hitInfo.entityObject || (object)hitInfo.entityObject != bulletAttack.owner) && BulletAttack.defaultFilterCallback(bulletAttack, ref hitInfo);
                 };
@@ -195,12 +192,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         //Here, we are doing nothing
         public override void OnExit()
         {
-            if (base.characterBody.GetBuffCount(Rifter.RifterBuffs.riftTeleportableBuff) > 0)
-            {
-                base.characterBody.RemoveBuff(Rifter.RifterBuffs.riftTeleportableBuff);
-            }
-            base.OnExit();
-            
+            base.OnExit(); 
         }
 
 
@@ -222,8 +214,102 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             return InterruptPriority.Skill;
         }
 
+        public override float RiftDistance()
+        {
+            return RifterStaticValues.riftPrimaryDistance;
+        }
+
+        public override float BlastRadius()
+        {
+            if (IsOvercharged())
+            {
+                return 7f * RifterStaticValues.overchargedCoefficient;
+            }
+            return 7f;
+        }
+
+        public override float BlastDamage()
+        {
+            if (IsOvercharged())
+            {
+                return (base.characterBody.damage * RifterStaticValues.primaryRiftCoefficient) * RifterStaticValues.overchargedCoefficient;
+            }
+            return base.characterBody.damage * RifterStaticValues.primaryRiftCoefficient;
+        }
+
+        public override bool IsOvercharged()
+        {
+            if (rifterStep.rifterStep <= 0)
+            {
+                return false;
+            }
+            return true;
+        }
 
 
+        public override void Overcharge(BulletAttack.BulletHit hitInfo, HurtBox hurtBox)
+        {
+            HealthComponent enemyHit = hurtBox.healthComponent;
+            Vector3 enemyTeleportTo = GetTeleportLocation(enemyHit.body);
+            if (enemyHit.body && !enemyHit.body.isBoss)
+            {
+                TryTeleport(enemyHit.body, enemyTeleportTo);
+            }
+            if (enemyHit.body && (enemyHit.body.isBoss || enemyHit.body.isChampion) && enemyHit.body.HasBuff(RifterBuffs.unstableDebuff))
+            {
+                ;
+                TryTeleport(enemyHit.body, enemyTeleportTo);
+            }
+        }
 
+        public override void BlastOvercharge(BlastAttack.Result result)
+        {
+            foreach (var hit in result.hitPoints)
+            {
+                if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
+                {
+                    HealthComponent enemyHit = hurtBox.healthComponent;
+                    if (enemyHit == null)
+                    {
+                        UnityEngine.Debug.Log("null");
+                        return;
+                    }
+                    Vector3 enemyTeleportTo = GetTeleportLocation(enemyHit.body);
+                    if (enemyHit.body && !enemyHit.body.isBoss)
+                    {
+                        TryTeleport(enemyHit.body, enemyTeleportTo);
+                    }
+                    if (enemyHit.body && enemyHit.body.isBoss && enemyHit.body.HasBuff(RifterBuffs.unstableDebuff))
+                    {
+                        enemyTeleportTo /= 2f;
+                        TryTeleport(enemyHit.body, enemyTeleportTo);
+                    }
+                }
+                
+            }          
+        }
+
+        public override Vector3 GetTeleportLocation(CharacterBody body)
+        {
+            Vector3 baseDirection = (body.corePosition - base.characterBody.corePosition).normalized;
+            Ray ray = new Ray(base.characterBody.corePosition, baseDirection);
+            Vector3 location;
+            if (body.isFlying || !body.characterMotor.isGrounded)
+            {
+                location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance);
+            }
+            else
+            {
+                location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance) + (Vector3.up * 3f);
+            }
+            Vector3 direction = (location - base.characterBody.corePosition).normalized;
+            RaycastHit raycastHit;
+            Vector3 position = location;
+            if (Physics.SphereCast(base.characterBody.corePosition, 0.1f, direction, out raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
+            {
+                position = raycastHit.point;
+            }           
+            return position;
+        }
     }
 }

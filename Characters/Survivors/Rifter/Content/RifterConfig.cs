@@ -1,4 +1,6 @@
-﻿namespace RifterMod.Survivors.Rifter
+﻿using JetBrains.Annotations;
+
+namespace RifterMod.Survivors.Rifter
 {
     public static class RifterConfig
     {
@@ -6,6 +8,7 @@
         {
             string section = "Rifter";
 
+            
             //add more here or else you're cringe
         }
     }

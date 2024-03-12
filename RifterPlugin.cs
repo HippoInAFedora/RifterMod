@@ -5,6 +5,8 @@ using RoR2;
 using System.Collections.Generic;
 using System.Security;
 using System.Security.Permissions;
+using System.Runtime.CompilerServices;
+using R2API;
 
 [module: UnverifiableCode]
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
@@ -31,18 +33,40 @@ namespace RifterMod
         void Awake()
         {
             instance = this;
-
             //easy to use logger
             Log.Init(Logger);
 
             // used when you want to properly set up language folders
             Modules.Language.Init();
 
+            Damage.SetupModdedDamage();
+
             // character initialization
             new RifterSurvivor().Initialize();
 
+
             // make a content pack and add it. this has to be last
             new Modules.ContentPacks().Initialize();
+
+            Hook();
+
+        }
+
+        private void Hook()
+        {
+            On.RoR2.HealthComponent.TakeDamage += HealthComponent_TakeDamage;
+        }
+
+        private void HealthComponent_TakeDamage(On.RoR2.HealthComponent.orig_TakeDamage orig, RoR2.HealthComponent self, RoR2.DamageInfo damageInfo)
+        {
+            if ((bool)self && (bool)self.body)
+            {
+                if (self.body.HasBuff(RifterBuffs.unstableDebuff) && damageInfo.HasModdedDamageType(Damage.overchargedDamageType))
+                {
+                    damageInfo.damage *= RifterStaticValues.overchargedCoefficient;
+                }
+            }
+            orig(self, damageInfo);
         }
     }
 }
