@@ -171,8 +171,8 @@ namespace RifterMod.Survivors.Rifter
             RifterSkillDef primarySkillDef1 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
                 (
                     "Rift Gauntlet Scope",
-                    Rifter_PREFIX + "PRIMARY_SLASH_NAME",
-                    Rifter_PREFIX + "PRIMARY_SLASH_DESCRIPTION",
+                    Rifter_PREFIX + "PRIMARY_GAUNTLET_RANGED",
+                    Rifter_PREFIX + "PRIMARY_GAUNTLET_RANGED_DESCRIPTION",
                     assetBundle.LoadAsset<Sprite>("texPrimaryIcon"),
                     new EntityStates.SerializableEntityStateType(typeof(SkillStates.RiftGauntlet)),
                     "Weapon",
@@ -191,9 +191,9 @@ namespace RifterMod.Survivors.Rifter
             //here is a basic skill def with all fields accounted for
             RifterSkillDef secondarySkillDef1 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
             {
-                skillName = "Gauntlet",
-                skillNameToken = Rifter_PREFIX + "SECONDARY_GUN_NAME",
-                skillDescriptionToken = Rifter_PREFIX + "SECONDARY_GUN_DESCRIPTION",
+                skillName = "Rift Gauntlet",
+                skillNameToken = Rifter_PREFIX + "SECONDARY_GAUNTLET",
+                skillDescriptionToken = Rifter_PREFIX + "SECONDARY_GAUNTLET_DESCRIPTION",
                 keywordTokens = new string[] { "KEYWORD_AGILE" },
                 skillIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon"),
 
@@ -217,8 +217,8 @@ namespace RifterMod.Survivors.Rifter
             RapidfireSkillDef secondarySkillDef2 = Skills.CreateSkillDef<RapidfireSkillDef>(new SkillDefInfo
             {
                 skillName = "Rapidfire Gauntlet",
-                skillNameToken = Rifter_PREFIX + "SECONDARY_GUN_NAME",
-                skillDescriptionToken = Rifter_PREFIX + "SECONDARY_GUN_DESCRIPTION",
+                skillNameToken = Rifter_PREFIX + "SECONDARY_RAPIDFIRE",
+                skillDescriptionToken = Rifter_PREFIX + "SECONDARY_RAPIDFIRE_DESCRIPTION",
                 keywordTokens = new string[] { "KEYWORD_AGILE" },
                 skillIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon"),
 
@@ -248,8 +248,8 @@ namespace RifterMod.Survivors.Rifter
             RifterSkillDef secondarySkillDef3 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
             {
                 skillName = "Refraction",
-                skillNameToken = Rifter_PREFIX + "SECONDARY_GUN_NAME",
-                skillDescriptionToken = Rifter_PREFIX + "SECONDARY_GUN_DESCRIPTION",
+                skillNameToken = Rifter_PREFIX + "SECONDARY_REFRACTION",
+                skillDescriptionToken = Rifter_PREFIX + "SECONDARY_REFRACTION",
                 keywordTokens = new string[] { "KEYWORD_AGILE" },
                 skillIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon"),
 
@@ -269,8 +269,8 @@ namespace RifterMod.Survivors.Rifter
             });
             secondarySkillDef3.lastChargeOvercharge = true;
             secondarySkillDef3.overchargedIcon = assetBundle.LoadAsset<Sprite>("texPrimaryIcon");
-            secondarySkillDef3.overchargedNameToken = Rifter_PREFIX + "PRIMARY_SLASH_NAME";
-            secondarySkillDef3.overchargedDescriptionToken = Rifter_PREFIX + "PRIMARY_SLASH_DESCRIPTION";
+            secondarySkillDef3.overchargedNameToken = Rifter_PREFIX + "PRIMARY_GAUNTLET_RANGED";
+            secondarySkillDef3.overchargedDescriptionToken = Rifter_PREFIX + "PRIMARY_GAUNTLET_RANGED_DESCRIPTION";
             secondarySkillDef3.usesOvercharge = true;
             Skills.AddSecondarySkills(bodyPrefab, secondarySkillDef3);
 
@@ -283,8 +283,8 @@ namespace RifterMod.Survivors.Rifter
             RifterSkillDef utilitySkillDef1 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
             {
                 skillName = "Slipstream",
-                skillNameToken = Rifter_PREFIX + "SPECIAL_BOMB_NAME",
-                skillDescriptionToken = Rifter_PREFIX + "SPECIAL_BOMB_DESCRIPTION",
+                skillNameToken = Rifter_PREFIX + "UTILITY_SLIPSTREAM",
+                skillDescriptionToken = Rifter_PREFIX + "UTILITY_SLIPSTREAM_DESCRIPTION",
                 skillIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon"),
 
                 activationState = new EntityStates.SerializableEntityStateType(typeof(Slipstream)),
@@ -312,8 +312,8 @@ namespace RifterMod.Survivors.Rifter
             RifterSkillDef utilitySkillDef2 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
             {
                 skillName = "Slipstream",
-                skillNameToken = Rifter_PREFIX + "SPECIAL_BOMB_NAME",
-                skillDescriptionToken = Rifter_PREFIX + "SPECIAL_BOMB_DESCRIPTION",
+                skillNameToken = Rifter_PREFIX + "SPECIAL_RECURSION",
+                skillDescriptionToken = Rifter_PREFIX + "SPECIAL_RECURSION_DESCRIPTION",
                 skillIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon"),
 
                 activationState = new EntityStates.SerializableEntityStateType(typeof(Slipstream)),

@@ -273,27 +273,27 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             }          
         }
 
-        public override Vector3 GetTeleportLocation(CharacterBody body)
-        {
-            Vector3 baseDirection = base.GetAimRay().direction;
-            Ray ray = new Ray(base.characterBody.corePosition, baseDirection);
-            Vector3 location;
-            if (body.isFlying || !body.characterMotor.isGrounded)
-            {
-                location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance);
-            }
-            else
-            {
-                location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance) + (Vector3.up);
-            }
-            Vector3 direction = baseDirection;
-            RaycastHit raycastHit;
-            Vector3 position = location;
-            if (Physics.SphereCast(base.characterBody.corePosition, 0.1f, direction, out raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
-            {
-                position = raycastHit.point;
-            }           
-            return position;
-        }
+        //public override Vector3 GetTeleportLocation(CharacterBody body)
+        //{
+        //    Vector3 baseDirection = base.GetAimRay().direction;
+        //    Ray ray = new Ray(base.characterBody.corePosition, baseDirection);
+        //    Vector3 location;
+        //    if (body.isFlying || !body.characterMotor.isGrounded)
+        //    {
+        //        location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance);
+        //    }
+        //    else
+        //    {
+        //        location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance) + (Vector3.up);
+        //    }
+        //    Vector3 direction = baseDirection;
+        //    RaycastHit raycastHit;
+        //    Vector3 position = location;
+        //    if (Physics.SphereCast(base.characterBody.corePosition, 0.1f, direction, out raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
+        //    {
+        //        position = raycastHit.point;
+        //    }           
+        //    return position;
+        //}
     }
 }

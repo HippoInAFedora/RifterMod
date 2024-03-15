@@ -77,12 +77,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public virtual void Overcharge(BulletAttack.BulletHit hitInfo, HurtBox hurtBox)
         {
             HealthComponent enemyHit = hurtBox.healthComponent;
-            if (enemyHit == null)
-            {
-                UnityEngine.Debug.Log("null");
-                return;
-            }
-            Debug.Log("not null");
             enemyHit.body.TryGetComponent(out CharacterMotor motor);
             enemyHit.body.TryGetComponent(out RigidbodyMotor rbmotor);
 
@@ -93,7 +87,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             }
             if (enemyHit.body && enemyHit.body.isBoss)
             {
-                enemyTeleportTo /= 2f;
                 TryTeleport(enemyHit.body, enemyTeleportTo);
             }
         }
@@ -157,7 +150,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             }
             else
             {
-                location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance) + (Vector3.up * 1f);
+                location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance) + (Vector3.up);
             }
             Vector3 direction = (location - base.characterBody.corePosition).normalized;
             RaycastHit raycastHit;
@@ -165,7 +158,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             if (Physics.SphereCast(base.characterBody.corePosition, 0.05f, direction, out raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
             {
                 position = raycastHit.point;
-            }           
+            }
             return position;
         }
     }

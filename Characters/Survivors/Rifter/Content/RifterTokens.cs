@@ -24,7 +24,7 @@ namespace RifterMod.Survivors.Rifter
              + "< ! > Rift Gauntlet encourages strong positioning to hit in the sweet spot." + Environment.NewLine + Environment.NewLine
              + "< ! > Refracted Realities ." + Environment.NewLine + Environment.NewLine
              + "< ! > Slipstream acts as a repositioning tool and a way to move enemies into the sweet spot." + Environment.NewLine + Environment.NewLine
-             + "< ! > Rift Collapse can shatter and destroy enemies with ease." + Environment.NewLine + Environment.NewLine;
+             + "< ! > Recursion is a good get-off-me tool, dealing close range damage and teleporting enemies away." + Environment.NewLine + Environment.NewLine;
 
             string outro = "..and so he left a fractured world behind.";
             string outroFailure = "..and so he vanished from reality.";
@@ -41,28 +41,34 @@ namespace RifterMod.Survivors.Rifter
             #endregion
 
             #region Passive
-            Language.Add(prefix + "PASSIVE_NAME", "Rifter passive");
-            Language.Add(prefix + "PASSIVE_DESCRIPTION", "Sample text.");
+            Language.Add(prefix + "PASSIVE_NAME", "Rift/Fracture");
+            Language.Add(prefix + "PASSIVE_DESCRIPTION", "Each shot is comprised of a strong, large Rift at the end of the shot, and a thin, weak Fracture Line that travels from you to the Rift. Rifts do less damage on contact with the ground.");
             #endregion
 
             #region Primary
-            Language.Add(prefix + "PRIMARY_SLASH_NAME", "Sword");
-            Language.Add(prefix + "PRIMARY_SLASH_DESCRIPTION", Tokens.agilePrefix + $"Swing forward for <style=cIsDamage>{100f * RifterStaticValues.primaryRiftCoefficient}% damage</style>.");
+            Language.Add(prefix + "PRIMARY_GAUNTLET_RANGED", "Rift Gauntlet Ranged");
+            Language.Add(prefix + "PRIMARY_GAUNTLET_RANGED_DESCRIPTION", Tokens.agilePrefix + $"Shoot a far ranged rift for <style=cIsDamage>{100f * RifterStaticValues.primaryRiftCoefficient}% damage</style>.");
             #endregion
 
             #region Secondary
-            Language.Add(prefix + "SECONDARY_GUN_NAME", "Handgun");
-            Language.Add(prefix + "SECONDARY_GUN_DESCRIPTION", Tokens.agilePrefix + $"Fire a handgun for <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style>.");
+            Language.Add(prefix + "SECONDARY_GAUNTLET", "Rift Gauntlet");
+            Language.Add(prefix + "SECONDARY_GAUNTLET_DESCRIPTION", Tokens.agilePrefix + $"Shoot a midrange rift <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style>. There is no cooldown.");
+
+            Language.Add(prefix + "SECONDARY_RAPIDFIRE", "Rapidfire Gauntlet");
+            Language.Add(prefix + "SECONDARY_RAPIDFIRE_DESCRIPTION", Tokens.agilePrefix + $"Shoot a midrange rift at twice the speed for <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style>. On a cooldown.");
+
+            Language.Add(prefix + "SECONDARY_REFRACTION", "Refraction");
+            Language.Add(prefix + "SECONDARY_REFRACTION_DESCRIPTION", Tokens.agilePrefix + $"Shoot a spread of 3 midrange rifts for <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style> each. On a cooldown.");
             #endregion
 
             #region Utility
-            Language.Add(prefix + "UTILITY_ROLL_NAME", "Roll");
-            Language.Add(prefix + "UTILITY_ROLL_DESCRIPTION", "Roll a short distance, gaining <style=cIsUtility>300 armor</style>. <style=cIsUtility>You cannot be hit during the roll.</style>");
+            Language.Add(prefix + "UTILITY_SLIPSTREAM", "Slipstream");
+            Language.Add(prefix + "UTILITY_SLIPSTREAM_DESCRIPTION", "Teleport a short distance. Your next shot will teleport enemies to primary distance. You are Invulnerable during your teleport.");
             #endregion
 
             #region Special
-            Language.Add(prefix + "SPECIAL_BOMB_NAME", "Bomb");
-            Language.Add(prefix + "SPECIAL_BOMB_DESCRIPTION", $"Throw a bomb for <style=cIsDamage>{100f * RifterStaticValues.bombDamageCoefficient}% damage</style>.");
+            Language.Add(prefix + "SPECIAL_RECURSION", "Recursion");
+            Language.Add(prefix + "SPECIAL_RECURSION_DESCRIPTION", $"Charge a up to 5 rifts stacked on your location. Initial rift is <style=cIsDamage>{100f * RifterStaticValues.recursionCoefficient}% damage</style>, subsequent rifts are 20% larger and stronger than the last.");
             #endregion
 
             #region Achievements
