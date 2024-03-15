@@ -41,14 +41,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Aura);
             }
             rifterstep = base.GetComponent<RifterStep>();
-            step = rifterstep.rifterStep;
-            if (step > 5)
-            {
-                step = 5;
-            }
             flag = 0;
             blastNum = step;
-            chargeDuration = .7f / base.attackSpeedStat;
+            chargeDuration = .5f / base.attackSpeedStat;
             body = base.characterBody;
             if ((bool)areaIndicatorPrefab)
             {
@@ -100,9 +95,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 }
             if((bool)base.skillLocator && base.inputBank.skill3.justPressed && base.skillLocator.utility.IsReady())
             {
-                base.activatorSkillSlot.AddOneStock();
                 base.skillLocator.utility.stock--;
-                outer.SetNextState(new Slipstream());
+                outer.SetNextState(new Recursion
+                {
+                    blastMax = blastNum,
+                    setNextState = new Slipstream(),
+                }) ;
             }
             
         }

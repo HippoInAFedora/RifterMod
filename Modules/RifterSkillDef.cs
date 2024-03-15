@@ -25,8 +25,6 @@ namespace RifterMod.Modules
 
         public string overchargedDescriptionToken;
 
-        public int overchargeDeduction = 1;
-
         public bool lastChargeOvercharge;
 
 
@@ -47,7 +45,7 @@ namespace RifterMod.Modules
         public override Sprite GetCurrentIcon([NotNull] GenericSkill skillSlot)
         {
             InstanceData instanceData = (InstanceData)skillSlot.skillInstanceData;
-            if (instanceData.step.rifterStep > 0)
+            if (instanceData.step.rifterStep > 1 && usesOvercharge)
             {
                 return overchargedIcon;
             }
@@ -57,7 +55,7 @@ namespace RifterMod.Modules
         public override string GetCurrentNameToken([NotNull] GenericSkill skillSlot)
         {
             InstanceData instanceData = (InstanceData)skillSlot.skillInstanceData;
-            if (instanceData.step.rifterStep > 0)
+            if (instanceData.step.rifterStep > 1 && usesOvercharge)
             {
                 return overchargedNameToken;
             }
@@ -67,7 +65,7 @@ namespace RifterMod.Modules
         public override string GetCurrentDescriptionToken([NotNull] GenericSkill skillSlot)
         {
             InstanceData instanceData = (InstanceData)skillSlot.skillInstanceData;
-            if (instanceData.step.rifterStep > 0)
+            if (instanceData.step.rifterStep > 1 && usesOvercharge)
             {
                 return overchargedDescriptionToken;
             }
@@ -84,27 +82,22 @@ namespace RifterMod.Modules
             {
                 if (instanceData.step.rifterStep < 1)
                 {
-                    instanceData.step.rifterStep = 1;
+                    instanceData.step.rifterStep = 2;
                 }
-                if (instanceData.step.rifterStep >= 1)
-                {
-                    instanceData.step.rifterStep++;
-                }
-            }
-            if(lastChargeOvercharge && skillSlot.stock == 1)
-            {
-                instanceData.step.rifterStep++;
+                
             }
             if (usesOvercharge)
             {
-                instanceData.step.rifterStep -= overchargeDeduction;
-                Debug.Log(instanceData.step.rifterStep + "--");
+                instanceData.step.rifterStep -= 1;
+            }        
+            if (instanceData.step.rifterStep >2)
+            {
+                instanceData.step.rifterStep = 2;
             }
             if (instanceData.step.rifterStep < 0)
             {
                 instanceData.step.rifterStep = 0;
-                Debug.Log("step back to zero");
-            }          
+            }
         }
 
 

@@ -15,7 +15,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 {
     public class RiftGauntlet : RiftBase
     {
-        public float baseDuration = 0.75f;
+        public float baseDuration = 0.7f;
         public bool blasted = false;
         public bool shot = false;
 
@@ -71,12 +71,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
                 float vectorDistance = Vector3.Distance(aimRay.origin, vector);
                 float isRiftHitGround;
-                if (vectorDistance + BlastRadius() < RiftDistance())
+                if (vectorDistance < RiftDistance() * 2 / 3)
                 {
                     float float1 = RiftDistance() - vectorDistance + 1.1f;
                     decimal dec = new decimal(float1);
                     double d = (double)dec;
-                    double isRiftHitGroundDouble = 1 / Math.Log(d, 6.7);
+                    double isRiftHitGroundDouble = 1 / Math.Log(d, 3.5);
                     isRiftHitGround = (float)isRiftHitGroundDouble;
                 }
                 else
@@ -95,7 +95,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 blastAttack.falloffModel = BlastAttack.FalloffModel.None;
                 blastAttack.baseDamage = BlastDamage() * isRiftHitGround;
                 blastAttack.crit = base.RollCrit();
-                blastAttack.procCoefficient = 1f;
+                blastAttack.procCoefficient = .8f;
                 blastAttack.canRejectForce = false;
                 blastAttack.position = vector;
                 blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
@@ -112,12 +112,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     {
                         blasted = true;
 
-                        if (IsOvercharged() || hurtBox.healthComponent.body.HasBuff(RifterBuffs.unstableDebuff))
-                        {
-                            if (IsOvercharged()) 
-                            {
-                                ApplyUnstableDebuff(hurtBox.healthComponent.body);
-                            }   
+                        if (IsOvercharged())
+                        {   
                             if (isBlastOvercharge || IsOvercharged())
                             {
                                 BlastOvercharge(result);
@@ -142,7 +138,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 bulletAttack.maxSpread = base.characterBody.spreadBloomAngle;
                 bulletAttack.damage = base.characterBody.damage * 1.2f;
                 bulletAttack.bulletCount = 1U;
-                bulletAttack.procCoefficient = .5f;
+                bulletAttack.procCoefficient = 0f;
                 bulletAttack.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
                 bulletAttack.radius = .75f;
                 bulletAttack.tracerEffectPrefab = RiftGauntlet.tracerEffectPrefab;
@@ -160,12 +156,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     if (hitInfo.hitHurtBox.TryGetComponent(out HurtBox hurtBox))
                     {
                         shot = true;
-                        if (IsOvercharged() || hurtBox.healthComponent.body.HasBuff(RifterBuffs.unstableDebuff))
-                        {
-                            if (IsOvercharged())
-                            {
-                                ApplyUnstableDebuff(hurtBox.healthComponent.body);
-                            }                        
+                        if (IsOvercharged())
+                        {                     
                             Overcharge(hitInfo, hurtBox);
                         }
                     }
@@ -221,19 +213,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastRadius()
         {
-            if (IsOvercharged())
-            {
-                return 7f * RifterStaticValues.overchargedCoefficient;
-            }
             return 7f;
         }
 
         public override float BlastDamage()
         {
-            if (IsOvercharged())
-            {
-                return (base.characterBody.damage * RifterStaticValues.primaryRiftCoefficient) * RifterStaticValues.overchargedCoefficient;
-            }
             return base.characterBody.damage * RifterStaticValues.primaryRiftCoefficient;
         }
 
@@ -255,7 +239,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 TryTeleport(enemyHit.body, enemyTeleportTo);
             }
-            if (enemyHit.body && (enemyHit.body.isBoss || enemyHit.body.isChampion) && enemyHit.body.HasBuff(RifterBuffs.unstableDebuff))
+            if (enemyHit.body && (enemyHit.body.isBoss || enemyHit.body.isChampion))
             {
                 ;
                 TryTeleport(enemyHit.body, enemyTeleportTo);
@@ -279,7 +263,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     {
                         TryTeleport(enemyHit.body, enemyTeleportTo);
                     }
-                    if (enemyHit.body && enemyHit.body.isBoss && enemyHit.body.HasBuff(RifterBuffs.unstableDebuff))
+                    if (enemyHit.body && enemyHit.body.isBoss)
                     {
                         enemyTeleportTo /= 2f;
                         TryTeleport(enemyHit.body, enemyTeleportTo);
@@ -291,7 +275,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override Vector3 GetTeleportLocation(CharacterBody body)
         {
-            Vector3 baseDirection = (body.corePosition - base.characterBody.corePosition).normalized;
+            Vector3 baseDirection = base.GetAimRay().direction;
             Ray ray = new Ray(base.characterBody.corePosition, baseDirection);
             Vector3 location;
             if (body.isFlying || !body.characterMotor.isGrounded)
@@ -300,9 +284,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             }
             else
             {
-                location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance) + (Vector3.up * 3f);
+                location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance) + (Vector3.up);
             }
-            Vector3 direction = (location - base.characterBody.corePosition).normalized;
+            Vector3 direction = baseDirection;
             RaycastHit raycastHit;
             Vector3 position = location;
             if (Physics.SphereCast(base.characterBody.corePosition, 0.1f, direction, out raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))

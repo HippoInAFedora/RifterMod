@@ -234,7 +234,7 @@ namespace RifterMod.Survivors.Rifter
                 forceSprintDuringState = false,
 
             });
-            secondarySkillDef2.newRecharge = 6f;
+            secondarySkillDef2.newRecharge = 4f;
             secondarySkillDef2.baseRechargeInterval = 1.5f;
             secondarySkillDef2.lastChargeOvercharge = true;
             secondarySkillDef2.resetCooldownTimerOnUse = true;
@@ -258,7 +258,7 @@ namespace RifterMod.Survivors.Rifter
                 interruptPriority = EntityStates.InterruptPriority.Any,
 
                 baseMaxStock = 1,
-                baseRechargeInterval = 1.25f,
+                baseRechargeInterval = 1f,
                 resetCooldownTimerOnUse = true,
                 fullRestockOnAssign = true,
                 isCombatSkill = true,
@@ -308,9 +308,35 @@ namespace RifterMod.Survivors.Rifter
             utilitySkillDef1.usesOvercharge = false;
             Skills.AddUtilitySkills(bodyPrefab, utilitySkillDef1);
             //here's a skilldef of a typical movement skill. some fields are omitted and will just have default values
-            
 
-            
+            RifterSkillDef utilitySkillDef2 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
+            {
+                skillName = "Slipstream",
+                skillNameToken = Rifter_PREFIX + "SPECIAL_BOMB_NAME",
+                skillDescriptionToken = Rifter_PREFIX + "SPECIAL_BOMB_DESCRIPTION",
+                skillIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon"),
+
+                activationState = new EntityStates.SerializableEntityStateType(typeof(Slipstream)),
+                //setting this to the "weapon2" EntityStateMachine allows us to cast this skill at the same time primary, which is set to the "weapon" EntityStateMachine
+                activationStateMachineName = "Body",
+                interruptPriority = EntityStates.InterruptPriority.PrioritySkill,
+
+                baseMaxStock = 3,
+                baseRechargeInterval = 7f,
+
+                stockToConsume = 1,
+
+                forceSprintDuringState = true,
+                canceledFromSprinting = false,
+                isCombatSkill = false,
+                mustKeyPress = true,
+                beginSkillCooldownOnSkillEnd = true
+            });
+            utilitySkillDef2.overchargedIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon");
+            utilitySkillDef2.overcharges = true;
+            utilitySkillDef2.usesOvercharge = false;
+            Skills.AddUtilitySkills(bodyPrefab, utilitySkillDef1);
+
         }
 
         private void AddSpecialSkills()

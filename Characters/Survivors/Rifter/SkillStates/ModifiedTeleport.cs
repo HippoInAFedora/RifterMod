@@ -1,10 +1,10 @@
 ﻿using RoR2;
 using EntityStates;
 using UnityEngine;
-using UnityEngine.Networking;
 
 public class ModifiedTeleport : BaseState
 {
+    private Vector3 initialPosition;
     public Vector3 targetFootPosition;
 
     private Transform modelTransform;
@@ -13,17 +13,20 @@ public class ModifiedTeleport : BaseState
 
     private HurtBoxGroup hurtboxGroup;
 
-    public EntityState setNextState = null;
+    GameObject trailObject = new GameObject();
+
+    TrailRenderer teleportTrail;
 
     private float stopwatch;
     public float teleportTimer;
-    public float teleportWaitDuration = .5f;
+    public float teleportWaitDuration;
     public bool teleportOut;
 
     public override void OnEnter()
     {
         base.OnEnter();
         Debug.Log("began teleport");
+        initialPosition = base.characterBody.corePosition;
         modelTransform = GetModelTransform();
         if ((bool)modelTransform)
         {
@@ -46,13 +49,28 @@ public class ModifiedTeleport : BaseState
             {
                 TeleportHelper.TeleportBody(base.characterBody, targetFootPosition);
             }
-        }       
+        }
+        trailObject.transform.position = initialPosition;
+        trailObject.transform.LookAt(targetFootPosition);
+        teleportTrail = trailObject.AddComponent<TrailRenderer>();
+        teleportTrail.minVertexDistance = 1f;
+        teleportTrail.material = LegacyResourcesAPI.Load<Material>("RoR2 / Base / Gateway / matGatewayBeam");
+        teleportTrail.material.color = new Color(66, 135, 245);    
+        teleportTrail.AddPosition(initialPosition);
+        teleportTrail.generateLightingData = true;
+        teleportTrail.time = .05f;
+        teleportTrail.autodestruct = true;
+
     }
 
     public override void FixedUpdate()
     {
         base.FixedUpdate();
-        stopwatch += Time.deltaTime;
+        stopwatch += Time.fixedDeltaTime;
+        if ((bool)trailObject)
+        {
+            trailObject.transform.position = trailObject.transform.forward * (Vector3.Magnitude(targetFootPosition - initialPosition) / teleportWaitDuration * Time.fixedDeltaTime);
+        }
         if ((bool)base.characterMotor)
         {
             base.characterMotor.velocity = Vector3.zero;
@@ -66,7 +84,7 @@ public class ModifiedTeleport : BaseState
             base.transform.position = Vector3.zero;
         }
 
-        if (stopwatch >= teleportWaitDuration && base.isAuthority)
+        if (stopwatch >= teleportWaitDuration)
         {
             if (characterBody.modelLocator.name == "FlyingVermin(Clone)")
             {
@@ -101,6 +119,10 @@ public class ModifiedTeleport : BaseState
                 temporaryOverlay2.originalMaterial = LegacyResourcesAPI.Load<Material>("Materials/matHuntressFlashExpanded");
                 temporaryOverlay2.AddToCharacerModel(modelTransform.GetComponent<CharacterModel>());
             }
+        }
+        if (trailObject)
+        {
+            Destroy(trailObject);
         }
         if ((bool)characterModel)
         {

@@ -22,6 +22,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public int blastNum;
         public int blastMax;
 
+        public EntityStates.EntityState setNextState = null;
+
         BlastAttack blastAttack;
         float duration;
 
@@ -69,14 +71,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     {
                         cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Standard);
                     }
-                    if (base.characterBody.TryGetComponent(out RifterStep step))
+                    if (setNextState != null)
                     {
-                        step.rifterStep -= 5;
-                        if (step.rifterStep < 0)
-                        {
-                            step.rifterStep = 0;
-                        }
-                        Debug.Log(step.rifterStep.ToString());
+                        outer.SetNextState(setNextState);
                     }
                     outer.SetNextStateToMain();
                 }
@@ -106,12 +103,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             }
             else
             {
-                location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance) + (Vector3.up * 3f);
+                location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance) + (Vector3.up);
             }
             Vector3 direction = (location - base.characterBody.corePosition).normalized;
             RaycastHit raycastHit;
             Vector3 position = location;
-            if (Physics.SphereCast(base.characterBody.corePosition, 0.1f, direction, out raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
+            if (Physics.SphereCast(base.characterBody.corePosition, 0.05f, direction, out raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
             {
                 position = raycastHit.point;
             }
@@ -151,7 +148,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             blastAttack.falloffModel = BlastAttack.FalloffModel.None;
             blastAttack.baseDamage = BlastDamage();
             blastAttack.crit = base.RollCrit();
-            blastAttack.procCoefficient = 1f;
+            blastAttack.procCoefficient = ProcCoefficient();
             blastAttack.canRejectForce = false;
             blastAttack.position = basePosition;
             blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
@@ -166,8 +163,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
                 {
-                    ApplyUnstableDebuff(hurtBox.healthComponent.body);
-                    if (blastNum == blastMax)
+                    if (blastNum == blastMax - 1)
                     {
                         ModifyBlastOvercharge(result);
                     }                 
@@ -185,9 +181,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             return base.characterBody.damage * RifterStaticValues.recursionCoefficient * (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
         }
 
-        public override void ApplyUnstableDebuff(CharacterBody body)
+        public virtual float ProcCoefficient()
         {
-            body.AddTimedBuff(RifterBuffs.unstableDebuff, 5f);
+            return blastNum / (blastMax + 1);
         }
     }
 }

@@ -163,7 +163,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 {
                     if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
                     {
-                        ApplyUnstableDebuff(hurtBox.healthComponent.body);
                         ModifyBlastOvercharge(result);
                     }
                 };
@@ -171,7 +170,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 {
                     if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
                     {
-                        ApplyUnstableDebuff(hurtBox.healthComponent.body);
                         BlastOvercharge(result);
                     }
                 };
@@ -273,7 +271,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     {
                         TryTeleport(enemyHit.body, enemyTeleportTo);
                     }
-                    if (enemyHit.body && enemyHit.body.isBoss && enemyHit.body.HasBuff(RifterBuffs.unstableDebuff))
+                    if (enemyHit.body && enemyHit.body.isBoss)
                     {
                         TryTeleport(enemyHit.body, enemyTeleportTo);
                     }

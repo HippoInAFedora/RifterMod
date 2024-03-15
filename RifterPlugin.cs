@@ -61,10 +61,7 @@ namespace RifterMod
         {
             if ((bool)self && (bool)self.body)
             {
-                if (self.body.HasBuff(RifterBuffs.unstableDebuff) && damageInfo.HasModdedDamageType(Damage.overchargedDamageType))
-                {
-                    damageInfo.damage *= RifterStaticValues.overchargedCoefficient;
-                }
+
             }
             orig(self, damageInfo);
         }

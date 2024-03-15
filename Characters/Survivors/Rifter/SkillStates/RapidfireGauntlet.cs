@@ -39,19 +39,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastRadius()
         {
-            if (IsOvercharged())
-            {
-                return 7.75f * RifterStaticValues.overchargedCoefficient;
-            }
             return 7.75f;
         }
 
         public override float BlastDamage()
         {
-            if (IsOvercharged())
-            {
-                return (base.characterBody.damage * RifterStaticValues.secondaryRiftCoefficient) * RifterStaticValues.overchargedCoefficient;
-            }
             return base.characterBody.damage * RifterStaticValues.secondaryRiftCoefficient;
         }
 

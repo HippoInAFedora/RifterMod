@@ -14,7 +14,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 {
     public class Refraction : RiftGauntlet
     {
-        public float baseDuration = .75f;
+        public float baseDuration = .6f;
         public bool isBlastOvercharge = true;
 
         private float isLeftHitGround;
@@ -77,12 +77,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 }
 
                 float vectorDistanceLeft = Vector3.Distance(aimRay.origin, vectorLeft);
-                if (vectorDistanceLeft + BlastRadius() < RiftDistance())
+                if (vectorDistanceLeft < RiftDistance() * 2 / 3)
                 {
                     float float1 = RiftDistance() - vectorDistanceLeft + 1.1f;
                     decimal dec = new decimal(float1);
                     double d = (double)dec;
-                    double isRiftHitGroundDouble = 1 / Math.Log(d, 6.7);
+                    double isRiftHitGroundDouble = 1 / Math.Log(d, 3.5);
                     isLeftHitGround = (float)isRiftHitGroundDouble;
                 }
                 else
@@ -105,12 +105,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 //}
 
                 float vectorDistanceRight = Vector3.Distance(aimRay.origin, vectorRight);
-                if (vectorDistanceRight + BlastRadius() < RiftDistance())
+                if (vectorDistanceRight < RiftDistance() * 2 / 3)
                 {
                     float float1 = RiftDistance() - vectorDistanceRight + 1.1f;
                     decimal dec = new decimal(float1);
                     double d = (double)dec;
-                    double isRiftHitGroundDouble = 1 / Math.Log(d, 6.7);
+                    double isRiftHitGroundDouble = 1 / Math.Log(d, 3.5);
                     isRightHitGround = (float)isRiftHitGroundDouble;
                 }
                 else
@@ -136,7 +136,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                                 {
                                     if (IsOvercharged())
                                     {
-                                        ApplyUnstableDebuff(hurtBox.healthComponent.body);
                                         BlastOvercharge(result);
                                     }
 
@@ -158,7 +157,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 bulletAttackL.maxSpread = base.characterBody.spreadBloomAngle;
                 bulletAttackL.damage = base.characterBody.damage * 1.2f;
                 bulletAttackL.bulletCount = 1U;
-                bulletAttackL.procCoefficient = .5f;
+                bulletAttackL.procCoefficient = 0f;
                 bulletAttackL.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
                 bulletAttackL.radius = .75f;
                 bulletAttackL.tracerEffectPrefab = RiftGauntlet.tracerEffectPrefab;
@@ -175,14 +174,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 {
                     if (hitInfo.hitHurtBox.TryGetComponent(out HurtBox hurtBox))
                     {
-                        if (IsOvercharged() || hurtBox.healthComponent.body.HasBuff(RifterBuffs.unstableDebuff))
-                        {
-                            if (IsOvercharged())
-                            {
-                                ApplyUnstableDebuff(hurtBox.healthComponent.body);
-                            }
                             Overcharge(hitInfo, hurtBox);
-                        }
                     }
 
                 };
@@ -208,7 +200,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 bulletAttackR.maxSpread = base.characterBody.spreadBloomAngle;
                 bulletAttackR.damage = base.characterBody.damage * 1.2f;
                 bulletAttackR.bulletCount = 1U;
-                bulletAttackR.procCoefficient = .5f;
+                bulletAttackR.procCoefficient = 0f;
                 bulletAttackR.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
                 bulletAttackR.radius = .75f;
                 bulletAttackR.tracerEffectPrefab = RiftGauntlet.tracerEffectPrefab;
@@ -225,12 +217,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 {
                     if (hitInfo.hitHurtBox.TryGetComponent(out HurtBox hurtBox))
                     {
-                        if (IsOvercharged() || hurtBox.healthComponent.body.HasBuff(RifterBuffs.unstableDebuff))
+                        if (IsOvercharged())
                         {
-                            if (IsOvercharged())
-                            {
-                                ApplyUnstableDebuff(hurtBox.healthComponent.body);
-                            }
                             Overcharge(hitInfo, hurtBox);
                         }
                     }
@@ -259,19 +247,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastRadius()
         {
-            if (IsOvercharged())
-            {
-                return 7.75f * RifterStaticValues.overchargedCoefficient;
-            }
             return 7.75f;
         }
 
         public override float BlastDamage()
         {
-            if (IsOvercharged())
-            {
-                return (base.characterBody.damage * RifterStaticValues.secondaryRiftCoefficient) * RifterStaticValues.overchargedCoefficient;
-            }
             return base.characterBody.damage * RifterStaticValues.secondaryRiftCoefficient;
         }
 
@@ -290,7 +270,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             blastAttack.falloffModel = BlastAttack.FalloffModel.None;
             blastAttack.baseDamage = BlastDamage() * isHitGround;
             blastAttack.crit = base.RollCrit();
-            blastAttack.procCoefficient = 1f;
+            blastAttack.procCoefficient = .8f;
             blastAttack.canRejectForce = false;
             blastAttack.position = position;
             blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;

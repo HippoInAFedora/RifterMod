@@ -19,21 +19,16 @@ namespace RifterMod.Modules
         public override void OnExecute([NotNull] GenericSkill skillSlot)
         {
             base.OnExecute(skillSlot);
+            if (skillSlot.stock == 0)
+            {
+                skillSlot.RunRecharge(-newRecharge + skillSlot.baseRechargeInterval);
+            }
         }
 
         public override void OnFixedUpdate([NotNull] GenericSkill skillSlot)
         {
             InstanceData instanceData = (InstanceData)skillSlot.skillInstanceData;
             base.OnFixedUpdate(skillSlot);
-            if (skillSlot.stock == 0 && !runRecharge)
-            {
-                skillSlot.rechargeStopwatch = 0;
-                runRecharge = true;
-            }
-            if (skillSlot.stock > 0)
-            {
-                runRecharge = false;
-            }
             if (skillSlot.stock == 1)
             {
                 instanceData.step.rapidfireShot = true;
@@ -71,16 +66,6 @@ namespace RifterMod.Modules
                 return overchargedDescriptionToken;
             }
             return base.GetCurrentDescriptionToken(skillSlot);
-        }
-
-        public override float GetRechargeInterval([NotNull] GenericSkill skillSlot)
-        {
-            InstanceData instanceData = (InstanceData)skillSlot.skillInstanceData;
-            if (skillSlot.stock == 0)
-            {
-                return newRecharge;
-            }
-            return base.GetRechargeInterval(skillSlot);
         }
 
         public override int GetRechargeStock([NotNull] GenericSkill skillSlot)
