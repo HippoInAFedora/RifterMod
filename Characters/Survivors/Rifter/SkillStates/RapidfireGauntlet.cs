@@ -11,7 +11,7 @@ using RifterMod.Modules;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
-    public class RapidfireGauntlet : RiftGauntlet
+    public class RapidfireGauntlet : RiftGauntletBase
     {
         public float baseDuration = .4f;
         public bool isBlastOvercharge = true;
@@ -55,6 +55,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override InterruptPriority GetMinimumInterruptPriority()
         {
             return InterruptPriority.PrioritySkill;
+        }
+
+        public override void RunDistanceAssist(Vector3 vector, BlastAttack.Result result)
+        {
+            return;
         }
     }
 }

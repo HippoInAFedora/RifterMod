@@ -81,11 +81,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             enemyHit.body.TryGetComponent(out RigidbodyMotor rbmotor);
 
             Vector3 enemyTeleportTo = GetTeleportLocation(enemyHit.body);
-            if (enemyHit.body && !enemyHit.body.isBoss)
-            {
-                TryTeleport(enemyHit.body, enemyTeleportTo);
-            }
-            if (enemyHit.body && enemyHit.body.isBoss)
+            if (motor || rbmotor)
             {
                 TryTeleport(enemyHit.body, enemyTeleportTo);
             }
@@ -103,13 +99,10 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                         return;
                     }
                     Vector3 enemyTeleportTo = GetTeleportLocation(enemyHit.body);
-                    if (enemyHit.body && !enemyHit.body.isBoss)
+                    enemyHit.body.TryGetComponent(out CharacterMotor motor);
+                    enemyHit.body.TryGetComponent(out RigidbodyMotor rbmotor);
+                    if (motor || rbmotor)
                     {
-                        TryTeleport(enemyHit.body, enemyTeleportTo);
-                    }
-                    if (enemyHit.body && enemyHit.body.isBoss)
-                    {
-                        ;
                         TryTeleport(enemyHit.body, enemyTeleportTo);
                     }
                 }
@@ -121,12 +114,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             if (body.TryGetComponent(out SetStateOnHurt setStateOnHurt))
             {
-                Debug.Log("setstateonhurt");
                 if (setStateOnHurt.targetStateMachine)
                 {
                     ModifiedTeleport modifiedTeleport = new ModifiedTeleport();
                     modifiedTeleport.targetFootPosition = teleportToPosition;
-                    modifiedTeleport.teleportWaitDuration = 1f;
+                    modifiedTeleport.teleportWaitDuration = .25f;
                     setStateOnHurt.targetStateMachine.SetInterruptState(modifiedTeleport, InterruptPriority.Frozen);
                 }
                 EntityStateMachine[] array = setStateOnHurt.idleStateMachine;
@@ -152,10 +144,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance) + (Vector3.up);
             }
-            Vector3 direction = (location - base.characterBody.corePosition).normalized;
+            Vector3 direction = (location - base.characterBody.corePosition).normalized;           
             RaycastHit raycastHit;
             Vector3 position = location;
-            if (Physics.SphereCast(base.characterBody.corePosition, 0.05f, direction, out raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
+            float distance = Vector3.Distance(body.corePosition, location);
+            if (Physics.SphereCast(body.corePosition, 0.05f, direction, out raycastHit, distance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
             {
                 position = raycastHit.point;
             }

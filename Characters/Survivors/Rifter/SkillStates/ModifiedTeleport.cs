@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ModifiedTeleport : BaseState
 {
-    private Vector3 initialPosition;
+    public Vector3 initialPosition;
     public Vector3 targetFootPosition;
 
     private Transform modelTransform;
@@ -25,7 +25,6 @@ public class ModifiedTeleport : BaseState
     public override void OnEnter()
     {
         base.OnEnter();
-        Debug.Log("began teleport");
         initialPosition = base.characterBody.corePosition;
         modelTransform = GetModelTransform();
         if ((bool)modelTransform)
@@ -53,12 +52,17 @@ public class ModifiedTeleport : BaseState
         trailObject.transform.position = initialPosition;
         trailObject.transform.LookAt(targetFootPosition);
         teleportTrail = trailObject.AddComponent<TrailRenderer>();
-        teleportTrail.minVertexDistance = 1f;
-        teleportTrail.material = LegacyResourcesAPI.Load<Material>("RoR2 / Base / Gateway / matGatewayBeam");
-        teleportTrail.material.color = new Color(66, 135, 245);    
-        teleportTrail.AddPosition(initialPosition);
+        teleportTrail.minVertexDistance = 2f;
+        teleportTrail.material = LegacyResourcesAPI.Load<Material>("RoR2 / Base / Golem / matZap1");
+        teleportTrail.material.color = new Color(66, 135, 245);
+        teleportTrail.startWidth = 0.05f;
+        teleportTrail.endWidth = 0f;
+        teleportTrail.AddPosition(trailObject.transform.position);
         teleportTrail.generateLightingData = true;
-        teleportTrail.time = .05f;
+        teleportTrail.startColor = new Color(184, 128, 237);
+        teleportTrail.time = .25f;
+        teleportTrail.emitting = true;
+        teleportTrail.widthMultiplier = .1f;
         teleportTrail.autodestruct = true;
 
     }
@@ -69,7 +73,9 @@ public class ModifiedTeleport : BaseState
         stopwatch += Time.fixedDeltaTime;
         if ((bool)trailObject)
         {
-            trailObject.transform.position = trailObject.transform.forward * (Vector3.Magnitude(targetFootPosition - initialPosition) / teleportWaitDuration * Time.fixedDeltaTime);
+            trailObject.transform.position += trailObject.transform.forward * (Vector3.Distance(targetFootPosition,initialPosition) / teleportWaitDuration * Time.fixedDeltaTime);
+            teleportTrail.AddPosition((Vector3)trailObject.transform.position);
+            Debug.Log(trailObject.transform.position.ToString());
         }
         if ((bool)base.characterMotor)
         {
@@ -86,14 +92,7 @@ public class ModifiedTeleport : BaseState
 
         if (stopwatch >= teleportWaitDuration)
         {
-            if (characterBody.modelLocator.name == "FlyingVermin(Clone)")
-            {
-                outer.SetNextState(new EntityStates.FlyingVermin.Mode.GrantFlight());
-            }
-            else 
-            {
-                outer.SetNextStateToMain();
-            }
+            outer.SetNextStateToMain();
         }
     }
 
@@ -134,7 +133,6 @@ public class ModifiedTeleport : BaseState
             int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter - 1;
             hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
         }
-        Debug.Log("got out of teleport");
         base.OnExit();
     }
 

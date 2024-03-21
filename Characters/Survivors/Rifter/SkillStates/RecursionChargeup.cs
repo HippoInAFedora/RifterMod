@@ -22,12 +22,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         CharacterBody body;
 
-        int flag;
-
         int blastNum;
 
-        RifterStep rifterstep;
-        int step;
 
         bool specialReleasedOnce;
 
@@ -36,13 +32,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void OnEnter()
         {
             base.OnEnter();
-            if (cameraTargetParams)
+            if (base.cameraTargetParams)
             {
                 cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Aura);
             }
-            rifterstep = base.GetComponent<RifterStep>();
-            flag = 0;
-            blastNum = step;
+            blastNum = 0;
             chargeDuration = .5f / base.attackSpeedStat;
             body = base.characterBody;
             if ((bool)areaIndicatorPrefab)
@@ -77,7 +71,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             }
 
             stopwatch += Time.fixedDeltaTime;
-            if (blastNum <= 4)
+            if (blastNum <= 3)
             {
                 blastWatch += Time.fixedDeltaTime;
                 if (blastWatch > chargeDuration)
@@ -86,11 +80,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     blastWatch = 0;
                 }
             }
-            if (base.isAuthority && base.inputBank.skill4.justPressed && specialReleasedOnce || blastNum > 4 && base.isAuthority)
+            if (base.isAuthority && base.inputBank.skill4.justPressed && specialReleasedOnce || blastNum > 3 && base.isAuthority)
                 {
                 outer.SetNextState(new Recursion
                 {
-                    blastMax = blastNum,
+                    blastMax = blastNum + 1,
                 }) ;
                 }
             if((bool)base.skillLocator && base.inputBank.skill3.justPressed && base.skillLocator.utility.IsReady())
@@ -98,7 +92,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 base.skillLocator.utility.stock--;
                 outer.SetNextState(new Recursion
                 {
-                    blastMax = blastNum,
+                    blastMax = blastNum + 1,
                     setNextState = new Slipstream(),
                 }) ;
             }
@@ -110,6 +104,10 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             if ((bool)areaIndicatorInstance)
             {
                 EntityState.Destroy(areaIndicatorInstance.gameObject);
+            }
+            if (base.cameraTargetParams)
+            {
+                cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Standard);
             }
             base.OnExit();
         }

@@ -2,10 +2,14 @@
 
 public static class Damage
 {
-    internal static DamageAPI.ModdedDamageType overchargedDamageType;
+    internal static DamageAPI.ModdedDamageType riftDamage;
+
+    internal static DamageAPI.ModdedDamageType riftAssistDamage;
 
     internal static void SetupModdedDamage()
     {
-        overchargedDamageType = DamageAPI.ReserveDamageType();
+        riftDamage = DamageAPI.ReserveDamageType();
+
+        riftAssistDamage = DamageAPI.ReserveDamageType();
     }
 }

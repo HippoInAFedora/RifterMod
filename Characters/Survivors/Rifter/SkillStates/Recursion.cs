@@ -128,8 +128,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                         return;
                     }
 
+                    enemyHit.TryGetComponent(out CharacterMotor motor);
+                    enemyHit.TryGetComponent(out RigidbodyMotor rbmotor);
+
                     Vector3 enemyTeleportTo = GetTeleportLocation(enemyHit);
-                    if (enemyHit && !enemyHit.isBoss)
+                    if (motor || rbmotor)
                     {
                         TryTeleport(enemyHit, enemyTeleportTo);
                     }
@@ -152,7 +155,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             blastAttack.canRejectForce = false;
             blastAttack.position = basePosition;
             blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
-            blastAttack.AddModdedDamageType(Damage.overchargedDamageType);
+            blastAttack.AddModdedDamageType(Damage.riftDamage);
             var result = blastAttack.Fire();
 
             EffectData effectData2 = new EffectData();
@@ -163,7 +166,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
                 {
-                    if (blastNum == blastMax - 1)
+                    if (blastNum == blastMax - 1 && hurtBox.healthComponent.alive)
                     {
                         ModifyBlastOvercharge(result);
                     }                 

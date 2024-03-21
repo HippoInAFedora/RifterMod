@@ -12,6 +12,7 @@ namespace RifterMod.Modules
 {
     public class RapidfireSkillDef : RifterSkillDef
     {
+        CharacterBody body;
         public float baseRecharge;
         public float newRecharge;
 
@@ -71,9 +72,11 @@ namespace RifterMod.Modules
         public override int GetRechargeStock([NotNull] GenericSkill skillSlot)
         {
             InstanceData instanceData = (InstanceData)skillSlot.skillInstanceData;
+            body = skillSlot.characterBody;
             if (skillSlot.stock == 0)
             {
-                return base.GetMaxStock(skillSlot);
+                int maxStock = skillSlot.maxStock + body.inventory.GetItemCount(RoR2Content.Items.SecondarySkillMagazine);
+                return maxStock;
             }
             return base.rechargeStock;
         }

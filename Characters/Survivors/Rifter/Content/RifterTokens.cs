@@ -21,10 +21,10 @@ namespace RifterMod.Survivors.Rifter
             string prefix = RifterSurvivor.Rifter_PREFIX;
 
             string desc = "Rifter utilizes position to create devestating rifts in reality.<color=#CCD3E0>" + Environment.NewLine + Environment.NewLine
-             + "< ! > Rift Gauntlet encourages strong positioning to hit in the sweet spot." + Environment.NewLine + Environment.NewLine
-             + "< ! > Refracted Realities ." + Environment.NewLine + Environment.NewLine
-             + "< ! > Slipstream acts as a repositioning tool and a way to move enemies into the sweet spot." + Environment.NewLine + Environment.NewLine
-             + "< ! > Recursion is a good get-off-me tool, dealing close range damage and teleporting enemies away." + Environment.NewLine + Environment.NewLine;
+             + "Your Ranged Gauntlet encourages strong positioning to hit in the rift." + Environment.NewLine + Environment.NewLine
+             + "Your secondaries fill in your midrange. Rift Gauntlet is solid and stable, Rapidfire Gauntlet shoots quickly and teleports on its last shot, and Refraction shoots 3 rifts at once." + Environment.NewLine + Environment.NewLine
+             + "Slipstream acts as a repositioning tool and a way to move enemies into the sweet spot, while Rift Rider lets you reposition yourself AND the enemy." + Environment.NewLine + Environment.NewLine
+             + "Recursion is a good get-off-me tool, dealing close range damage and teleporting enemies away." + Environment.NewLine + Environment.NewLine;
 
             string outro = "..and so he left a fractured world behind.";
             string outroFailure = "..and so he vanished from reality.";
@@ -47,23 +47,26 @@ namespace RifterMod.Survivors.Rifter
 
             #region Primary
             Language.Add(prefix + "PRIMARY_GAUNTLET_RANGED", "Rift Gauntlet Ranged");
-            Language.Add(prefix + "PRIMARY_GAUNTLET_RANGED_DESCRIPTION", Tokens.agilePrefix + $"Shoot a far ranged rift for <style=cIsDamage>{100f * RifterStaticValues.primaryRiftCoefficient}% damage</style>.");
+            Language.Add(prefix + "PRIMARY_GAUNTLET_RANGED_DESCRIPTION", $"Shoot a far ranged rift for <style=cIsDamage>{100f * RifterStaticValues.primaryRiftCoefficient}% damage</style>.");
             #endregion
 
             #region Secondary
             Language.Add(prefix + "SECONDARY_GAUNTLET", "Rift Gauntlet");
-            Language.Add(prefix + "SECONDARY_GAUNTLET_DESCRIPTION", Tokens.agilePrefix + $"Shoot a midrange rift <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style>. There is no cooldown.");
+            Language.Add(prefix + "SECONDARY_GAUNTLET_DESCRIPTION", $"Shoot a midrange rift <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style>. There is no cooldown.");
 
             Language.Add(prefix + "SECONDARY_RAPIDFIRE", "Rapidfire Gauntlet");
-            Language.Add(prefix + "SECONDARY_RAPIDFIRE_DESCRIPTION", Tokens.agilePrefix + $"Shoot a midrange rift at twice the speed for <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style>. On a cooldown.");
+            Language.Add(prefix + "SECONDARY_RAPIDFIRE_DESCRIPTION", $"Shoot a midrange rift at twice the speed for <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style>. Last stock  <style=cIsUtility>Teleports</style> enemies.");
 
             Language.Add(prefix + "SECONDARY_REFRACTION", "Refraction");
-            Language.Add(prefix + "SECONDARY_REFRACTION_DESCRIPTION", Tokens.agilePrefix + $"Shoot a spread of 3 midrange rifts for <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style> each. On a cooldown.");
+            Language.Add(prefix + "SECONDARY_REFRACTION_DESCRIPTION", $"Shoot a spread of 3 midrange rifts for <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style> each. On a cooldown.");
             #endregion
 
             #region Utility
             Language.Add(prefix + "UTILITY_SLIPSTREAM", "Slipstream");
-            Language.Add(prefix + "UTILITY_SLIPSTREAM_DESCRIPTION", "Teleport a short distance. Your next shot will teleport enemies to primary distance. You are Invulnerable during your teleport.");
+            Language.Add(prefix + "UTILITY_SLIPSTREAM_DESCRIPTION", "Teleport a short distance. Your next shot will <style=cIsUtility>teleport</style> enemies to primary distance. You are Invulnerable during your teleport.");
+
+            Language.Add(prefix + "UTILITY_RIFT_RIDER", "Rift Rider");
+            Language.Add(prefix + "UTILITY_RIFT_RIDER_DESCRIPTION", "Traverse through a Fracture Line to a primary rift. <style=cIsUtility>Teleport</style> enemies to your previous location. You are Invulnerable during your teleport.");
             #endregion
 
             #region Special

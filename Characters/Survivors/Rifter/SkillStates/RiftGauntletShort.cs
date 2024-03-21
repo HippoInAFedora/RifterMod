@@ -10,7 +10,7 @@ using IL.RoR2.Skills;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
-    public class RiftGauntletShort : RiftGauntlet
+    public class RiftGauntletShort : RiftGauntletBase
     {
         public bool isBlastOvercharge = true;
        public override float RiftDistance()
@@ -31,6 +31,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override InterruptPriority GetMinimumInterruptPriority()
         {
             return InterruptPriority.Skill;
+        }
+
+        public override void RunDistanceAssist(Vector3 vector, BlastAttack.Result result)
+        {
+            return;
         }
     }
 }

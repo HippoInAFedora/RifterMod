@@ -135,7 +135,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 blastAttack.canRejectForce = false;
                 blastAttack.position = base.transform.position;
                 blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
-                blastAttack.AddModdedDamageType(Damage.overchargedDamageType);
+                blastAttack.AddModdedDamageType(Damage.riftDamage);
                 var result = blastAttack.Fire();
 
                 blastAttack2 = new BlastAttack
@@ -152,7 +152,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     position = basePosition,
                     attackerFiltering = AttackerFiltering.NeverHitSelf,
                 };
-                blastAttack2.AddModdedDamageType(Damage.overchargedDamageType);
+                blastAttack2.AddModdedDamageType(Damage.riftDamage);
                 var result2 = blastAttack2.Fire();
 
                 EffectData effectData2 = new EffectData();

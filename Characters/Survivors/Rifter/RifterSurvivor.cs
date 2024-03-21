@@ -157,6 +157,7 @@ namespace RifterMod.Survivors.Rifter
             Skills.ClearGenericSkills(bodyPrefab);
             //add our own
             Skills.CreateSkillFamilies(bodyPrefab);
+            AddPassiveSkills();
             AddPrimarySkills();
             AddSecondarySkills();
             AddUtiitySkills();
@@ -164,6 +165,15 @@ namespace RifterMod.Survivors.Rifter
         }
 
         //if this is your first look at skilldef creation, take a look at Secondary first
+        private void AddPassiveSkills()
+        {
+            SkillLocator.PassiveSkill passiveSkill1 = bodyPrefab.GetComponent<SkillLocator>().passiveSkill;
+            passiveSkill1.icon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon");
+            passiveSkill1.skillNameToken = "PASSIVE_NAME";
+            passiveSkill1.skillDescriptionToken = "PASSIVE_DESCRIPTION";
+
+        }
+
         private void AddPrimarySkills()
         {
             //the primary skill is created using a constructor for a typical primary
@@ -174,7 +184,7 @@ namespace RifterMod.Survivors.Rifter
                     Rifter_PREFIX + "PRIMARY_GAUNTLET_RANGED",
                     Rifter_PREFIX + "PRIMARY_GAUNTLET_RANGED_DESCRIPTION",
                     assetBundle.LoadAsset<Sprite>("texPrimaryIcon"),
-                    new EntityStates.SerializableEntityStateType(typeof(SkillStates.RiftGauntlet)),
+                    new EntityStates.SerializableEntityStateType(typeof(SkillStates.RiftGauntletBase)),
                     "Weapon",
                     false
                 ));
@@ -194,7 +204,6 @@ namespace RifterMod.Survivors.Rifter
                 skillName = "Rift Gauntlet",
                 skillNameToken = Rifter_PREFIX + "SECONDARY_GAUNTLET",
                 skillDescriptionToken = Rifter_PREFIX + "SECONDARY_GAUNTLET_DESCRIPTION",
-                keywordTokens = new string[] { "KEYWORD_AGILE" },
                 skillIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon"),
 
                 activationState = new EntityStates.SerializableEntityStateType(typeof(SkillStates.RiftGauntletShort)),
@@ -219,12 +228,11 @@ namespace RifterMod.Survivors.Rifter
                 skillName = "Rapidfire Gauntlet",
                 skillNameToken = Rifter_PREFIX + "SECONDARY_RAPIDFIRE",
                 skillDescriptionToken = Rifter_PREFIX + "SECONDARY_RAPIDFIRE_DESCRIPTION",
-                keywordTokens = new string[] { "KEYWORD_AGILE" },
                 skillIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon"),
 
                 activationState = new EntityStates.SerializableEntityStateType(typeof(SkillStates.RapidfireGauntlet)),
                 activationStateMachineName = "Weapon",
-                interruptPriority = EntityStates.InterruptPriority.Skill,
+                interruptPriority = EntityStates.InterruptPriority.Any,
 
                 baseMaxStock = 3,
                 rechargeStock = 1,
@@ -234,7 +242,7 @@ namespace RifterMod.Survivors.Rifter
                 forceSprintDuringState = false,
 
             });
-            secondarySkillDef2.newRecharge = 4f;
+            secondarySkillDef2.newRecharge = 3f;
             secondarySkillDef2.baseRechargeInterval = 1.5f;
             secondarySkillDef2.lastChargeOvercharge = true;
             secondarySkillDef2.resetCooldownTimerOnUse = true;
@@ -249,8 +257,7 @@ namespace RifterMod.Survivors.Rifter
             {
                 skillName = "Refraction",
                 skillNameToken = Rifter_PREFIX + "SECONDARY_REFRACTION",
-                skillDescriptionToken = Rifter_PREFIX + "SECONDARY_REFRACTION",
-                keywordTokens = new string[] { "KEYWORD_AGILE" },
+                skillDescriptionToken = Rifter_PREFIX + "SECONDARY_REFRACTION_DESCRIPTION",
                 skillIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon"),
 
                 activationState = new EntityStates.SerializableEntityStateType(typeof(SkillStates.Refraction)),
@@ -258,7 +265,7 @@ namespace RifterMod.Survivors.Rifter
                 interruptPriority = EntityStates.InterruptPriority.Any,
 
                 baseMaxStock = 1,
-                baseRechargeInterval = 1f,
+                baseRechargeInterval = 1.5f,
                 resetCooldownTimerOnUse = true,
                 fullRestockOnAssign = true,
                 isCombatSkill = true,
@@ -285,7 +292,7 @@ namespace RifterMod.Survivors.Rifter
                 skillName = "Slipstream",
                 skillNameToken = Rifter_PREFIX + "UTILITY_SLIPSTREAM",
                 skillDescriptionToken = Rifter_PREFIX + "UTILITY_SLIPSTREAM_DESCRIPTION",
-                skillIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon"),
+                skillIcon = assetBundle.LoadAsset<Sprite>("texUtilityIcon"),
 
                 activationState = new EntityStates.SerializableEntityStateType(typeof(Slipstream)),
                 //setting this to the "weapon2" EntityStateMachine allows us to cast this skill at the same time primary, which is set to the "weapon" EntityStateMachine
@@ -311,31 +318,31 @@ namespace RifterMod.Survivors.Rifter
 
             RifterSkillDef utilitySkillDef2 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
             {
-                skillName = "Slipstream",
-                skillNameToken = Rifter_PREFIX + "SPECIAL_RECURSION",
-                skillDescriptionToken = Rifter_PREFIX + "SPECIAL_RECURSION_DESCRIPTION",
-                skillIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon"),
+                skillName = "Rift Rider",
+                skillNameToken = Rifter_PREFIX + "UTILITY_RIFT_RIDER",
+                skillDescriptionToken = Rifter_PREFIX + "UTILITY_RIFT_RIDER_DESCRIPTION",
+                skillIcon = assetBundle.LoadAsset<Sprite>("texUtilityIcon"),
 
-                activationState = new EntityStates.SerializableEntityStateType(typeof(Slipstream)),
+                activationState = new EntityStates.SerializableEntityStateType(typeof(RiftRiderLocate)),
                 //setting this to the "weapon2" EntityStateMachine allows us to cast this skill at the same time primary, which is set to the "weapon" EntityStateMachine
-                activationStateMachineName = "Body",
+                activationStateMachineName = "Weapon",
                 interruptPriority = EntityStates.InterruptPriority.PrioritySkill,
 
-                baseMaxStock = 3,
+                baseMaxStock = 1,
                 baseRechargeInterval = 7f,
 
                 stockToConsume = 1,
 
-                forceSprintDuringState = true,
+                cancelSprintingOnActivation = true,
                 canceledFromSprinting = false,
                 isCombatSkill = false,
                 mustKeyPress = true,
                 beginSkillCooldownOnSkillEnd = true
             });
             utilitySkillDef2.overchargedIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon");
-            utilitySkillDef2.overcharges = true;
+            utilitySkillDef2.overcharges = false;
             utilitySkillDef2.usesOvercharge = false;
-            Skills.AddUtilitySkills(bodyPrefab, utilitySkillDef1);
+            Skills.AddUtilitySkills(bodyPrefab, utilitySkillDef2);
 
         }
 
@@ -345,9 +352,9 @@ namespace RifterMod.Survivors.Rifter
             RifterSkillDef specialSkillDef1 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
             {
                 skillName = "Recursion",
-                skillNameToken = Rifter_PREFIX + "UTILITY_ROLL_NAME",
-                skillDescriptionToken = Rifter_PREFIX + "UTILITY_ROLL_DESCRIPTION",
-                skillIcon = assetBundle.LoadAsset<Sprite>("texUtilityIcon"),
+                skillNameToken = Rifter_PREFIX + "SPECIAL_RECURSION",
+                skillDescriptionToken = Rifter_PREFIX + "SPECIAL_RECURSION_DESCRIPTION",
+                skillIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon"),
 
                 activationState = new EntityStates.SerializableEntityStateType(typeof(RecursionChargeup)),
                 activationStateMachineName = "Weapon2",
@@ -359,34 +366,10 @@ namespace RifterMod.Survivors.Rifter
                 beginSkillCooldownOnSkillEnd = true,
                 isCombatSkill = false,
                 mustKeyPress = false,
-                canceledFromSprinting = true,
                 cancelSprintingOnActivation = true,
             }) ;
             specialSkillDef1.usesOvercharge = false;
             Skills.AddSpecialSkills(bodyPrefab, specialSkillDef1);
-
-
-            SkillDef specialSkillDef2 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
-            {
-                skillName = "Entanglement",
-                skillNameToken = Rifter_PREFIX + "UTILITY_ROLL_NAME",
-                skillDescriptionToken = Rifter_PREFIX + "UTILITY_ROLL_DESCRIPTION",
-                skillIcon = assetBundle.LoadAsset<Sprite>("texUtilityIcon"),
-
-                activationState = new EntityStates.SerializableEntityStateType(typeof(EntanglementLocate)),
-                activationStateMachineName = "Weapon",
-                interruptPriority = EntityStates.InterruptPriority.PrioritySkill,
-
-                baseMaxStock = 1,
-                baseRechargeInterval = 10f,
-
-
-                isCombatSkill = false,
-                mustKeyPress = false,
-                canceledFromSprinting = true,
-                cancelSprintingOnActivation = true,
-            });
-            //Skills.AddSpecialSkills(bodyPrefab, specialSkillDef2);
         }
 
 

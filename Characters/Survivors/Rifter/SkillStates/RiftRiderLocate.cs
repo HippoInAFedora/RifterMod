@@ -29,13 +29,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             base.FixedUpdate();
             if(base.isAuthority && (bool)base.inputBank)
             {
-                if ((bool)base.skillLocator && base.skillLocator.special.IsReady() && base.inputBank.skill4.justPressed)
+                if (base.inputBank.skill3.justReleased)
                 {
-                    outer.SetNextStateToMain();
-                }
-                else if (base.inputBank.skill1.justPressed || base.inputBank.skill3.justReleased)
-                {
-                    outer.SetNextStateToMain();
+                    outer.SetNextState(new RiftRider());
                 }
             }
             
