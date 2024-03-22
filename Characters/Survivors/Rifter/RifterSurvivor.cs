@@ -157,7 +157,7 @@ namespace RifterMod.Survivors.Rifter
             Skills.ClearGenericSkills(bodyPrefab);
             //add our own
             Skills.CreateSkillFamilies(bodyPrefab);
-            AddPassiveSkills();
+            //AddPassiveSkills();
             AddPrimarySkills();
             AddSecondarySkills();
             AddUtiitySkills();
@@ -165,21 +165,21 @@ namespace RifterMod.Survivors.Rifter
         }
 
         //if this is your first look at skilldef creation, take a look at Secondary first
-        private void AddPassiveSkills()
-        {
-            SkillLocator.PassiveSkill passiveSkill1 = bodyPrefab.GetComponent<SkillLocator>().passiveSkill;
-            passiveSkill1.enabled = true;
-            passiveSkill1.icon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon");
-            passiveSkill1.skillNameToken = "PASSIVE_RIFT_FRACTURE";
-            passiveSkill1.skillDescriptionToken = "PASSIVE_RIFT_FRACTURE_DESCRIPTION";
+        //private void AddPassiveSkills()
+        //{
+        //    SkillLocator.PassiveSkill passiveSkill1 = bodyPrefab.GetComponent<SkillLocator>().passiveSkill;
+        //    passiveSkill1.enabled = true;
+        //    passiveSkill1.icon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon");
+        //    passiveSkill1.skillNameToken = "PASSIVE_RIFT_FRACTURE";
+        //    passiveSkill1.skillDescriptionToken = "PASSIVE_RIFT_FRACTURE_DESCRIPTION";
+//
+        //    SkillLocator.PassiveSkill passiveSkill2 = bodyPrefab.GetComponent<SkillLocator>().passiveSkill;
+        //    passiveSkill2.enabled = true;
+        //    passiveSkill2.icon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon");
+        //    passiveSkill2.skillNameToken = "PASSIVE_OVERCHARGE";
+        //    passiveSkill2.skillDescriptionToken = "PASSIVE_OVERCHARGE_DESCRIPTION";
 
-            SkillLocator.PassiveSkill passiveSkill2 = bodyPrefab.GetComponent<SkillLocator>().passiveSkill;
-            passiveSkill2.enabled = true;
-            passiveSkill2.icon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon");
-            passiveSkill2.skillNameToken = "PASSIVE_OVERCHARGE";
-            passiveSkill2.skillDescriptionToken = "PASSIVE_OVERCHARGE_DESCRIPTION";
-
-        }
+        //}
 
         private void AddPrimarySkills()
         {
