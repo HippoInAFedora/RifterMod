@@ -4,7 +4,7 @@ namespace RifterMod.Survivors.Rifter
 {
     public static class RifterStaticValues
     {
-        public const float primaryRiftCoefficient = 4.5f;
+        public const float primaryRiftCoefficient = 5.5f;
 
         public const float secondaryRiftCoefficient = 3.75f;
 
@@ -16,7 +16,7 @@ namespace RifterMod.Survivors.Rifter
 
         public const float overchargedCoefficient = 1.2f;
 
-        public const float recursionCoefficient = 1.25f;
+        public const float recursionCoefficient = 2f;
 
     }
 }

@@ -258,7 +258,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastDamage()
         {
-            return base.characterBody.damage * RifterStaticValues.secondaryRiftCoefficient;
+            return base.characterBody.damage * RifterStaticValues.secondaryRiftCoefficient + 1.0f;
         }
 
         public override InterruptPriority GetMinimumInterruptPriority()
@@ -282,11 +282,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
             blastAttack.AddModdedDamageType(Damage.riftDamage);
             result = blastAttack.Fire();
-            
-            EffectData effectData2 = new EffectData();
-            effectData2.origin = blastAttack.position;
-            EffectManager.SpawnEffect(GlobalEventManager.CommonAssets.igniteOnKillExplosionEffectPrefab, effectData2, transmit: false);
-            
+
+
+
         }
 
         public override void RunDistanceAssist(Vector3 vector, BlastAttack.Result result)

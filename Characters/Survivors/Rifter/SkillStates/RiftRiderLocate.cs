@@ -65,6 +65,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             base.OnExit();
         }
 
+
+        public override InterruptPriority GetMinimumInterruptPriority()
+        {
+            return InterruptPriority.Frozen;
+        }
     }
 
 }

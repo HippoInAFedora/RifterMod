@@ -10,6 +10,8 @@ using IL.RoR2.Skills;
 using RifterMod.Modules;
 using static UnityEngine.SendMouseEvents;
 using R2API;
+using UnityEngine.AddressableAssets;
+using static RoR2.Skills.SkillFamily;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
@@ -18,12 +20,15 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         private float duration;
 
         public float isBlastOvercharge;
-
         RifterStep rifterStep;
 
-        //OnEnter() runs once at the start of the skill
-        //All we do here is create a BulletAttack and fire it
-        public override void OnEnter()
+
+
+
+
+    //OnEnter() runs once at the start of the skill
+    //All we do here is create a BulletAttack and fire it
+    public override void OnEnter()
         {
             base.OnEnter();
         }

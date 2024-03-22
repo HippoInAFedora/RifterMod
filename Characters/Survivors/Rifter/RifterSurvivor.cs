@@ -168,9 +168,16 @@ namespace RifterMod.Survivors.Rifter
         private void AddPassiveSkills()
         {
             SkillLocator.PassiveSkill passiveSkill1 = bodyPrefab.GetComponent<SkillLocator>().passiveSkill;
+            passiveSkill1.enabled = true;
             passiveSkill1.icon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon");
-            passiveSkill1.skillNameToken = "PASSIVE_NAME";
-            passiveSkill1.skillDescriptionToken = "PASSIVE_DESCRIPTION";
+            passiveSkill1.skillNameToken = "PASSIVE_RIFT_FRACTURE";
+            passiveSkill1.skillDescriptionToken = "PASSIVE_RIFT_FRACTURE_DESCRIPTION";
+
+            SkillLocator.PassiveSkill passiveSkill2 = bodyPrefab.GetComponent<SkillLocator>().passiveSkill;
+            passiveSkill2.enabled = true;
+            passiveSkill2.icon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon");
+            passiveSkill2.skillNameToken = "PASSIVE_OVERCHARGE";
+            passiveSkill2.skillDescriptionToken = "PASSIVE_OVERCHARGE_DESCRIPTION";
 
         }
 
@@ -357,7 +364,7 @@ namespace RifterMod.Survivors.Rifter
                 skillIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon"),
 
                 activationState = new EntityStates.SerializableEntityStateType(typeof(RecursionChargeup)),
-                activationStateMachineName = "Weapon2",
+                activationStateMachineName = "Weapon",
                 interruptPriority = EntityStates.InterruptPriority.PrioritySkill,
 
                 baseMaxStock = 1,

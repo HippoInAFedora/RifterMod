@@ -31,7 +31,7 @@ namespace RifterMod.Survivors.Rifter
 
             Language.Add(prefix + "NAME", "Rifter");
             Language.Add(prefix + "DESCRIPTION", desc);
-            Language.Add(prefix + "SUBTITLE", "The Divided");
+            Language.Add(prefix + "SUBTITLE", "The Fractured Scientist");
             Language.Add(prefix + "LORE", "sample lore");
             Language.Add(prefix + "OUTRO_FLAVOR", outro);
             Language.Add(prefix + "OUTRO_FAILURE", outroFailure);
@@ -41,37 +41,40 @@ namespace RifterMod.Survivors.Rifter
             #endregion
 
             #region Passive
-            Language.Add(prefix + "PASSIVE_NAME", "Rift/Fracture");
-            Language.Add(prefix + "PASSIVE_DESCRIPTION", "Each shot is comprised of a strong, large Rift at the end of the shot, and a thin, weak Fracture Line that travels from you to the Rift. Rifts do less damage on contact with the ground.");
+            Language.Add(prefix + "PASSIVE_RIFT_FRACTURE", "Rift/Fracture");
+            Language.Add(prefix + "PASSIVE_RIFT_FRACTURE_DESCRIPTION", "Rifts weaken if closer to you. Ranged rifts are connected by weaker Fracture Lines that deal <style=cIsDamage>100f% damage</style> that are  <style=cIsHealth>unable to activate item effects<style>.");
+
+            Language.Add(prefix + "PASSIVE_OVERCHARGED", "Overcharge");
+            Language.Add(prefix + "PASSIVE__OVERCHARGED_DESCRIPTION", "Hit enemies are <style=cIsUtility>teleported</style> to your long-range-rift distance.");
             #endregion
 
             #region Primary
             Language.Add(prefix + "PRIMARY_GAUNTLET_RANGED", "Rift Gauntlet Ranged");
-            Language.Add(prefix + "PRIMARY_GAUNTLET_RANGED_DESCRIPTION", $"Shoot a far ranged rift for <style=cIsDamage>{100f * RifterStaticValues.primaryRiftCoefficient}% damage</style>.");
+            Language.Add(prefix + "PRIMARY_GAUNTLET_RANGED_DESCRIPTION", $"Shoot a far-ranged rift for <style=cIsDamage>{100f * RifterStaticValues.primaryRiftCoefficient}% damage</style>.");
             #endregion
 
             #region Secondary
             Language.Add(prefix + "SECONDARY_GAUNTLET", "Rift Gauntlet");
-            Language.Add(prefix + "SECONDARY_GAUNTLET_DESCRIPTION", $"Shoot a midrange rift <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style>. There is no cooldown.");
+            Language.Add(prefix + "SECONDARY_GAUNTLET_DESCRIPTION", $"Shoot a midrange rift <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style>. Incurs no cooldown.");
 
             Language.Add(prefix + "SECONDARY_RAPIDFIRE", "Rapidfire Gauntlet");
-            Language.Add(prefix + "SECONDARY_RAPIDFIRE_DESCRIPTION", $"Shoot a midrange rift at twice the speed for <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style>. Last stock  <style=cIsUtility>Teleports</style> enemies.");
+            Language.Add(prefix + "SECONDARY_RAPIDFIRE_DESCRIPTION", $"Shoot a midrange rift for <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style>. Hold up to 3. Last shot is <style=cIsUtility>overcharged</style>.");
 
             Language.Add(prefix + "SECONDARY_REFRACTION", "Refraction");
-            Language.Add(prefix + "SECONDARY_REFRACTION_DESCRIPTION", $"Shoot a spread of 3 midrange rifts for <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style> each. On a cooldown.");
+            Language.Add(prefix + "SECONDARY_REFRACTION_DESCRIPTION", $"Shoot a spread of 3 midrange rifts for <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient + 100f}% damage</style> each.");
             #endregion
 
             #region Utility
             Language.Add(prefix + "UTILITY_SLIPSTREAM", "Slipstream");
-            Language.Add(prefix + "UTILITY_SLIPSTREAM_DESCRIPTION", "Teleport a short distance. Your next shot will <style=cIsUtility>teleport</style> enemies to primary distance. You are Invulnerable during your teleport.");
+            Language.Add(prefix + "UTILITY_SLIPSTREAM_DESCRIPTION", "Teleport a short distance, <style=cIsUtility>briefly turning invulnerable</style>. Your next shot is <style=cIsUtility>overcharged</style>.");
 
             Language.Add(prefix + "UTILITY_RIFT_RIDER", "Rift Rider");
-            Language.Add(prefix + "UTILITY_RIFT_RIDER_DESCRIPTION", "Traverse through a Fracture Line to a primary rift. <style=cIsUtility>Teleport</style> enemies to your previous location. You are Invulnerable during your teleport.");
+            Language.Add(prefix + "UTILITY_RIFT_RIDER_DESCRIPTION", "Travel through a long-range Fracture Line, dealing <style=cIsDamage>100f% damage</style>. All hit enemies will be <style=cIsUtility>teleported to your previous location</style>.");
             #endregion
 
             #region Special
             Language.Add(prefix + "SPECIAL_RECURSION", "Recursion");
-            Language.Add(prefix + "SPECIAL_RECURSION_DESCRIPTION", $"Charge a up to 5 rifts stacked on your location. Initial rift is <style=cIsDamage>{100f * RifterStaticValues.recursionCoefficient}% damage</style>, subsequent rifts are 20% larger and stronger than the last.");
+            Language.Add(prefix + "SPECIAL_RECURSION_DESCRIPTION", $"Charge a up to 5 rifts centered on you for <style=cIsDamage>{100f * RifterStaticValues.recursionCoefficient}% damage</style>, with each <style=cIsDamage>20 larger and stronger% damage</style> than the last. The last rift is <style=cIsUtility>overcharged</style>.");
             #endregion
 
             #region Achievements

@@ -37,7 +37,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Aura);
             }
             blastNum = 0;
-            chargeDuration = .5f / base.attackSpeedStat;
+            chargeDuration = .8f / base.attackSpeedStat;
             body = base.characterBody;
             if ((bool)areaIndicatorPrefab)
             {
@@ -89,11 +89,19 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 }
             if((bool)base.skillLocator && base.inputBank.skill3.justPressed && base.skillLocator.utility.IsReady())
             {
-                base.skillLocator.utility.stock--;
+                EntityState state = new EntityState();
+                if (base.skillLocator.utility.stateMachine.state is Slipstream)
+                {
+                    state = new Slipstream();
+                }
+                if (base.skillLocator.utility.stateMachine.state is RiftRiderLocate)
+                {
+                    state = new RiftRiderLocate();
+                }
                 outer.SetNextState(new Recursion
                 {
                     blastMax = blastNum + 1,
-                    setNextState = new Slipstream(),
+                    setNextState = state
                 }) ;
             }
             

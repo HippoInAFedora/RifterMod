@@ -22,6 +22,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public bool isBlastOvercharge = false;
         public static GameObject tracerEffectPrefab = LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/Tracers/TracerGoldGat");
 
+
+
+
         public float duration;
 
 
@@ -43,7 +46,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void OnEnter()
         {
             base.OnEnter();
-
 
             rifterStep = base.GetComponent<RifterStep>();
 
@@ -139,9 +141,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             blastAttack.AddModdedDamageType(Damage.riftDamage);
             var result = blastAttack.Fire();
 
-            EffectData effectData2 = new EffectData();
-            effectData2.origin = blastAttack.position;
-            EffectManager.SpawnEffect(GlobalEventManager.CommonAssets.igniteOnKillExplosionEffectPrefab, effectData2, transmit: false);
+
 
             foreach (var hit in result.hitPoints)
             {
