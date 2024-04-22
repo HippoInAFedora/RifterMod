@@ -1,4 +1,5 @@
 ﻿
+using EntityStates;
 using Newtonsoft.Json.Utilities;
 using R2API;
 using RifterMod.Modules;
@@ -11,11 +12,10 @@ using UnityEngine.Networking;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
-    public class Recursion : RiftBase
+    public class ChainedWorlds : RiftBase
     {
 
-
-        public Vector3 basePosition;
+        public Vector3 numPosition;
         float stopwatch;
         float blastWatch;
 
@@ -23,6 +23,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public float recursionDamage;
         public int blastNum;
         public int blastMax;
+
+        Ray aimRay;
 
         public EntityStates.EntityState setNextState = null;
 
@@ -32,13 +34,22 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void OnEnter()
         {
             base.OnEnter();
-            duration = 1f;
+            duration = 1.5f;
             blastNum = 0;
-            if (base.isAuthority)
-            {
-                basePosition = base.transform.position;
-            }
+            aimRay = base.GetAimRay();
+        }
 
+        private Vector3 GetNumPosition(int num)
+        {
+            float num2 = RiftDistance() / 5 * (num + 1);
+            Vector3 location = aimRay.GetPoint(num2);
+            Vector3 position = location;
+            if (Physics.SphereCast(base.characterBody.corePosition, 0.05f, aimRay.direction, out var raycastHit, num2, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
+            {
+                position = raycastHit.point;
+            }
+            Debug.Log(position + "position and num2 is " + num2);
+            return position;
         }
 
 
@@ -51,6 +62,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 stopwatch += Time.fixedDeltaTime;
                 if (blastNum == 0)
                 {
+                    numPosition = GetNumPosition(blastNum);
                     Fire();
                     blastNum++;
                 }
@@ -60,6 +72,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     blastWatch += Time.fixedDeltaTime;
                     if (blastWatch > duration / 5)
                     {
+                        numPosition = GetNumPosition(blastNum);
                         Fire();
                         blastNum++;
                         blastWatch = 0;
@@ -67,7 +80,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
                 }
 
-                if (stopwatch >= duration && base.isAuthority)
+                if (stopwatch >= duration && base.isAuthority || base.isAuthority && blastNum >= blastMax)
                 {
                     if (cameraTargetParams)
                     {
@@ -96,32 +109,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override Vector3 GetTeleportLocation(CharacterBody body)
         {
-            Vector3 baseDirection = (body.corePosition - base.characterBody.corePosition).normalized;
-            Ray ray = new Ray(base.characterBody.corePosition, baseDirection);
-            Vector3 location;
-            if (body.isFlying || !body.characterMotor.isGrounded)
-            {
-                location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance);
-            }
-            else
-            {
-                location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance) + (Vector3.up);
-            }
-            Vector3 direction = (location - base.characterBody.corePosition).normalized;
-            RaycastHit raycastHit;
-            Vector3 position = location;
-            if (Physics.SphereCast(base.characterBody.corePosition, 0.05f, direction, out raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
-            {
-                bool normalPlacement = Vector3.Angle(Vector3.up, raycastHit.normal) < maxSlopeAngle;
-                if (normalPlacement)
-                {
-                    position = raycastHit.point;
-                }
-                if (!normalPlacement)
-                {
-                    position = raycastHit.point - direction.normalized;
-                }
-            }
+            Vector3 position = GetNumPosition(blastNum + 1);
             return position;
         }
 
@@ -143,17 +131,43 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                         //Add Effect here later
                         return;
                     }
-                    enemyBodies.AddDistinct(enemyHit);
-                    //enemyTeleportTo = GetTeleportLocation(enemyHit);
-                    //enemyHit.TryGetComponent(out CharacterMotor motor);
-                    //enemyHit.TryGetComponent(out RigidbodyMotor rbmotor);
-                    //if (motor || rbmotor)
-                    //{
-                    //    TryTeleport(enemyHit, enemyTeleportTo);
-                    //}
+                    //enemyBodies.AddDistinct(enemyHit);
+                    enemyTeleportTo = GetTeleportLocation(enemyHit);
+                    enemyHit.TryGetComponent(out CharacterMotor motor);
+                    enemyHit.TryGetComponent(out RigidbodyMotor rbmotor);
+                    if (motor || rbmotor)
+                    {
+                        TryTeleport(enemyHit, enemyTeleportTo);
+                    }
+
                 }
 
             }
+        }
+
+        public override void TryTeleport(CharacterBody body, Vector3 teleportToPosition)
+        {
+            if (base.isAuthority)
+            {
+                if (body.TryGetComponent(out SetStateOnHurt setStateOnHurt))
+                {
+                    if (setStateOnHurt.targetStateMachine)
+                    {
+                        ModifiedTeleport modifiedTeleport = new ModifiedTeleport();
+                        modifiedTeleport.targetFootPosition = teleportToPosition;
+                        modifiedTeleport.teleportWaitDuration = .05f;
+                        setStateOnHurt.targetStateMachine.SetInterruptState(modifiedTeleport, InterruptPriority.Frozen);
+                    }
+                    EntityStateMachine[] array = setStateOnHurt.idleStateMachine;
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        array[i].SetNextStateToMain();
+                    };
+                }
+            }
+
+
+
         }
 
         private void Fire()
@@ -168,7 +182,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             blastAttack.crit = base.RollCrit();
             blastAttack.procCoefficient = ProcCoefficient();
             blastAttack.canRejectForce = false;
-            blastAttack.position = basePosition;
+            blastAttack.position = GetNumPosition(blastNum);
             blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
             blastAttack.AddModdedDamageType(Damage.riftDamage);
             var result = blastAttack.Fire();
@@ -176,37 +190,27 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             EffectData effectData = new EffectData();
             blastEffectPrefab.transform.localScale = Vector3.one;
             effectData.scale = BlastRadius() * 1.5f;
-            effectData.origin = basePosition;
-            if (blastNum < blastMax - 1)
-            {
-                EffectManager.SpawnEffect(blastEffectPrefab, effectData, transmit: true);
-            }
-            else
-            {
-                EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: true);
-            }
+            effectData.origin = blastAttack.position;
+            EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: true);
 
             foreach (var hit in result.hitPoints)
             {
                 if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
                 {
-                    if (blastNum == blastMax - 1 && hurtBox.healthComponent.alive)
-                    {
-                        ModifyBlastOvercharge(result);
-                    }
+                    ModifyBlastOvercharge(result);
                 }
             };
-            TeleportEnemies();
+            //TeleportEnemies();
         }
 
         public override float BlastRadius()
         {
-            return 10f * (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
+            return 12f / (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
         }
 
         public override float BlastDamage()
         {
-            return base.characterBody.damage * RifterStaticValues.recursionCoefficient * (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
+            return base.characterBody.damage * RifterStaticValues.chainedWorldsCoefficient * (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
         }
 
         public virtual float ProcCoefficient()

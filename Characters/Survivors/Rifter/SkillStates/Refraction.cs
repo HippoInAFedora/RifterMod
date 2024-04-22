@@ -11,8 +11,10 @@ using HG;
 using R2API;
 using System.Collections.Generic;
 using Newtonsoft.Json.Utilities;
+using RifterMod.Survivors.Rifter.SkillStates;
+using UnityEngine.Networking;
 
-namespace RifterMod.Survivors.Rifter.SkillStates
+namespace RifterMod.Characters.Survivors.Rifter.SkillStates
 {
     public class Refraction : RiftGauntletBase
     {
@@ -35,17 +37,17 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void OnEnter()
         {
             base.OnEnter();
-            this.duration = baseDuration / base.attackSpeedStat;
-            Ray aimRay = base.GetAimRay();
-            base.StartAimMode(aimRay, 2f, false);
+            duration = baseDuration / attackSpeedStat;
+            Ray aimRay = GetAimRay();
+            StartAimMode(aimRay, 2f, false);
             base.PlayAnimation("Gesture Additive, Right", "FirePistol, Right");
-            Util.PlaySound(FireBarrage.fireBarrageSoundString, base.gameObject);
-            base.AddRecoil(-0.6f, 0.6f, -0.6f, 0.6f);
+            Util.PlaySound(FireBarrage.fireBarrageSoundString, gameObject);
+            AddRecoil(-0.6f, 0.6f, -0.6f, 0.6f);
             if (FireBarrage.effectPrefab)
             {
-                EffectManager.SimpleMuzzleFlash(FireBarrage.effectPrefab, base.gameObject, "MuzzleRight", false);
+                EffectManager.SimpleMuzzleFlash(FireBarrage.effectPrefab, gameObject, "MuzzleRight", false);
             }
-            if (base.isAuthority)
+            if (isAuthority)
             {
                 //Blast Attack Stuff
                 List<GameObject> blasted2 = new List<GameObject>();
@@ -135,10 +137,13 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                         {
                             if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
                             {
-                                ignoreList2.AddDistinct(hurtBox.healthComponent.gameObject);
-                                if (IsOvercharged() && hurtBox.healthComponent.alive)
+                                if (!ignoreList2.Contains(hurtBox.healthComponent.gameObject))
                                 {
-                                    BlastOvercharge(result);
+                                    ignoreList2.AddDistinct(hurtBox.healthComponent.gameObject);
+                                }
+                                if (hurtBox.healthComponent.alive)
+                                {
+                                    BlastOvercharge(eResults[i]);
                                 }
                             }
 
@@ -149,20 +154,20 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 bool shotL = false;
 
                 BulletAttack bulletAttackL = new BulletAttack();
-                bulletAttackL.owner = base.gameObject;
-                bulletAttackL.weapon = base.gameObject;
+                bulletAttackL.owner = gameObject;
+                bulletAttackL.weapon = gameObject;
                 bulletAttackL.origin = vectorLeft;
                 bulletAttackL.aimVector = -leftBlast.direction;
                 bulletAttackL.minSpread = 0f;
-                bulletAttackL.maxSpread = base.characterBody.spreadBloomAngle;
-                bulletAttackL.damage = base.characterBody.damage * 1.2f;
+                bulletAttackL.maxSpread = characterBody.spreadBloomAngle;
+                bulletAttackL.damage = characterBody.damage * 1.2f;
                 bulletAttackL.bulletCount = 1U;
                 bulletAttackL.procCoefficient = 0f;
                 bulletAttackL.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
                 bulletAttackL.radius = .75f;
-                bulletAttackL.tracerEffectPrefab = RiftGauntletBase.tracerEffectPrefab;
+                bulletAttackL.tracerEffectPrefab = tracerEffectPrefab;
                 bulletAttackL.muzzleName = "MuzzleRight";
-                bulletAttackL.hitEffectPrefab = this.hitEffectPrefab;
+                bulletAttackL.hitEffectPrefab = hitEffectPrefab;
                 bulletAttackL.isCrit = false;
                 bulletAttackL.HitEffectNormal = false;
                 bulletAttackL.stopperMask = LayerIndex.playerBody.mask;
@@ -174,7 +179,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 {
                     if (hitInfo.hitHurtBox.TryGetComponent(out HurtBox hurtBox))
                     {
-                        if (IsOvercharged() && hurtBox.healthComponent.alive)
+                        if (hurtBox.healthComponent.alive)
                         {
                             Overcharge(hitInfo, hurtBox);
                         }
@@ -184,7 +189,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
                 bulletAttackL.filterCallback = delegate (BulletAttack _bulletAttack, ref BulletAttack.BulletHit hitInfo)
                 {
-                    HealthComponent healthComponent = (hitInfo.hitHurtBox ? hitInfo.hitHurtBox.healthComponent : null);
+                    HealthComponent healthComponent = hitInfo.hitHurtBox ? hitInfo.hitHurtBox.healthComponent : null;
                     if (healthComponent && healthComponent.alive && ignoreList2.Contains(healthComponent.gameObject))
                     {
                         return false;
@@ -196,20 +201,20 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 bulletAttackL.Fire();
 
                 BulletAttack bulletAttackR = new BulletAttack();
-                bulletAttackR.owner = base.gameObject;
-                bulletAttackR.weapon = base.gameObject;
+                bulletAttackR.owner = gameObject;
+                bulletAttackR.weapon = gameObject;
                 bulletAttackR.origin = vectorRight;
                 bulletAttackR.aimVector = -rightBlast.direction;
                 bulletAttackR.minSpread = 0f;
-                bulletAttackR.maxSpread = base.characterBody.spreadBloomAngle;
-                bulletAttackR.damage = base.characterBody.damage * 1f;
+                bulletAttackR.maxSpread = characterBody.spreadBloomAngle;
+                bulletAttackR.damage = characterBody.damage * 1f;
                 bulletAttackR.bulletCount = 1U;
                 bulletAttackR.procCoefficient = 0f;
                 bulletAttackR.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
                 bulletAttackR.radius = .75f;
-                bulletAttackR.tracerEffectPrefab = RiftGauntletBase.tracerEffectPrefab;
+                bulletAttackR.tracerEffectPrefab = tracerEffectPrefab;
                 bulletAttackR.muzzleName = "MuzzleRight";
-                bulletAttackR.hitEffectPrefab = this.hitEffectPrefab;
+                bulletAttackR.hitEffectPrefab = hitEffectPrefab;
                 bulletAttackR.isCrit = false;
                 bulletAttackR.HitEffectNormal = false;
                 bulletAttackR.stopperMask = LayerIndex.playerBody.mask;
@@ -221,7 +226,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 {
                     if (hitInfo.hitHurtBox.TryGetComponent(out HurtBox hurtBox))
                     {
-                        if (IsOvercharged() && hurtBox.healthComponent.alive)
+                        if (hurtBox.healthComponent.alive)
                         {
                             Overcharge(hitInfo, hurtBox);
                         }
@@ -231,7 +236,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
                 bulletAttackR.filterCallback = delegate (BulletAttack _bulletAttack, ref BulletAttack.BulletHit hitInfo)
                 {
-                    HealthComponent healthComponent = (hitInfo.hitHurtBox ? hitInfo.hitHurtBox.healthComponent : null);
+                    HealthComponent healthComponent = hitInfo.hitHurtBox ? hitInfo.hitHurtBox.healthComponent : null;
                     if (healthComponent && healthComponent.alive && ignoreList2.Contains(healthComponent.gameObject))
                     {
                         return false;
@@ -258,7 +263,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastDamage()
         {
-            return base.characterBody.damage * RifterStaticValues.secondaryRiftCoefficient + 1.0f;
+            return characterBody.damage * RifterStaticValues.secondaryRiftCoefficient - 50f;
         }
 
         public override InterruptPriority GetMinimumInterruptPriority()
@@ -269,13 +274,13 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public void SecondaryBlast(Ray aimRay, Vector3 position, float isHitGround, float riftPrimaryDistance2, float radius, out BlastAttack.Result result)
         {
             BlastAttack blastAttack = new BlastAttack();
-            blastAttack.attacker = base.gameObject;
-            blastAttack.inflictor = base.gameObject;
+            blastAttack.attacker = gameObject;
+            blastAttack.inflictor = gameObject;
             blastAttack.teamIndex = TeamIndex.None;
             blastAttack.radius = radius;
             blastAttack.falloffModel = BlastAttack.FalloffModel.None;
             blastAttack.baseDamage = BlastDamage() * isHitGround;
-            blastAttack.crit = base.RollCrit();
+            blastAttack.crit = RollCrit();
             blastAttack.procCoefficient = .8f;
             blastAttack.canRejectForce = false;
             blastAttack.position = position;
@@ -283,8 +288,18 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             blastAttack.AddModdedDamageType(Damage.riftDamage);
             result = blastAttack.Fire();
 
+            EffectData effectData = new EffectData();
+            blastEffectPrefab.transform.localScale = Vector3.one;
+            effectData.scale = BlastRadius() * 1.5f;
+            effectData.origin = position;
+            EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: false);
 
 
+        }
+
+        public override bool IsOvercharged()
+        {
+            return true;
         }
 
         public override void RunDistanceAssist(Vector3 vector, BlastAttack.Result result)

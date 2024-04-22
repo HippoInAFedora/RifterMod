@@ -2,13 +2,14 @@
 using IL.RoR2.Skills;
 using R2API;
 using RifterMod.Survivors.Rifter;
+using RifterMod.Survivors.Rifter.SkillStates;
 using RoR2;
 using System;
 using UnityEngine;
 using UnityEngine.Networking;
 using static Rewired.ComponentControls.Effects.RotateAroundAxis;
 
-namespace RifterMod.Survivors.Rifter.SkillStates
+namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
 {
     public class Entanglement : RiftBase
     {
@@ -35,7 +36,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void OnEnter()
         {
             base.OnEnter();
-            basePosition = base.transform.position;
+            basePosition = transform.position;
             modelTransform = GetModelTransform();
             if ((bool)modelTransform)
             {
@@ -52,9 +53,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter + 1;
                 hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
             }
-         
 
-            Ray aimRay = base.GetAimRay();
+
+            Ray aimRay = GetAimRay();
             targetFootPosition = aimRay.GetPoint(RiftDistance());
 
             if (Physics.Raycast(aimRay, out var endPoint, RiftDistance(), LayerIndex.world.mask, QueryTriggerInteraction.UseGlobal))
@@ -77,37 +78,37 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 isRiftHitGround = 1f;
             }
-            
+
         }
 
         public override void FixedUpdate()
         {
             base.FixedUpdate();
             stopwatch += Time.deltaTime;
-            if (base.isAuthority)
+            if (isAuthority)
             {
-                if ((bool)base.characterMotor)
+                if ((bool)characterMotor)
                 {
-                    base.characterMotor.velocity = Vector3.zero;
+                    characterMotor.velocity = Vector3.zero;
                 }
-                else if ((bool)base.rigidbodyMotor)
+                else if ((bool)rigidbodyMotor)
                 {
-                    base.rigidbodyMotor.moveVector = Vector3.zero;
+                    rigidbodyMotor.moveVector = Vector3.zero;
                 }
                 else
                 {
-                    base.transform.position = Vector3.zero;
+                    transform.position = Vector3.zero;
                 }
-                if((bool)characterMotor && (bool)characterDirection)
+                if ((bool)characterMotor && (bool)characterDirection)
                 {
                     characterMotor.velocity = Vector3.zero;
-                    characterMotor.rootMotion += base.GetAimRay().direction * (RifterStaticValues.riftPrimaryDistance / duration * Time.fixedDeltaTime);
+                    characterMotor.rootMotion += GetAimRay().direction * (RifterStaticValues.riftPrimaryDistance / duration * Time.fixedDeltaTime);
                     characterDirection.forward = -characterDirection.forward;
                 }
-                
+
                 if (modelTransform)
                 {
-                    modelTransform.SetPositionAndRotation(targetFootPosition, Util.QuaternionSafeLookRotation(basePosition-targetFootPosition));
+                    modelTransform.SetPositionAndRotation(targetFootPosition, Util.QuaternionSafeLookRotation(basePosition - targetFootPosition));
                 }
 
                 if (stopwatch >= duration)
@@ -120,33 +121,33 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override void OnExit()
         {
-            if (base.isAuthority)
+            if (isAuthority)
             {
-                
+
                 blastAttack = new BlastAttack();
-                blastAttack.attacker = base.gameObject;
-                blastAttack.inflictor = base.gameObject;
+                blastAttack.attacker = gameObject;
+                blastAttack.inflictor = gameObject;
                 blastAttack.teamIndex = TeamIndex.None;
                 blastAttack.radius = BlastRadius();
                 blastAttack.falloffModel = BlastAttack.FalloffModel.None;
                 blastAttack.baseDamage = BlastDamage() * isRiftHitGround;
-                blastAttack.crit = base.RollCrit();
+                blastAttack.crit = RollCrit();
                 blastAttack.procCoefficient = 1f;
                 blastAttack.canRejectForce = false;
-                blastAttack.position = base.transform.position;
+                blastAttack.position = transform.position;
                 blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
                 blastAttack.AddModdedDamageType(Damage.riftDamage);
                 var result = blastAttack.Fire();
 
                 blastAttack2 = new BlastAttack
                 {
-                    attacker = base.gameObject,
-                    inflictor = base.gameObject,
+                    attacker = gameObject,
+                    inflictor = gameObject,
                     teamIndex = TeamIndex.None,
                     radius = BlastRadius(),
                     falloffModel = BlastAttack.FalloffModel.None,
                     baseDamage = BlastDamage() * .75f,
-                    crit = base.RollCrit(),
+                    crit = RollCrit(),
                     procCoefficient = 1f,
                     canRejectForce = false,
                     position = basePosition,
@@ -205,13 +206,13 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter - 1;
                     hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
                 }
-                if ((bool)base.characterMotor)
+                if ((bool)characterMotor)
                 {
-                    base.characterMotor.disableAirControlUntilCollision = false;
+                    characterMotor.disableAirControlUntilCollision = false;
                 }
                 base.OnExit();
             }
-            
+
         }
 
         public override float RiftDistance()
@@ -227,14 +228,14 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override float BlastDamage()
         {
 
-          return (base.characterBody.damage * RifterStaticValues.primaryRiftCoefficient) * RifterStaticValues.overchargedCoefficient;
+            return characterBody.damage * RifterStaticValues.primaryRiftCoefficient * RifterStaticValues.overchargedCoefficient;
 
         }
 
         public override Vector3 GetTeleportLocation(CharacterBody body)
         {
-            Vector3 baseDirection = (body.corePosition - base.characterBody.corePosition).normalized;
-            Ray ray = new Ray(base.characterBody.corePosition, baseDirection);
+            Vector3 baseDirection = (body.corePosition - characterBody.corePosition).normalized;
+            Ray ray = new Ray(characterBody.corePosition, baseDirection);
             Vector3 location;
             if (body.isFlying || !body.characterMotor.isGrounded)
             {
@@ -242,12 +243,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             }
             else
             {
-                location = ray.GetPoint(RifterStaticValues.riftSecondaryDistance) + (Vector3.up * 3f);
+                location = ray.GetPoint(RifterStaticValues.riftSecondaryDistance) + Vector3.up * 3f;
             }
-            Vector3 direction = (location - base.characterBody.corePosition).normalized;
+            Vector3 direction = (location - characterBody.corePosition).normalized;
             RaycastHit raycastHit;
             Vector3 position = location;
-            if (Physics.SphereCast(base.characterBody.corePosition, 0f, direction, out raycastHit, RifterStaticValues.riftSecondaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
+            if (Physics.SphereCast(characterBody.corePosition, 0f, direction, out raycastHit, RifterStaticValues.riftSecondaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
             {
                 position = raycastHit.point;
             }
@@ -263,7 +264,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     HealthComponent enemyHit = hurtBox.healthComponent;
                     if (enemyHit == null)
                     {
-                        UnityEngine.Debug.Log("null");
+                        Debug.Log("null");
                         return;
                     }
                     Vector3 enemyTeleportTo = basePosition + Vector3.up * .1f;
@@ -282,5 +283,5 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
     }
 }
-    
+
 

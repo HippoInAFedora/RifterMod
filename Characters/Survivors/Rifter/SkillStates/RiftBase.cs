@@ -6,12 +6,15 @@ using RifterMod.Survivors.Rifter;
 using RoR2;
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 using IL.RoR2.Skills;
-using RifterMod.Modules;
 using static UnityEngine.SendMouseEvents;
 using R2API;
 using UnityEngine.AddressableAssets;
 using static RoR2.Skills.SkillFamily;
+using RifterMod.Characters.Survivors.Rifter.Components;
+using UnityEngine.Networking;
+using Newtonsoft.Json.Utilities;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
@@ -20,24 +23,36 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         private float duration;
 
         public float isBlastOvercharge;
-        RifterStep rifterStep;
+        RifterOverchargePassive rifterStep;
+
+        public static GameObject blastEffectPrefab = RifterAssets.riftExplosionEffect;
+        public static GameObject overchargedEffectPrefab = RifterAssets.riftExplosionEffectOvercharged;
+
+        public CharacterBody enemyHit;
+        public Vector3 originalPosition;
+        public Vector3 enemyTeleportTo;
+
+        public List<CharacterBody> enemyBodies = new List<CharacterBody>();
+
+        public float maxSlopeAngle = 90;
 
 
 
 
-
-    //OnEnter() runs once at the start of the skill
-    //All we do here is create a BulletAttack and fire it
-    public override void OnEnter()
+        //OnEnter() runs once at the start of the skill
+        //All we do here is create a BulletAttack and fire it
+        public override void OnEnter()
         {
             base.OnEnter();
+
+            //TeleportEnemies();
         }
 
         //This method runs once at the end
         //Here, we are doing nothing
         public override void OnExit()
         {
-            base.OnExit(); 
+            base.OnExit();
         }
 
 
@@ -61,7 +76,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public virtual float BlastRadius()
         {
-            return 7f;
+            return 7.5f;
         }
 
         public virtual float BlastDamage()
@@ -71,7 +86,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public virtual bool IsOvercharged()
         {
-            if (rifterStep.rifterStep <= 0 || !rifterStep.rapidfireShot)
+            if (rifterStep.rifterOverchargePassive <= 0 || !rifterStep.rapidfireShot)
             {
                 return false;
             }
@@ -81,15 +96,22 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public virtual void Overcharge(BulletAttack.BulletHit hitInfo, HurtBox hurtBox)
         {
-            HealthComponent enemyHit = hurtBox.healthComponent;
-            enemyHit.body.TryGetComponent(out CharacterMotor motor);
-            enemyHit.body.TryGetComponent(out RigidbodyMotor rbmotor);
-
-            Vector3 enemyTeleportTo = GetTeleportLocation(enemyHit.body);
-            if (motor || rbmotor)
+            HealthComponent enemyHitHealthbox = hurtBox.healthComponent;
+            enemyHit = enemyHitHealthbox.body;
+            //enemyHit.TryGetComponent(out CharacterMotor motor);
+            //enemyHit.TryGetComponent(out RigidbodyMotor rbmotor);
+            if (RifterPlugin.blacklistBodyNames.Contains(enemyHit.name) || enemyHit.teamComponent.teamIndex == TeamIndex.Lunar)
             {
-                TryTeleport(enemyHit.body, enemyTeleportTo);
+                Debug.Log("notgettingteleported");
+                //Add Effect here later
+                return;
             }
+            enemyBodies.AddDistinct(enemyHit);
+            //enemyTeleportTo = GetTeleportLocation(enemyHit);
+            //if (motor || rbmotor)
+            //{
+            //    TryTeleport(enemyHit, enemyTeleportTo);
+            //}
         }
 
         public virtual void BlastOvercharge(BlastAttack.Result result)
@@ -98,24 +120,47 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
                 {
-                    HealthComponent enemyHit = hurtBox.healthComponent;
-                    if (!enemyHit.body.hasEffectiveAuthority)
+                    HealthComponent enemyHitHealthbox = hurtBox.healthComponent;
+                    enemyHit = enemyHitHealthbox.body;
+                    if (RifterPlugin.blacklistBodyNames.Contains(enemyHit.name))
                     {
+                        Debug.Log("notgettingteleported");
+                        //Add Effect here later
                         return;
                     }
-                    Vector3 enemyTeleportTo = GetTeleportLocation(enemyHit.body);
-                    enemyHit.body.TryGetComponent(out CharacterMotor motor);
-                    enemyHit.body.TryGetComponent(out RigidbodyMotor rbmotor);
-                    if (motor || rbmotor)
-                    {
-                        TryTeleport(enemyHit.body, enemyTeleportTo);
-                    }
+                    enemyBodies.AddDistinct(enemyHit);
+                    //enemyTeleportTo = GetTeleportLocation(enemyHit);
+                    //enemyHit.TryGetComponent(out CharacterMotor motor);
+                    //enemyHit.TryGetComponent(out RigidbodyMotor rbmotor);
+                    //if (motor || rbmotor)
+                    //{
+                    //    TryTeleport(enemyHit, enemyTeleportTo);
+                    //}
                 }
-                
-            }          
+
+            }
         }
 
-        public void TryTeleport(CharacterBody body, Vector3 teleportToPosition)
+        public virtual void TeleportEnemies()
+        {
+
+            for (int i = 0; i < enemyBodies.Count; i++)
+            {
+                CharacterBody body = enemyBodies[i];
+                originalPosition = body.gameObject.transform.position;
+                enemyTeleportTo = GetTeleportLocation(body);
+                body.TryGetComponent(out RigidbodyMotor rbmotor);
+                body.TryGetComponent(out CharacterMotor motor);
+                if (motor || rbmotor)
+                {
+                    TryTeleport(body, enemyTeleportTo);
+                }
+                
+            }
+
+        }
+
+        public virtual void TryTeleport(CharacterBody body, Vector3 teleportToPosition)
         {
             if (body.TryGetComponent(out SetStateOnHurt setStateOnHurt))
             {
@@ -131,9 +176,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 {
                     array[i].SetNextStateToMain();
                 };
+
             }
-           
-            
+
         }
 
         public virtual Vector3 GetTeleportLocation(CharacterBody body)
@@ -149,15 +194,45 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance) + (Vector3.up);
             }
-            Vector3 direction = (location - base.characterBody.corePosition).normalized;           
+            Vector3 direction = (location - base.characterBody.corePosition).normalized;
             RaycastHit raycastHit;
             Vector3 position = location;
             float distance = Vector3.Distance(body.corePosition, location);
             if (Physics.SphereCast(body.corePosition, 0.05f, direction, out raycastHit, distance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
             {
-                position = raycastHit.point;
+                bool normalPlacement = Vector3.Angle(Vector3.up, raycastHit.normal) < maxSlopeAngle;
+                if (normalPlacement)
+                {
+                    position = raycastHit.point;
+                }
+                if (!normalPlacement)
+                {
+                    position = raycastHit.point - direction.normalized;
+                }
             }
             return position;
+        }
+
+        public override void OnSerialize(NetworkWriter writer)
+        {
+            base.OnSerialize(writer);
+            //writer.Write(base.gameObject.transform.position);
+            writer.Write(enemyTeleportTo);
+            //for (int i = 0; i < enemyBodies.Count; i++)
+            //{
+            //    writer.Write(enemyBodies[i].gameObject);
+            //}
+        }
+
+        public override void OnDeserialize(NetworkReader reader)
+        {
+            base.OnDeserialize(reader);
+            //originalPosition = reader.ReadVector3();
+            enemyTeleportTo = reader.ReadVector3();
+            //while (reader.Position < reader.Length)
+            //{
+            //    enemyBodies.Add(reader.ReadGameObject().GetComponent<CharacterBody>());
+            //}
         }
     }
 }

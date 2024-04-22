@@ -8,7 +8,7 @@ namespace RifterMod.Survivors.Rifter
         {
             string section = "Rifter";
 
-            
+
             //add more here or else you're cringe
         }
     }

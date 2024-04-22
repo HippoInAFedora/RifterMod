@@ -3,6 +3,7 @@ using RoR2;
 using RoR2.Skills;
 using UnityEngine;
 using JetBrains.Annotations;
+using RifterMod.Characters.Survivors.Rifter.Components;
 
 namespace RifterMod.Modules
 {
@@ -10,9 +11,9 @@ namespace RifterMod.Modules
     {
         protected class InstanceData : BaseSkillInstanceData
         {
-            public RifterStep step;
+            public RifterOverchargePassive step;
         }
-    
+
         public GenericSkill skillSlot;
 
         public bool overcharges;
@@ -31,9 +32,9 @@ namespace RifterMod.Modules
 
         public override BaseSkillInstanceData OnAssigned([NotNull] GenericSkill skillSlot)
         {
-            return new InstanceData 
-            { 
-                step = skillSlot.GetComponent<RifterStep>()
+            return new InstanceData
+            {
+                step = skillSlot.GetComponent<RifterOverchargePassive>()
             };
         }
 
@@ -45,7 +46,7 @@ namespace RifterMod.Modules
         public override Sprite GetCurrentIcon([NotNull] GenericSkill skillSlot)
         {
             InstanceData instanceData = (InstanceData)skillSlot.skillInstanceData;
-            if (instanceData.step.rifterStep > 1 && usesOvercharge)
+            if (instanceData.step.rifterOverchargePassive > 1 && usesOvercharge)
             {
                 return overchargedIcon;
             }
@@ -55,7 +56,7 @@ namespace RifterMod.Modules
         public override string GetCurrentNameToken([NotNull] GenericSkill skillSlot)
         {
             InstanceData instanceData = (InstanceData)skillSlot.skillInstanceData;
-            if (instanceData.step.rifterStep > 1 && usesOvercharge)
+            if (instanceData.step.rifterOverchargePassive > 1 && usesOvercharge)
             {
                 return overchargedNameToken;
             }
@@ -65,7 +66,7 @@ namespace RifterMod.Modules
         public override string GetCurrentDescriptionToken([NotNull] GenericSkill skillSlot)
         {
             InstanceData instanceData = (InstanceData)skillSlot.skillInstanceData;
-            if (instanceData.step.rifterStep > 1 && usesOvercharge)
+            if (instanceData.step.rifterOverchargePassive > 1 && usesOvercharge)
             {
                 return overchargedDescriptionToken;
             }
@@ -80,23 +81,24 @@ namespace RifterMod.Modules
             InstanceData instanceData = (InstanceData)skillSlot.skillInstanceData;
             if (overcharges)
             {
-                if (instanceData.step.rifterStep < 1)
+                if (instanceData.step.rifterOverchargePassive < 1)
                 {
-                    instanceData.step.rifterStep = 2;
+                    instanceData.step.rifterOverchargePassive = 1;
                 }
-                
+                instanceData.step.rifterOverchargePassive++;
+
             }
             if (usesOvercharge)
             {
-                instanceData.step.rifterStep -= 1;
-            }        
-            if (instanceData.step.rifterStep >2)
-            {
-                instanceData.step.rifterStep = 2;
+                instanceData.step.rifterOverchargePassive -= 1;
             }
-            if (instanceData.step.rifterStep < 0)
+            //if (instanceData.step.rifterOverchargePassive >2)
+            //{
+            //    instanceData.step.rifterOverchargePassive = 2;
+            //}
+            if (instanceData.step.rifterOverchargePassive < 0)
             {
-                instanceData.step.rifterStep = 0;
+                instanceData.step.rifterOverchargePassive = 0;
             }
         }
 

@@ -397,8 +397,8 @@ namespace RifterMod.Modules
             characterModel.baseRendererInfos = rendererInfos.ToArray();
         }
 
-        private static void SetupHurtboxGroup(GameObject bodyPrefab, GameObject model) 
-        {         
+        private static void SetupHurtboxGroup(GameObject bodyPrefab, GameObject model)
+        {
             SetupMainHurtboxesFromChildLocator(bodyPrefab, model);
 
             SetHurtboxesHealthComponents(bodyPrefab);
@@ -567,7 +567,7 @@ namespace RifterMod.Modules
             GameObject newMaster = assetBundle.LoadAsset<GameObject>(assetName);
 
             BaseAI baseAI = newMaster.GetComponent<BaseAI>();
-            if(baseAI == null)
+            if (baseAI == null)
             {
                 baseAI = newMaster.AddComponent<BaseAI>();
                 baseAI.aimVectorDampTime = 0.1f;
@@ -576,7 +576,7 @@ namespace RifterMod.Modules
             baseAI.scanState = new EntityStates.SerializableEntityStateType(typeof(EntityStates.AI.Walker.Wander));
 
             EntityStateMachine stateMachine = newMaster.GetComponent<EntityStateMachine>();
-            if(stateMachine == null)
+            if (stateMachine == null)
             {
                 AddEntityStateMachine(newMaster, "AI", typeof(EntityStates.AI.Walker.Wander), typeof(EntityStates.AI.Walker.Wander));
             }
@@ -584,7 +584,7 @@ namespace RifterMod.Modules
             baseAI.stateMachine = stateMachine;
 
             CharacterMaster characterMaster = newMaster.GetComponent<CharacterMaster>();
-            if(characterMaster == null)
+            if (characterMaster == null)
             {
                 characterMaster = newMaster.AddComponent<CharacterMaster>();
             }
@@ -613,7 +613,7 @@ namespace RifterMod.Modules
             {
                 deathBehavior.idleStateMachine = Array.Empty<EntityStateMachine>();
             }
-            
+
             SetStateOnHurt setStateOnHurt = bodyPrefab.GetComponent<SetStateOnHurt>();
             if (setStateOnHurt)
             {
@@ -667,13 +667,14 @@ namespace RifterMod.Modules
         }
 
         //this but in reverse https://media.discordapp.net/attachments/875473107891150878/896193331720237106/caption-7.gif?ex=65989f94&is=65862a94&hm=e1f51da3ad190c00c5da1f90269d5ef10bedb0ae063c0f20aa0dd8721608018a&
-        public static void AddEntityStateMachine(GameObject prefab, string machineName, Type mainStateType = null,  Type initalStateType = null)
+        public static void AddEntityStateMachine(GameObject prefab, string machineName, Type mainStateType = null, Type initalStateType = null)
         {
             EntityStateMachine entityStateMachine = EntityStateMachine.FindByCustomName(prefab, machineName);
             if (entityStateMachine == null)
             {
                 entityStateMachine = prefab.AddComponent<EntityStateMachine>();
-            } else
+            }
+            else
             {
                 Log.Message($"An Entity State Machine already exists with the name {machineName}. replacing.");
             }
@@ -686,7 +687,7 @@ namespace RifterMod.Modules
             }
             entityStateMachine.mainStateType = new EntityStates.SerializableEntityStateType(mainStateType);
 
-            if(initalStateType == null)
+            if (initalStateType == null)
             {
                 initalStateType = typeof(EntityStates.Idle);
             }
@@ -728,7 +729,7 @@ namespace RifterMod.Modules
                 hitBoxes.Add(hitBox);
             }
 
-            if(hitBoxes.Count == 0)
+            if (hitBoxes.Count == 0)
             {
                 Log.Error($"No hitboxes were set up. aborting setting up hitboxGroup for {hitBoxGroupName}");
                 return;

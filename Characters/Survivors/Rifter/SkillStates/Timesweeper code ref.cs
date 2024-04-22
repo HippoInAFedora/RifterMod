@@ -7,7 +7,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace RifterMod.Survivors.Rifter.SkillStates
+namespace RovrMod.Survivors.Rovr.SkillStates
 {
 
     //copypaste RoR2.Skills.SteppedSkillDef with few changes

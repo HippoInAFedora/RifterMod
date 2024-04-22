@@ -18,7 +18,7 @@ namespace RifterMod.Survivors.Rifter
                 Color.white,
                 true,
                 true);
-            unstableDebuff.isHidden = false;
+            unstableDebuff.isHidden = true;
         }
     }
 }

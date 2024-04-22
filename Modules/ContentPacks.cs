@@ -5,7 +5,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RifterMod.Modules {
+namespace RifterMod.Modules
+{
     internal class ContentPacks : IContentPackProvider
     {
         internal ContentPack contentPack = new ContentPack();

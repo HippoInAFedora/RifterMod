@@ -5,10 +5,12 @@ using EntityStates.Commando.CommandoWeapon;
 using RoR2;
 using UnityEngine;
 using System;
-using RifterMod.Modules;
 using R2API;
 using System.Collections.Generic;
 using Newtonsoft.Json.Utilities;
+using RifterMod.Characters.Survivors.Rifter.Components;
+using RifterMod.Modules;
+using UnityEngine.Networking;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
@@ -20,20 +22,20 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         float isRiftHitGround;
 
         public bool isBlastOvercharge = false;
-        public static GameObject tracerEffectPrefab = LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/Tracers/TracerGoldGat");
+        public static GameObject tracerEffectPrefabOld = RifterAssets.fractureLineEffect;
+
+        public static GameObject tracerEffectPrefab = RifterAssets.fractureLineEffect;
+
+
 
 
 
 
         public float duration;
 
-
-        //added vars for blastAttack
-
-        //Interface stuff
         public int currentTeleportActive { get; set; }
 
-        public RifterStep rifterStep;
+        public RifterOverchargePassive rifterStep;
 
         public GameObject hitEffectPrefab = FireBarrage.hitEffectPrefab;
 
@@ -47,7 +49,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             base.OnEnter();
 
-            rifterStep = base.GetComponent<RifterStep>();
+            rifterStep = base.GetComponent<RifterOverchargePassive>();
 
             this.duration = baseDuration / base.attackSpeedStat;
             Ray aimRay = base.GetAimRay();
@@ -63,8 +65,10 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
             if (base.isAuthority)
             {
-                RiftAndFracture();                           
+                RiftAndFracture();
+                TeleportEnemies();
             }
+            
         }
 
         //This method runs once at the end
@@ -73,7 +77,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             ignoreList1.RemoveAll(x => x != null);
             ignoreList2.RemoveAll(x => x != null);
-            base.OnExit(); 
+            enemyBodies.RemoveAll(x => x != null);
+            base.OnExit();
         }
 
 
@@ -101,12 +106,15 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             //Blast Attack Stuff
             Vector3 vector = aimRay.GetPoint(RiftDistance());
 
+
+
             if (Physics.Raycast(aimRay, out var endPoint, RiftDistance(), LayerIndex.world.mask, QueryTriggerInteraction.UseGlobal))
             {
                 float hit = endPoint.distance;
                 vector = aimRay.GetPoint(hit);
             }
-            
+
+
 
             float vectorDistance = Vector3.Distance(aimRay.origin, vector);
             if (vectorDistance < RiftDistance() * 2 / 3)
@@ -129,7 +137,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             BlastAttack blastAttack = new BlastAttack();
             blastAttack.attacker = base.gameObject;
             blastAttack.inflictor = base.gameObject;
-            blastAttack.teamIndex = TeamIndex.None;
+            blastAttack.teamIndex = TeamIndex.Player;
             blastAttack.radius = BlastRadius();
             blastAttack.falloffModel = BlastAttack.FalloffModel.None;
             blastAttack.baseDamage = BlastDamage() * isRiftHitGround;
@@ -140,6 +148,21 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
             blastAttack.AddModdedDamageType(Damage.riftDamage);
             var result = blastAttack.Fire();
+
+            EffectData effectData = new EffectData();
+            blastEffectPrefab.transform.localScale = Vector3.one;
+            effectData.scale = BlastRadius() * 1.5f;
+            effectData.origin = vector;
+            if (!IsOvercharged())
+            {
+                EffectManager.SpawnEffect(blastEffectPrefab, effectData, transmit: true);
+            }
+            else
+            {
+                EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: true);
+            }
+
+
 
 
 
@@ -184,7 +207,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             bulletAttack.procCoefficient = 0f;
             bulletAttack.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
             bulletAttack.radius = .75f;
-            bulletAttack.tracerEffectPrefab = RiftGauntletBase.tracerEffectPrefab;
+            bulletAttack.tracerEffectPrefab = tracerEffectPrefab;
             bulletAttack.muzzleName = "MuzzleRight";
             bulletAttack.hitEffectPrefab = this.hitEffectPrefab;
             bulletAttack.isCrit = false;
@@ -231,7 +254,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastRadius()
         {
-            return 7f;
+            return 7.75f;
         }
 
         public override float BlastDamage()
@@ -241,47 +264,14 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override bool IsOvercharged()
         {
-            if (rifterStep.rifterStep <= 0)
+            if (rifterStep.rifterOverchargePassive <= 0)
             {
                 return false;
             }
             return true;
         }
 
-        
 
-
-        public override void Overcharge(BulletAttack.BulletHit hitInfo, HurtBox hurtBox)
-        {
-            HealthComponent enemyHit = hurtBox.healthComponent;
-            Vector3 enemyTeleportTo = GetTeleportLocation(enemyHit.body);
-            if (enemyHit.body && enemyHit.alive)
-            {
-                TryTeleport(enemyHit.body, enemyTeleportTo);
-            }
-        }
-
-        public override void BlastOvercharge(BlastAttack.Result result)
-        {
-            foreach (var hit in result.hitPoints)
-            {
-                if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
-                {
-                    HealthComponent enemyHit = hurtBox.healthComponent;
-                    if (enemyHit == null)
-                    {
-                        UnityEngine.Debug.Log("null");
-                        return;
-                    }
-                    Vector3 enemyTeleportTo = GetTeleportLocation(enemyHit.body);
-                    if (enemyHit.body)
-                    {
-                        TryTeleport(enemyHit.body, enemyTeleportTo);
-                    }
-                }
-                
-            }          
-        }
 
         public virtual void RunDistanceAssist(Vector3 vector, BlastAttack.Result result)
         {
@@ -298,7 +288,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             bulletAttack.bulletCount = 1U;
             bulletAttack.procCoefficient = .8f;
             bulletAttack.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
-            bulletAttack.radius = BlastRadius() / 2;
+            bulletAttack.radius = BlastRadius() / 2f;
             bulletAttack.tracerEffectPrefab = RiftGauntletBase.tracerEffectPrefab;
             bulletAttack.muzzleName = "MuzzleRight";
             bulletAttack.hitEffectPrefab = this.hitEffectPrefab;
@@ -306,7 +296,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             bulletAttack.HitEffectNormal = false;
             bulletAttack.stopperMask = LayerIndex.playerBody.mask;
             bulletAttack.smartCollision = true;
-            bulletAttack.maxDistance = BlastRadius();
+            bulletAttack.maxDistance = BlastRadius() * .8f;
             bulletAttack.AddModdedDamageType(Damage.riftAssistDamage);
 
 

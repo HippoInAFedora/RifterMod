@@ -27,14 +27,14 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if(base.isAuthority && (bool)base.inputBank)
+            if (base.isAuthority && (bool)base.inputBank)
             {
                 if (base.inputBank.skill3.justReleased)
                 {
                     outer.SetNextState(new RiftRider());
                 }
             }
-            
+
         }
 
         public override void Update()
@@ -45,7 +45,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         private void UpdateAreaIndicator()
         {
-            if((bool)teleportLocatorInstance)
+            if ((bool)teleportLocatorInstance)
             {
                 float maxDistance = RifterStaticValues.riftPrimaryDistance;
                 teleportLocatorInstance.transform.position = base.GetAimRay().GetPoint(maxDistance);
@@ -73,5 +73,5 @@ namespace RifterMod.Survivors.Rifter.SkillStates
     }
 
 }
-    
+
 

@@ -1,32 +1,32 @@
 ﻿using EntityStates;
 using IL.RoR2.Skills;
-using RifterMod.Survivors.Rifter;
+using RifterMod.Survivors.Rifter.SkillStates;
 using RoR2;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace RifterMod.Survivors.Rifter.SkillStates
+namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
 {
     public class EntanglementLocate : RiftRiderLocate
     {
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if(base.isAuthority && (bool)base.inputBank)
+            if (isAuthority && (bool)inputBank)
             {
-                if ((bool)base.skillLocator && base.skillLocator.special.IsReady() && base.inputBank.skill4.justPressed)
+                if ((bool)skillLocator && skillLocator.special.IsReady() && inputBank.skill4.justPressed)
                 {
                     outer.SetNextStateToMain();
                 }
-                else if (base.inputBank.skill1.justPressed || base.inputBank.skill3.justReleased)
+                else if (inputBank.skill1.justPressed || inputBank.skill3.justReleased)
                 {
                     outer.SetNextState(new Entanglement());
                 }
             }
-            
+
         }
     }
 
 }
-    
+
 

@@ -124,7 +124,7 @@ namespace RifterMod.Modules
             networkSoundEventDef.eventName = eventName;
 
             AddNetworkSoundEventDef(networkSoundEventDef);
-            
+
             return networkSoundEventDef;
         }
     }

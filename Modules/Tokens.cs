@@ -2,7 +2,13 @@
 {
     internal static class Tokens
     {
-        public const string agilePrefix = "<style=cIsUtility>Agile.</style>";
+        public const string overchargedPrefix = "<style=cIsUtility>Overcharge</style>";
+
+        public const string stuntingPrefix = "<style=cIsUtility>Stunting</style>";
+
+        public static string overchargedKeyword = KeywordText("Overcharged", "Enemies hit are teleported to your primary-rift distance.");
+
+        public static string stuntingKeyword = KeywordText("Stunting", "Rift is weaker if hitting closer to you.");
 
         public static string DamageText(string text)
         {

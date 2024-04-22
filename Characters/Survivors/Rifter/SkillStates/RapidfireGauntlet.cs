@@ -8,6 +8,7 @@ using UnityEngine;
 using System;
 using IL.RoR2.Skills;
 using RifterMod.Modules;
+using UnityEngine.Networking;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
@@ -60,6 +61,18 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void RunDistanceAssist(Vector3 vector, BlastAttack.Result result)
         {
             return;
+        }
+
+        public override void OnSerialize(NetworkWriter writer)
+        {
+            base.OnSerialize(writer);
+            writer.Write(enemyTeleportTo);
+        }
+
+        public override void OnDeserialize(NetworkReader reader)
+        {
+            base.OnDeserialize(reader);
+            enemyTeleportTo = reader.ReadVector3();
         }
     }
 }

@@ -42,9 +42,9 @@ namespace RifterMod.Survivors.Rifter
             swingDriver.moveInputScale = 1;
             swingDriver.aimType = AISkillDriver.AimType.AtMoveTarget;
             swingDriver.ignoreNodeGraph = false; //will chase relentlessly but be kind of stupid
-            swingDriver.shouldSprint = false; 
+            swingDriver.shouldSprint = false;
             swingDriver.shouldFireEquipment = false;
-            swingDriver.buttonPressType = AISkillDriver.ButtonPressType.Hold; 
+            swingDriver.buttonPressType = AISkillDriver.ButtonPressType.Hold;
 
             //Transition Behavior
             swingDriver.driverUpdateTimerOverride = -1;
@@ -73,8 +73,8 @@ namespace RifterMod.Survivors.Rifter
             shootDriver.movementType = AISkillDriver.MovementType.ChaseMoveTarget;
             shootDriver.moveInputScale = 1;
             shootDriver.aimType = AISkillDriver.AimType.AtMoveTarget;
-            shootDriver.buttonPressType = AISkillDriver.ButtonPressType.Hold; 
-            
+            shootDriver.buttonPressType = AISkillDriver.ButtonPressType.Hold;
+
             AISkillDriver rollDriver = master.AddComponent<AISkillDriver>();
             //Selection Conditions
             rollDriver.customName = "Use Utility Roll";

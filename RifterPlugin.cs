@@ -7,6 +7,7 @@ using System.Security;
 using System.Security.Permissions;
 using System.Runtime.CompilerServices;
 using R2API;
+using UnityEngine;
 
 [module: UnverifiableCode]
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
@@ -30,6 +31,10 @@ namespace RifterMod
 
         public static RifterPlugin instance;
 
+        public static List<BodyIndex> blacklist = new List<BodyIndex>();
+
+        public static List<string> blacklistBodyNames = new List<string> { "MinorConstructBody(Clone)", "VoidBarnacleBody(Clone)" };
+
         void Awake()
         {
             instance = this;
@@ -52,18 +57,36 @@ namespace RifterMod
 
         }
 
-        private void Hook()
+        private static void Hook()
         {
-            On.RoR2.HealthComponent.TakeDamage += HealthComponent_TakeDamage;
+            //RoR2.GlobalEventManager.onServerDamageDealt += GlobalEventManager_onServerDamageDealt;
+            On.RoR2.GlobalEventManager.OnHitEnemy += GlobalEventManager_OnHitEnemy;
         }
 
-        private void HealthComponent_TakeDamage(On.RoR2.HealthComponent.orig_TakeDamage orig, RoR2.HealthComponent self, RoR2.DamageInfo damageInfo)
+        private static void GlobalEventManager_OnHitEnemy(On.RoR2.GlobalEventManager.orig_OnHitEnemy orig, RoR2.GlobalEventManager self, RoR2.DamageInfo damageInfo, GameObject victim)
         {
-            if ((bool)self && (bool)self.body)
+            //IL_0013: Unknown result type (might be due to invalid IL or missing references)
+            orig(self, damageInfo, victim);
+            CharacterModel model = victim.GetComponent<CharacterModel>();
+            if (DamageAPI.HasModdedDamageType(damageInfo, Damage.riftDamage) || DamageAPI.HasModdedDamageType(damageInfo, Damage.riftAssistDamage))
             {
 
             }
-            orig(self, damageInfo);
+        }
+
+        public static void AddBodyToBlacklist(string bodyName)
+        {
+            BodyIndex bodyIndex = RoR2.BodyCatalog.FindBodyIndex(bodyName);
+            TeamComponent teamComponent = BodyCatalog.FindBodyPrefab(bodyName).GetComponent<CharacterBody>().teamComponent;
+
+            if (bodyIndex != BodyIndex.None)
+            {
+                if (blacklistBodyNames.Contains(bodyName) || teamComponent.teamIndex == TeamIndex.Lunar)
+                {
+                    blacklist.Add(bodyIndex);
+                }
+
+            }
         }
     }
 }

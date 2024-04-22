@@ -4,7 +4,7 @@ using RoR2;
 using RoR2.Projectile;
 using UnityEngine;
 
-namespace RifterMod.Survivors.Rifter.SkillStates
+namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
 {
     public class ThrowBomb : GenericProjectileBaseState
     {

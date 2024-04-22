@@ -80,7 +80,7 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
             if ((bool)characterModel)
             {
                 characterModel.invisibilityCount--;
-             }
+            }
             if ((bool)hurtboxGroup)
             {
                 HurtBoxGroup hurtBoxGroup = hurtboxGroup;

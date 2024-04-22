@@ -95,11 +95,14 @@ namespace RifterMod.Modules
             #endregion
         }
 
-        public static GameObject LoadDisplay(string name) {
+        public static GameObject LoadDisplay(string name)
+        {
 
-            if (itemDisplayPrefabs.ContainsKey(name.ToLowerInvariant())) {
+            if (itemDisplayPrefabs.ContainsKey(name.ToLowerInvariant()))
+            {
 
-                if (itemDisplayPrefabs[name.ToLowerInvariant()]) {
+                if (itemDisplayPrefabs[name.ToLowerInvariant()])
+                {
 
                     GameObject display = itemDisplayPrefabs[name.ToLowerInvariant()];
 

@@ -1,6 +1,7 @@
 ﻿using RoR2;
 using EntityStates;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class ModifiedTeleport : BaseState
 {
@@ -48,22 +49,25 @@ public class ModifiedTeleport : BaseState
             {
                 TeleportHelper.TeleportBody(base.characterBody, targetFootPosition);
             }
+            trailObject.transform.position = initialPosition;
+            trailObject.transform.LookAt(targetFootPosition);
+            teleportTrail = trailObject.AddComponent<TrailRenderer>();
+            teleportTrail.minVertexDistance = 2f;
+            teleportTrail.material = LegacyResourcesAPI.Load<Material>("RoR2 / Base / Golem / matZap1");
+            teleportTrail.material.color = new Color(66, 135, 245);
+            teleportTrail.startWidth = 0.05f;
+            teleportTrail.endWidth = 0f;
+            teleportTrail.AddPosition(trailObject.transform.position);
+            teleportTrail.generateLightingData = true;
+            teleportTrail.startColor = new Color(184, 128, 237);
+            teleportTrail.time = .25f;
+            teleportTrail.emitting = true;
+            teleportTrail.widthMultiplier = .1f;
+            teleportTrail.autodestruct = true;
         }
-        trailObject.transform.position = initialPosition;
-        trailObject.transform.LookAt(targetFootPosition);
-        teleportTrail = trailObject.AddComponent<TrailRenderer>();
-        teleportTrail.minVertexDistance = 2f;
-        teleportTrail.material = LegacyResourcesAPI.Load<Material>("RoR2 / Base / Golem / matZap1");
-        teleportTrail.material.color = new Color(66, 135, 245);
-        teleportTrail.startWidth = 0.05f;
-        teleportTrail.endWidth = 0f;
-        teleportTrail.AddPosition(trailObject.transform.position);
-        teleportTrail.generateLightingData = true;
-        teleportTrail.startColor = new Color(184, 128, 237);
-        teleportTrail.time = .25f;
-        teleportTrail.emitting = true;
-        teleportTrail.widthMultiplier = .1f;
-        teleportTrail.autodestruct = true;
+        
+
+
 
     }
 
@@ -71,12 +75,12 @@ public class ModifiedTeleport : BaseState
     {
         base.FixedUpdate();
         stopwatch += Time.fixedDeltaTime;
-        if ((bool)trailObject)
+        if ((bool)trailObject && base.isAuthority)
         {
-            trailObject.transform.position += trailObject.transform.forward * (Vector3.Distance(targetFootPosition,initialPosition) / teleportWaitDuration * Time.fixedDeltaTime);
+            trailObject.transform.position += trailObject.transform.forward * (Vector3.Distance(targetFootPosition, initialPosition) / teleportWaitDuration * Time.fixedDeltaTime);
             teleportTrail.AddPosition((Vector3)trailObject.transform.position);
-            Debug.Log(trailObject.transform.position.ToString());
         }
+
         if ((bool)base.characterMotor)
         {
             base.characterMotor.velocity = Vector3.zero;

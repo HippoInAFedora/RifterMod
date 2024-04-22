@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using RifterMod;
 using UnityEngine;
+using RifterMod.Characters.Survivors.Rifter.Components;
 
 namespace RifterMod.Modules
 {
@@ -15,15 +16,29 @@ namespace RifterMod.Modules
         /// Create 4 GenericSkills for primary, secondary, utility, and special, and create skillfamilies for them
         /// </summary>
         /// <param name="targetPrefab">Body prefab to add GenericSkills</param>
-        public static void CreateSkillFamilies(GameObject targetPrefab) => CreateSkillFamilies(targetPrefab, SkillSlot.Primary, SkillSlot.Secondary, SkillSlot.Utility, SkillSlot.Special);
+        public static void CreateSkillFamilies(GameObject targetPrefab, bool destroyExisting = true) => CreateSkillFamilies(targetPrefab, destroyExisting, SkillSlot.Primary, SkillSlot.Secondary, SkillSlot.Utility, SkillSlot.Special);
         /// <summary>
         /// Create in order the GenericSkills for the skillslots desired, and create skillfamilies for them.
         /// </summary>
         /// <param name="targetPrefab">Body prefab to add GenericSkills</param>
         /// <param name="slots">Order of slots to add to the body prefab.</param>
-        public static void CreateSkillFamilies(GameObject targetPrefab, params SkillSlot[] slots)
+        public static void CreateSkillFamilies(GameObject targetPrefab, bool destroyExisting, params SkillSlot[] slots)
         {
+            if (destroyExisting)
+            {
+                GenericSkill[] componentsInChildren = targetPrefab.GetComponentsInChildren<GenericSkill>();
+                foreach (GenericSkill obj in componentsInChildren)
+                {
+                    UnityEngine.Object.DestroyImmediate(obj);
+                }
+            }
             SkillLocator skillLocator = targetPrefab.GetComponent<SkillLocator>();
+            RiftAndFracture component2 = targetPrefab.GetComponent<RiftAndFracture>();
+            if ((bool)component2)
+            {
+                component2.passiveSkillSlot = CreateGenericSkillWithSkillFamily(targetPrefab, "Passive");
+                component2.overchargeSkillSlot = CreateGenericSkillWithSkillFamily(targetPrefab, "Passive2");
+            }
 
             for (int i = 0; i < slots.Length; i++)
             {

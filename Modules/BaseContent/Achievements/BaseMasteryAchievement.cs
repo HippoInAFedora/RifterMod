@@ -37,7 +37,7 @@ namespace RifterMod.Modules.Achievements
                 DifficultyDef difficultyDef = DifficultyCatalog.GetDifficultyDef(difficultyIndex);
                 if (difficultyDef != null)
                 {
-                    
+
                     bool isDifficulty = difficultyDef.countsAsHardMode && difficultyDef.scalingValue >= RequiredDifficultyCoefficient;
                     bool isInferno = difficultyDef.nameToken == "INFERNO_NAME";
                     bool isEclipse = difficultyIndex >= DifficultyIndex.Eclipse1 && difficultyIndex <= DifficultyIndex.Eclipse8;

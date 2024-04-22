@@ -48,7 +48,7 @@ namespace RifterMod.Modules
 
         internal static GameObject CloneTracer(string originalTracerName, string newTracerName)
         {
-            if (RoR2.LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/Tracers/" + originalTracerName) == null) 
+            if (RoR2.LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/Tracers/" + originalTracerName) == null)
                 return null;
 
             GameObject newTracer = PrefabAPI.InstantiateClone(RoR2.LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/Tracers/" + originalTracerName), newTracerName, true);
@@ -56,7 +56,7 @@ namespace RifterMod.Modules
             if (!newTracer.GetComponent<EffectComponent>()) newTracer.AddComponent<EffectComponent>();
             if (!newTracer.GetComponent<VFXAttributes>()) newTracer.AddComponent<VFXAttributes>();
             if (!newTracer.GetComponent<NetworkIdentity>()) newTracer.AddComponent<NetworkIdentity>();
-            
+
             newTracer.GetComponent<Tracer>().speed = 250f;
             newTracer.GetComponent<Tracer>().length = 50f;
 
@@ -138,7 +138,7 @@ namespace RifterMod.Modules
         internal static GameObject LoadAndAddProjectilePrefab(this AssetBundle assetBundle, string newPrefabName)
         {
             GameObject newPrefab = assetBundle.LoadAsset<GameObject>(newPrefabName);
-            if(newPrefab == null)
+            if (newPrefab == null)
             {
                 Log.ErrorAssetBundle(newPrefabName, assetBundle.name);
                 return null;

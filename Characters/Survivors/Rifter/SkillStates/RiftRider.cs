@@ -10,6 +10,7 @@ using IL.RoR2.Skills;
 using R2API;
 using System.Collections.Generic;
 using Newtonsoft.Json.Utilities;
+using UnityEngine.Networking;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
@@ -64,7 +65,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 BlastAttack blastAttack = new BlastAttack();
                 blastAttack.attacker = base.gameObject;
                 blastAttack.inflictor = base.gameObject;
-                blastAttack.teamIndex = TeamIndex.None;
+                blastAttack.teamIndex = TeamIndex.Player;
                 blastAttack.radius = BlastRadius();
                 blastAttack.falloffModel = BlastAttack.FalloffModel.None;
                 blastAttack.baseDamage = BlastDamage() * isRiftHitGround;
@@ -76,9 +77,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 blastAttack.AddModdedDamageType(Damage.riftDamage);
                 var result = blastAttack.Fire();
 
-                EffectData effectData2 = new EffectData();
-                effectData2.origin = blastAttack.position;
-                EffectManager.SpawnEffect(GlobalEventManager.CommonAssets.igniteOnKillExplosionEffectPrefab, effectData2, transmit: false);
+                EffectData effectData = new EffectData();
+                blastEffectPrefab.transform.localScale = Vector3.one;
+                effectData.scale = BlastRadius() * 1.5f;
+                effectData.origin = blastAttack.position;
+                EffectManager.SpawnEffect(blastEffectPrefab, effectData, transmit: false);
 
                 foreach (var hit in result.hitPoints)
                 {
@@ -88,8 +91,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                         isResults = true;
                         if (IsOvercharged() && hurtBox.healthComponent.alive && isBlastOvercharge)
                         {
-                                BlastOvercharge(result);
-                            
+                            BlastOvercharge(result);
+
 
                         }
                     }
@@ -154,7 +157,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 BlastAttack blastAttack2 = new BlastAttack();
                 blastAttack2.attacker = base.gameObject;
                 blastAttack2.inflictor = base.gameObject;
-                blastAttack2.teamIndex = TeamIndex.None;
+
+                blastAttack2.teamIndex = TeamIndex.Player;
                 blastAttack2.radius = 10f;
                 blastAttack2.falloffModel = BlastAttack.FalloffModel.None;
                 blastAttack2.baseDamage = RifterStaticValues.recursionCoefficient;
@@ -179,7 +183,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
                         if (IsOvercharged() && hurtBox.healthComponent.alive && isBlastOvercharge)
                         {
-                                BlastOvercharge(result);
+                            BlastOvercharge(result);
 
                         }
                     }
@@ -196,12 +200,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 outer.SetNextState(new RiftRiderOut
                 {
                     initialPosition = initialPosition,
-                    targetFootPosition = targetFootPosition,  
+                    targetFootPosition = targetFootPosition,
                     teleportWaitDuration = .5f,
                     isResults = isResults,
-                }) ;
+                });
             }
-            
+
         }
 
         public override void OnExit()
@@ -218,6 +222,18 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override Vector3 GetTeleportLocation(CharacterBody body)
         {
             return initialPosition;
+        }
+
+        public override void OnSerialize(NetworkWriter writer)
+        {
+            base.OnSerialize(writer);
+            writer.Write(enemyTeleportTo);
+        }
+
+        public override void OnDeserialize(NetworkReader reader)
+        {
+            base.OnDeserialize(reader);
+            enemyTeleportTo = reader.ReadVector3();
         }
     }
 }

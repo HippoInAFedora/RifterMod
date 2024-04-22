@@ -29,7 +29,7 @@ namespace RifterMod.Modules
             string missingDisplays = $"generating item displays for {bodyName}";
 
             //grab all keyassets
-            if(allDisplayedItems == null)
+            if (allDisplayedItems == null)
                 LazyGatherAllItems();
 
             //start with all items, and remove from the list items that we already have displays for
@@ -64,7 +64,7 @@ namespace RifterMod.Modules
                 if (ItemDisplays.KeyAssetDisplayPrefabs.ContainsKey(keyAsset))
                 {
                     //if we have a displayprefab for it (Populated in ItemDisplays.PopulateDisplays),
-                        //generate a rule formatted to the code in this project
+                    //generate a rule formatted to the code in this project
                     thing += SpitOutNewRule(keyAsset, firstCompatibleChild, ItemDisplays.KeyAssetDisplayPrefabs[keyAsset]);
                 }
                 else
@@ -81,7 +81,8 @@ namespace RifterMod.Modules
         {
             allDisplayedItems = new List<Object>(ItemDisplays.KeyAssetDisplayPrefabs.Keys);
 
-            allDisplayedItems.Sort((item1, item2) => {
+            allDisplayedItems.Sort((item1, item2) =>
+            {
                 //sort defs by keyasset so it shows up in the same order as the idph
                 if (item1 is ItemDef && item2 is ItemDef)
                 {
@@ -113,19 +114,19 @@ namespace RifterMod.Modules
             string newRule = $"\n            itemDisplayRules.Add(ItemDisplays.CreateDisplayRuleGroupWithRules(ItemDisplays.KeyAssets[\"{asset.name}\"]";
             for (int i = 0; i < displayRules.Length; i++)
             {
-                if(displayRules[i].limbMask == LimbFlags.None)
+                if (displayRules[i].limbMask == LimbFlags.None)
                 {
-                    newRule += ",\n" + 
+                    newRule += ",\n" +
                               $"                ItemDisplays.CreateDisplayRule(ItemDisplays.LoadDisplay(\"{displayRules[i].followerPrefab.name}\"),\n" +
                               $"                    \"{firstCompatibleChild}\",\n" +
                                "                    new Vector3(2, 2, 2),\n" +
                                "                    new Vector3(0, 0, 0),\n" +
                                "                    new Vector3(1, 1, 1)\n" +
                                "                    )";
-                } 
+                }
                 else
                 {
-                    newRule += ",\n" + 
+                    newRule += ",\n" +
                               $"                ItemDisplays.CreateLimbMaskDisplayRule(LimbFlags.{displayRules[i].limbMask})";
                 }
             }

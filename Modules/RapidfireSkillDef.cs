@@ -34,7 +34,7 @@ namespace RifterMod.Modules
             {
                 instanceData.step.rapidfireShot = true;
             }
-            else
+            else if (skillSlot.stock != 1)
             {
                 instanceData.step.rapidfireShot = false;
             }

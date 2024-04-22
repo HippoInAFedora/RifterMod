@@ -15,6 +15,8 @@ namespace RifterMod.Survivors.Rifter
             Modules.Content.AddEntityState(typeof(ModifiedTeleport));
 
             Modules.Content.AddEntityState(typeof(RiftRiderLocate));
+
+            Modules.Content.AddEntityState(typeof(AirBourneOut));
         }
     }
 }

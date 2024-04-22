@@ -11,11 +11,10 @@ using UnityEngine.Networking;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
-    public class RecursionChargeup : RiftBase
+    public class ChainedWorldsChargeup : RiftBase
     {
         public static GameObject areaIndicatorPrefab = global::EntityStates.Huntress.ArrowRain.areaIndicatorPrefab;
         public static GameObject areaIndicatorInstance;
-
         float stopwatch;
         float blastWatch;
 
@@ -41,6 +40,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             body = base.characterBody;
             if ((bool)areaIndicatorPrefab)
             {
+
                 areaIndicatorInstance = UnityEngine.Object.Instantiate(areaIndicatorPrefab);
                 areaIndicatorInstance.transform.localScale = new Vector3(BlastRadius(), BlastRadius(), BlastRadius());
             }
@@ -52,12 +52,23 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             UpdateAreaIndicator();
         }
 
+        private Vector3 GetNumPosition(int num)
+        {
+            float num2 = RiftDistance() / 5 * (num + 1);
+            Vector3 location = base.GetAimRay().GetPoint(num2);
+            Vector3 position = location;
+            if (Physics.SphereCast(base.characterBody.corePosition, 0.05f, base.GetAimRay().direction, out var raycastHit, num2, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
+            {
+                position = raycastHit.point;
+            }
+            return position;
+        }
+
         private void UpdateAreaIndicator()
         {
             if ((bool)areaIndicatorInstance)
             {
-                areaIndicatorInstance.transform.position = body.corePosition;
-                areaIndicatorInstance.transform.up = body.transform.up;
+                areaIndicatorInstance.transform.position = GetNumPosition(blastNum);
                 areaIndicatorInstance.transform.localScale = new Vector3(BlastRadius(), BlastRadius(), BlastRadius());
             }
         }
@@ -80,34 +91,16 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     blastWatch = 0;
                 }
             }
-            if (base.isAuthority && base.inputBank.skill4.justPressed && specialReleasedOnce)
+            if (base.isAuthority && ((base.inputBank.skill4.justPressed && specialReleasedOnce) || base.inputBank.skill1.justPressed || base.inputBank.skill2.justPressed))
             {
-                outer.SetNextState(new Recursion
+                outer.SetNextState(new ChainedWorlds
                 {
                     blastMax = blastNum + 1,
                 });
-            }
-            if ((bool)base.skillLocator && base.inputBank.skill3.justPressed && base.skillLocator.utility.IsReady())
-            {
-                EntityState state = new EntityState();
-                if (base.skillLocator.utility.stateMachine.state is Slipstream)
-                {
-                    state = new Slipstream();
-                }
-                if (base.skillLocator.utility.stateMachine.state is RiftRiderLocate)
-                {
-                    state = new RiftRiderLocate();
-                }
-                outer.SetNextState(new Recursion
-                {
-                    blastMax = blastNum + 1,
-                    setNextState = state
-                });
-
             }
             if (base.isAuthority && blastNum > 4)
             {
-                outer.SetNextState(new Recursion
+                outer.SetNextState(new ChainedWorlds
                 {
                     blastMax = 5,
                 });
@@ -119,7 +112,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             if ((bool)areaIndicatorInstance)
             {
-                Destroy(areaIndicatorInstance.gameObject);
+                EntityState.Destroy(areaIndicatorInstance.gameObject);
             }
             if (base.cameraTargetParams)
             {
@@ -130,12 +123,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastRadius()
         {
-            return 10f * (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
+            return 12f;
         }
 
         public override float BlastDamage()
         {
-            return base.characterBody.damage * RifterStaticValues.recursionCoefficient * (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
+            return base.characterBody.damage * RifterStaticValues.chainedWorldsCoefficient;
         }
 
     }

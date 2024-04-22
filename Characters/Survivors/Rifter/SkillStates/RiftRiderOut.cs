@@ -24,7 +24,7 @@ public class RiftRiderOut : ModifiedTeleport
                 outer.SetNextStateToMain();
             }
         }
-        
+
     }
 }
 
