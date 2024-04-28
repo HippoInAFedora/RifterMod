@@ -82,7 +82,7 @@ namespace RifterMod.Modules
 
             skill._skillFamily = newFamily;
 
-            RifterMod.Modules.Content.AddSkillFamily(newFamily);
+            Content.AddSkillFamily(newFamily);
             return skill;
         }
         #endregion
@@ -189,7 +189,7 @@ namespace RifterMod.Modules
 
             skillDef.keywordTokens = skillDefInfo.keywordTokens;
 
-            RifterMod.Modules.Content.AddSkillDef(skillDef);
+            Content.AddSkillDef(skillDef);
 
 
             return skillDef;

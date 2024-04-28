@@ -17,6 +17,26 @@ namespace RifterMod.Survivors.Rifter
             Modules.Content.AddEntityState(typeof(RiftRiderLocate));
 
             Modules.Content.AddEntityState(typeof(AirBourneOut));
+
+            Modules.Content.AddEntityState(typeof(RiftGauntletBase));
+
+            Modules.Content.AddEntityState(typeof(RiftGauntletShort));
+
+            Modules.Content.AddEntityState(typeof(RiftRider));
+
+            Modules.Content.AddEntityState(typeof(RiftRiderOut));
+
+            Modules.Content.AddEntityState(typeof(Refraction));
+
+            Modules.Content.AddEntityState(typeof(RapidfireGauntlet));
+
+            Modules.Content.AddEntityState(typeof(RecursionChargeup));
+
+            Modules.Content.AddEntityState(typeof(Recursion));
+
+            Modules.Content.AddEntityState(typeof(ChainedWorldsChargeup));
+
+            Modules.Content.AddEntityState(typeof(ChainedWorlds));
         }
     }
 }

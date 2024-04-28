@@ -31,13 +31,13 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void OnEnter()
         {
             base.OnEnter();
-            if (base.cameraTargetParams)
+            if (cameraTargetParams)
             {
                 cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Aura);
             }
             blastNum = 0;
-            chargeDuration = .75f / base.attackSpeedStat;
-            body = base.characterBody;
+            chargeDuration = .75f / attackSpeedStat;
+            body = characterBody;
             if ((bool)areaIndicatorPrefab)
             {
 
@@ -55,9 +55,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         private Vector3 GetNumPosition(int num)
         {
             float num2 = RiftDistance() / 5 * (num + 1);
-            Vector3 location = base.GetAimRay().GetPoint(num2);
+            Vector3 location = GetAimRay().GetPoint(num2);
             Vector3 position = location;
-            if (Physics.SphereCast(base.characterBody.corePosition, 0.05f, base.GetAimRay().direction, out var raycastHit, num2, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
+            if (Physics.SphereCast(characterBody.corePosition, 0.05f, GetAimRay().direction, out var raycastHit, num2, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
             {
                 position = raycastHit.point;
             }
@@ -76,7 +76,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (base.isAuthority && base.inputBank.skill4.justReleased)
+            if (isAuthority && inputBank.skill4.justReleased)
             {
                 specialReleasedOnce = true;
             }
@@ -91,17 +91,19 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     blastWatch = 0;
                 }
             }
-            if (base.isAuthority && ((base.inputBank.skill4.justPressed && specialReleasedOnce) || base.inputBank.skill1.justPressed || base.inputBank.skill2.justPressed))
+            if (isAuthority && ((inputBank.skill4.justPressed && specialReleasedOnce) || inputBank.skill1.justPressed || inputBank.skill2.justPressed))
             {
                 outer.SetNextState(new ChainedWorlds
                 {
+                    blastNum = 0,
                     blastMax = blastNum + 1,
                 });
             }
-            if (base.isAuthority && blastNum > 4)
+            if (isAuthority && blastNum > 4)
             {
                 outer.SetNextState(new ChainedWorlds
                 {
+                    blastNum = 0,
                     blastMax = 5,
                 });
             }
@@ -112,9 +114,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             if ((bool)areaIndicatorInstance)
             {
-                EntityState.Destroy(areaIndicatorInstance.gameObject);
+                Destroy(areaIndicatorInstance.gameObject);
             }
-            if (base.cameraTargetParams)
+            if (cameraTargetParams)
             {
                 cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Standard);
             }
@@ -128,7 +130,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastDamage()
         {
-            return base.characterBody.damage * RifterStaticValues.chainedWorldsCoefficient;
+            return characterBody.damage * RifterStaticValues.chainedWorldsCoefficient;
         }
 
     }

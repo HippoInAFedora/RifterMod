@@ -25,20 +25,20 @@ public class AirBourneOut : BaseState
     {
         base.FixedUpdate();
         stopwatch += Time.fixedDeltaTime;
-        if ((bool)base.characterMotor)
+        if ((bool)characterMotor)
         {
-            base.characterMotor.velocity = Vector3.zero;
+            characterMotor.velocity = Vector3.zero;
         }
-        else if ((bool)base.rigidbodyMotor)
+        else if ((bool)rigidbodyMotor)
         {
-            base.rigidbodyMotor.moveVector = Vector3.zero;
+            rigidbodyMotor.moveVector = Vector3.zero;
         }
         else
         {
-            base.transform.position = Vector3.zero;
+            transform.position = Vector3.zero;
         }
 
-        if (stopwatch >= duration && base.isAuthority)
+        if (stopwatch >= duration && isAuthority)
         {
             outer.SetNextStateToMain();
         }

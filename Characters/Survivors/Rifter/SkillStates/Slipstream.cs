@@ -47,11 +47,11 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
                 int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter + 1;
                 hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
             }
-            if (base.isAuthority)
+            if (isAuthority)
             {
                 if ((bool)characterMotor)
                 {
-                    forwardDirection = ((base.inputBank.moveVector == Vector3.zero) ? base.characterDirection.forward : base.inputBank.moveVector).normalized; ;
+                    forwardDirection = ((inputBank.moveVector == Vector3.zero) ? characterDirection.forward : inputBank.moveVector).normalized; ;
                 }
                 finalPosition = transform.position + forwardDirection * speed;
                 startPosition = transform.position;
@@ -68,7 +68,7 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
                 characterMotor.velocity = Vector3.zero;
                 characterMotor.rootMotion += forwardDirection * (speed / duration * Time.fixedDeltaTime);
             }
-            if (stopwatch > duration && base.isAuthority)
+            if (stopwatch > duration && isAuthority)
             {
                 outer.SetNextStateToMain();
             }

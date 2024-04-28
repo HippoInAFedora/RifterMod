@@ -48,7 +48,7 @@ namespace RifterMod.Modules
 
         private static void PopulateFromBody(string bodyName)
         {
-            ItemDisplayRuleSet itemDisplayRuleSet = RoR2.LegacyResourcesAPI.Load<GameObject>("Prefabs/CharacterBodies/" + bodyName).GetComponent<ModelLocator>().modelTransform.GetComponent<CharacterModel>().itemDisplayRuleSet;
+            ItemDisplayRuleSet itemDisplayRuleSet = LegacyResourcesAPI.Load<GameObject>("Prefabs/CharacterBodies/" + bodyName).GetComponent<ModelLocator>().modelTransform.GetComponent<CharacterModel>().itemDisplayRuleSet;
 
             ItemDisplayRuleSet.KeyAssetRuleGroup[] itemRuleGroups = itemDisplayRuleSet.keyAssetRuleGroups;
 
@@ -161,11 +161,11 @@ namespace RifterMod.Modules
 
         private static Object GetKeyAssetFromString(string itemName)
         {
-            Object itemDef = RoR2.LegacyResourcesAPI.Load<ItemDef>("ItemDefs/" + itemName);
+            Object itemDef = LegacyResourcesAPI.Load<ItemDef>("ItemDefs/" + itemName);
 
             if (itemDef == null)
             {
-                itemDef = RoR2.LegacyResourcesAPI.Load<EquipmentDef>("EquipmentDefs/" + itemName);
+                itemDef = LegacyResourcesAPI.Load<EquipmentDef>("EquipmentDefs/" + itemName);
             }
 
             if (itemDef == null)

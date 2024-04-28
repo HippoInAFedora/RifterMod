@@ -21,12 +21,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastRadius()
         {
-            return 7.75f;
+            return RifterStaticValues.blastRadius;
         }
 
         public override float BlastDamage()
         {
-            return base.characterBody.damage * RifterStaticValues.secondaryRiftCoefficient;
+            return characterBody.damage * RifterStaticValues.secondaryRiftCoefficient;
         }
 
         public override InterruptPriority GetMinimumInterruptPriority()

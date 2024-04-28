@@ -32,13 +32,13 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void OnEnter()
         {
             base.OnEnter();
-            if (base.cameraTargetParams)
+            if (cameraTargetParams)
             {
                 cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Aura);
             }
             blastNum = 0;
-            chargeDuration = .75f / base.attackSpeedStat;
-            body = base.characterBody;
+            chargeDuration = .75f / attackSpeedStat;
+            body = characterBody;
             if ((bool)areaIndicatorPrefab)
             {
                 areaIndicatorInstance = UnityEngine.Object.Instantiate(areaIndicatorPrefab);
@@ -65,7 +65,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (base.isAuthority && base.inputBank.skill4.justReleased)
+            if (isAuthority && inputBank.skill4.justReleased)
             {
                 specialReleasedOnce = true;
             }
@@ -80,35 +80,37 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     blastWatch = 0;
                 }
             }
-            if (base.isAuthority && base.inputBank.skill4.justPressed && specialReleasedOnce)
+            if (isAuthority && inputBank.skill4.justPressed && specialReleasedOnce)
             {
                 outer.SetNextState(new Recursion
                 {
                     blastMax = blastNum + 1,
                 });
             }
-            if ((bool)base.skillLocator && base.inputBank.skill3.justPressed && base.skillLocator.utility.IsReady())
+            if ((bool)skillLocator && inputBank.skill3.justPressed && skillLocator.utility.IsReady())
             {
                 EntityState state = new EntityState();
-                if (base.skillLocator.utility.stateMachine.state is Slipstream)
+                if (skillLocator.utility.stateMachine.state is Slipstream)
                 {
                     state = new Slipstream();
                 }
-                if (base.skillLocator.utility.stateMachine.state is RiftRiderLocate)
+                if (skillLocator.utility.stateMachine.state is RiftRiderLocate)
                 {
                     state = new RiftRiderLocate();
                 }
                 outer.SetNextState(new Recursion
                 {
+                    blastNum = 0,
                     blastMax = blastNum + 1,
                     setNextState = state
                 });
 
             }
-            if (base.isAuthority && blastNum > 4)
+            if (isAuthority && blastNum > 4)
             {
                 outer.SetNextState(new Recursion
                 {
+                    blastNum = 0,
                     blastMax = 5,
                 });
             }
@@ -121,7 +123,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 Destroy(areaIndicatorInstance.gameObject);
             }
-            if (base.cameraTargetParams)
+            if (cameraTargetParams)
             {
                 cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Standard);
             }
@@ -135,7 +137,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastDamage()
         {
-            return base.characterBody.damage * RifterStaticValues.recursionCoefficient * (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
+            return characterBody.damage * RifterStaticValues.recursionCoefficient * (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
         }
 
     }

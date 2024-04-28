@@ -31,9 +31,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void OnEnter()
         {
             base.OnEnter();
-            Ray aimRay = base.GetAimRay();
-            initialPosition = base.characterBody.corePosition;
-            if (base.isAuthority)
+            Ray aimRay = GetAimRay();
+            initialPosition = characterBody.corePosition;
+            if (isAuthority)
             {
                 targetFootPosition = aimRay.GetPoint(RiftDistance());
 
@@ -63,13 +63,13 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 HurtBox component1;
 
                 BlastAttack blastAttack = new BlastAttack();
-                blastAttack.attacker = base.gameObject;
-                blastAttack.inflictor = base.gameObject;
+                blastAttack.attacker = gameObject;
+                blastAttack.inflictor = gameObject;
                 blastAttack.teamIndex = TeamIndex.Player;
                 blastAttack.radius = BlastRadius();
                 blastAttack.falloffModel = BlastAttack.FalloffModel.None;
                 blastAttack.baseDamage = BlastDamage() * isRiftHitGround;
-                blastAttack.crit = base.RollCrit();
+                blastAttack.crit = RollCrit();
                 blastAttack.procCoefficient = .8f;
                 blastAttack.canRejectForce = false;
                 blastAttack.position = targetFootPosition;
@@ -105,13 +105,13 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
 
                 BulletAttack bulletAttack = new BulletAttack();
-                bulletAttack.owner = base.gameObject;
-                bulletAttack.weapon = base.gameObject;
+                bulletAttack.owner = gameObject;
+                bulletAttack.weapon = gameObject;
                 bulletAttack.origin = targetFootPosition;
                 bulletAttack.aimVector = -aimRay.direction;
                 bulletAttack.minSpread = 0f;
-                bulletAttack.maxSpread = base.characterBody.spreadBloomAngle;
-                bulletAttack.damage = base.characterBody.damage * 1.2f;
+                bulletAttack.maxSpread = characterBody.spreadBloomAngle;
+                bulletAttack.damage = characterBody.damage * 1.2f;
                 bulletAttack.bulletCount = 1U;
                 bulletAttack.procCoefficient = 0f;
                 bulletAttack.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
@@ -155,14 +155,14 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
 
                 BlastAttack blastAttack2 = new BlastAttack();
-                blastAttack2.attacker = base.gameObject;
-                blastAttack2.inflictor = base.gameObject;
+                blastAttack2.attacker = gameObject;
+                blastAttack2.inflictor = gameObject;
 
                 blastAttack2.teamIndex = TeamIndex.Player;
                 blastAttack2.radius = 10f;
                 blastAttack2.falloffModel = BlastAttack.FalloffModel.None;
                 blastAttack2.baseDamage = RifterStaticValues.recursionCoefficient;
-                blastAttack2.crit = base.RollCrit();
+                blastAttack2.crit = RollCrit();
                 blastAttack2.procCoefficient = .8f;
                 blastAttack2.canRejectForce = false;
                 blastAttack2.position = initialPosition;
@@ -189,13 +189,14 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     }
 
                 };
-            }
+            }         
+            TeleportEnemies();
         }
 
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (base.isAuthority)
+            if (isAuthority)
             {
                 outer.SetNextState(new RiftRiderOut
                 {
@@ -223,17 +224,30 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             return initialPosition;
         }
-
         public override void OnSerialize(NetworkWriter writer)
         {
             base.OnSerialize(writer);
+            //writer.Write(base.gameObject.transform.position);
             writer.Write(enemyTeleportTo);
+            for (int i = 0; i < enemyBodies.Count; i++)
+            {
+                writer.Write(enemyBodies[i].netId);
+                Debug.Log("serialized enemy body count " + enemyBodies.Count);
+            }
+
         }
 
         public override void OnDeserialize(NetworkReader reader)
         {
             base.OnDeserialize(reader);
+            //originalPosition = reader.ReadVector3();
             enemyTeleportTo = reader.ReadVector3();
+            while (reader.Position < reader.Length)
+            {
+                enemyBodies.Add(Util.FindNetworkObject(reader.ReadNetworkId()).GetComponent<CharacterBody>());
+                Debug.Log("enemy body count " + enemyBodies.Count);
+            }
+
         }
     }
 }

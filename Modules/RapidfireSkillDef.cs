@@ -78,7 +78,7 @@ namespace RifterMod.Modules
                 int maxStock = skillSlot.maxStock + body.inventory.GetItemCount(RoR2Content.Items.SecondarySkillMagazine);
                 return maxStock;
             }
-            return base.rechargeStock;
+            return rechargeStock;
         }
     }
 }

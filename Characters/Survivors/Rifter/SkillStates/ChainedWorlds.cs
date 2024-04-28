@@ -16,6 +16,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
     {
 
         public Vector3 numPosition;
+        public Vector3 basePosition;
         float stopwatch;
         float blastWatch;
 
@@ -34,17 +35,28 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void OnEnter()
         {
             base.OnEnter();
-            duration = 1.5f;
-            blastNum = 0;
-            aimRay = base.GetAimRay();
+            duration = 1.75f;
+            aimRay = GetAimRay();
+
+            if (blastNum == 0)
+            {
+                basePosition = base.transform.position;              
+            }
+            blastNum++;
+            numPosition = GetNumPosition(blastNum);
+            Debug.Log(blastNum);
+            Fire();
+            TeleportEnemies();
+            
+            
         }
 
         private Vector3 GetNumPosition(int num)
         {
-            float num2 = RiftDistance() / 5 * (num + 1);
+            float num2 = RiftDistance() / 5 * (num);
             Vector3 location = aimRay.GetPoint(num2);
             Vector3 position = location;
-            if (Physics.SphereCast(base.characterBody.corePosition, 0.05f, aimRay.direction, out var raycastHit, num2, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
+            if (Physics.SphereCast(basePosition, 0.05f, aimRay.direction, out var raycastHit, num2, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
             {
                 position = raycastHit.point;
             }
@@ -53,46 +65,87 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         }
 
 
-        public override void FixedUpdate()
+        public void OldFixedUpdate()
         {
             base.FixedUpdate();
-
-            if (base.isAuthority)
+            stopwatch += Time.fixedDeltaTime;
+            if (blastNum == 0)
             {
-                stopwatch += Time.fixedDeltaTime;
-                if (blastNum == 0)
+                numPosition = GetNumPosition(blastNum);
+                Fire();
+                blastNum++;
+            }
+
+            if (blastNum != blastMax)
+            {
+                blastWatch += Time.fixedDeltaTime;
+                if (blastWatch > duration / 5)
                 {
                     numPosition = GetNumPosition(blastNum);
                     Fire();
                     blastNum++;
+                    blastWatch = 0;
                 }
 
-                if (blastNum != blastMax)
-                {
-                    blastWatch += Time.fixedDeltaTime;
-                    if (blastWatch > duration / 5)
-                    {
-                        numPosition = GetNumPosition(blastNum);
-                        Fire();
-                        blastNum++;
-                        blastWatch = 0;
-                    }
+            }
 
+            if (stopwatch >= duration && isAuthority || isAuthority && blastNum >= blastMax)
+            {
+                if (cameraTargetParams)
+                {
+                    cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Standard);
                 }
-
-                if (stopwatch >= duration && base.isAuthority || base.isAuthority && blastNum >= blastMax)
+                if (setNextState != null)
                 {
-                    if (cameraTargetParams)
+                    outer.SetNextState(setNextState);
+                }
+                outer.SetNextStateToMain();
+            }
+
+        }
+
+        public override void FixedUpdate()
+        {
+            base.FixedUpdate();
+            stopwatch += Time.fixedDeltaTime;
+            
+
+            //if (blastNum != blastMax)
+            //{
+            //    blastWatch += Time.fixedDeltaTime;
+            //    if (blastWatch > duration / 5)
+            //    {
+            //        numPosition = GetNumPosition(blastNum);
+            //        Fire();
+            //        blastNum++;
+            //        blastWatch = 0;
+            //    }
+
+            //}
+
+            if (stopwatch >= (duration / 5) && isAuthority)
+            {
+                if (cameraTargetParams)
+                {
+                    cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Standard);
+                }
+                if (blastNum < blastMax)
+                {
+                    outer.SetNextState(new ChainedWorlds
                     {
-                        cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Standard);
-                    }
-                    if (setNextState != null)
-                    {
-                        outer.SetNextState(setNextState);
-                    }
+                        blastNum = blastNum,
+                        blastMax = blastMax,
+                        basePosition = basePosition,
+                    });
+                    return;
+                }
+                else
+                {
                     outer.SetNextStateToMain();
                 }
+                
             }
+
         }
 
         public override void OnExit()
@@ -122,7 +175,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     enemyHit = hurtBox.healthComponent.body;
                     if (enemyHit == null)
                     {
-                        UnityEngine.Debug.Log("null");
+                        Debug.Log("null");
                         return;
                     }
                     if (RifterPlugin.blacklistBodyNames.Contains(enemyHit.name))
@@ -131,14 +184,14 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                         //Add Effect here later
                         return;
                     }
-                    //enemyBodies.AddDistinct(enemyHit);
-                    enemyTeleportTo = GetTeleportLocation(enemyHit);
-                    enemyHit.TryGetComponent(out CharacterMotor motor);
-                    enemyHit.TryGetComponent(out RigidbodyMotor rbmotor);
-                    if (motor || rbmotor)
-                    {
-                        TryTeleport(enemyHit, enemyTeleportTo);
-                    }
+                    enemyBodies.AddDistinct(enemyHit);
+                    //enemyTeleportTo = GetTeleportLocation(enemyHit);
+                    //enemyHit.TryGetComponent(out CharacterMotor motor);
+                    //enemyHit.TryGetComponent(out RigidbodyMotor rbmotor);
+                    //if (motor || rbmotor)
+                    //{
+                    //    TryTeleport(enemyHit, enemyTeleportTo);
+                    //}
 
                 }
 
@@ -147,8 +200,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override void TryTeleport(CharacterBody body, Vector3 teleportToPosition)
         {
-            if (base.isAuthority)
-            {
                 if (body.TryGetComponent(out SetStateOnHurt setStateOnHurt))
                 {
                     if (setStateOnHurt.targetStateMachine)
@@ -164,7 +215,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                         array[i].SetNextStateToMain();
                     };
                 }
-            }
 
 
 
@@ -172,45 +222,59 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         private void Fire()
         {
-            blastAttack = new BlastAttack();
-            blastAttack.attacker = base.gameObject;
-            blastAttack.inflictor = base.gameObject;
-            blastAttack.teamIndex = TeamIndex.Player;
-            blastAttack.radius = BlastRadius();
-            blastAttack.falloffModel = BlastAttack.FalloffModel.None;
-            blastAttack.baseDamage = BlastDamage();
-            blastAttack.crit = base.RollCrit();
-            blastAttack.procCoefficient = ProcCoefficient();
-            blastAttack.canRejectForce = false;
-            blastAttack.position = GetNumPosition(blastNum);
-            blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
-            blastAttack.AddModdedDamageType(Damage.riftDamage);
-            var result = blastAttack.Fire();
-
-            EffectData effectData = new EffectData();
-            blastEffectPrefab.transform.localScale = Vector3.one;
-            effectData.scale = BlastRadius() * 1.5f;
-            effectData.origin = blastAttack.position;
-            EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: true);
-
-            foreach (var hit in result.hitPoints)
+            if (base.isAuthority)
             {
-                if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
+                blastAttack = new BlastAttack();
+                blastAttack.attacker = gameObject;
+                blastAttack.inflictor = gameObject;
+                blastAttack.teamIndex = TeamIndex.Player;
+                blastAttack.radius = BlastRadius();
+                blastAttack.falloffModel = BlastAttack.FalloffModel.None;
+                blastAttack.baseDamage = BlastDamage();
+                blastAttack.crit = RollCrit();
+                blastAttack.procCoefficient = ProcCoefficient();
+                blastAttack.canRejectForce = false;
+                blastAttack.position = GetNumPosition(blastNum);
+                blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
+                blastAttack.AddModdedDamageType(Damage.riftDamage);
+                var result = blastAttack.Fire();
+
+                EffectData effectData = new EffectData();
+                blastEffectPrefab.transform.localScale = Vector3.one;
+                effectData.scale = BlastRadius() * 1.5f;
+                effectData.origin = blastAttack.position;
+                EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: true);
+
+                foreach (var hit in result.hitPoints)
                 {
-                    ModifyBlastOvercharge(result);
+                    if (hit.hurtBox != null)
+                    {
+                        if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
+                        {
+                            if (IsOvercharged() && hurtBox.healthComponent.alive)
+                            {
+                                BlastOvercharge(result);
+                            }
+                        }
+                    }
                 }
-            };
+            }          
             //TeleportEnemies();
         }
 
-        public override float BlastRadius()
+        public override bool IsOvercharged()
         {
-            return 12f / (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
+            return true;
+        }
+        public override float BlastRadius()
+
+        {
+            return 12f; /// (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
         }
 
         public override float BlastDamage()
         {
-            return base.characterBody.damage * RifterStaticValues.chainedWorldsCoefficient * (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
+            return characterBody.damage * RifterStaticValues.chainedWorldsCoefficient * (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
         }
 
         public virtual float ProcCoefficient()
@@ -218,6 +282,33 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             return blastNum / (blastMax + 1);
         }
 
+        public override void OnSerialize(NetworkWriter writer)
+        {
+            base.OnSerialize(writer);
+            writer.Write((byte)blastNum);
+            writer.Write((byte)blastMax);
+            writer.Write(enemyTeleportTo);
+            for (int i = 0; i < enemyBodies.Count; i++)
+            {
+                writer.Write(enemyBodies[i].netId);
+                Debug.Log("serialized enemy body count " + enemyBodies.Count);
+            }
+
+        }
+
+        public override void OnDeserialize(NetworkReader reader)
+        {
+            base.OnDeserialize(reader);
+            blastNum = reader.ReadByte();
+            blastMax = reader.ReadByte();
+            enemyTeleportTo = reader.ReadVector3();
+            while (reader.Position < reader.Length)
+            {
+                enemyBodies.Add(Util.FindNetworkObject(reader.ReadNetworkId()).GetComponent<CharacterBody>());
+                Debug.Log("enemy body count " + enemyBodies.Count);
+            }
+
+        }
     }
 }
 

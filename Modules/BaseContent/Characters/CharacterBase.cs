@@ -46,10 +46,10 @@ namespace RifterMod.Modules.Characters
         {
             characterModelObject = Prefabs.LoadCharacterModel(assetBundle, modelPrefabName);
 
-            bodyPrefab = Modules.Prefabs.CreateBodyPrefab(characterModelObject, bodyInfo);
+            bodyPrefab = Prefabs.CreateBodyPrefab(characterModelObject, bodyInfo);
             prefabCharacterBody = bodyPrefab.GetComponent<CharacterBody>();
 
-            prefabCharacterModel = Modules.Prefabs.SetupCharacterModel(bodyPrefab, customRendererInfos);
+            prefabCharacterModel = Prefabs.SetupCharacterModel(bodyPrefab, customRendererInfos);
         }
 
         public virtual void InitializeItemDisplays()
@@ -61,7 +61,7 @@ namespace RifterMod.Modules.Characters
 
             if (itemDisplays != null)
             {
-                Modules.ItemDisplays.queuedDisplays++;
+                ItemDisplays.queuedDisplays++;
                 RoR2.ContentManagement.ContentManager.onContentPacksAssigned += SetItemDisplays;
             }
         }

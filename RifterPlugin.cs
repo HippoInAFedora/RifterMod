@@ -8,6 +8,8 @@ using System.Security.Permissions;
 using System.Runtime.CompilerServices;
 using R2API;
 using UnityEngine;
+using UnityEngine.Networking;
+using System.Security.Cryptography;
 
 [module: UnverifiableCode]
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
@@ -67,16 +69,44 @@ namespace RifterMod
         {
             //IL_0013: Unknown result type (might be due to invalid IL or missing references)
             orig(self, damageInfo, victim);
-            CharacterModel model = victim.GetComponent<CharacterModel>();
-            if (DamageAPI.HasModdedDamageType(damageInfo, Damage.riftDamage) || DamageAPI.HasModdedDamageType(damageInfo, Damage.riftAssistDamage))
-            {
+                CharacterModel model = victim.GetComponent<CharacterModel>();
+                CharacterBody body = victim.GetComponent<CharacterBody>();
 
+            if (damageInfo.HasModdedDamageType(Damage.riftDamage) || damageInfo.HasModdedDamageType(Damage.riftAssistDamage))
+            {
+                if (body.GetBuffCount(RifterBuffs.shatterDebuff) < 20)
+                {
+                    body.AddBuff(RifterBuffs.shatterDebuff);
+                }
             }
+
+                if (body.HasBuff(RifterBuffs.shatterDebuff))
+                {
+                    int shatterStacks = body.GetBuffCount(RifterBuffs.shatterDebuff);
+                    body.cursePenalty += shatterStacks * 5f / 100f;
+                    if (shatterStacks < 5)
+                    {
+                        body.armor -= shatterStacks * 1f;
+                    }
+                    if (5 <= shatterStacks && shatterStacks < 10)
+                    {
+                        body.armor -= shatterStacks * 2f;
+                    }
+                    if (shatterStacks >= 10)
+                    {
+                        body.armor -= shatterStacks * 4f;
+                    }
+
+                    Debug.Log("armor is " + body.armor);
+                    Debug.Log("curse is " + body.cursePenalty);
+                    body.RecalculateStats();
+                }
+            
         }
 
         public static void AddBodyToBlacklist(string bodyName)
         {
-            BodyIndex bodyIndex = RoR2.BodyCatalog.FindBodyIndex(bodyName);
+            BodyIndex bodyIndex = BodyCatalog.FindBodyIndex(bodyName);
             TeamComponent teamComponent = BodyCatalog.FindBodyPrefab(bodyName).GetComponent<CharacterBody>().teamComponent;
 
             if (bodyIndex != BodyIndex.None)

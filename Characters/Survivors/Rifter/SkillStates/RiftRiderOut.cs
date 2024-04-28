@@ -12,10 +12,10 @@ public class RiftRiderOut : ModifiedTeleport
     {
         base.FixedUpdate();
         stopwatch += Time.fixedDeltaTime;
-        if (stopwatch > teleportWaitDuration && base.isAuthority)
+        if (stopwatch > teleportWaitDuration && isAuthority)
         {
 
-            if (!base.characterMotor.isGrounded && isResults)
+            if (!characterMotor.isGrounded && isResults)
             {
                 outer.SetNextState(new AirBourneOut());
             }

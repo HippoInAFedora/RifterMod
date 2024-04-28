@@ -32,6 +32,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public Vector3 originalPosition;
         public Vector3 enemyTeleportTo;
 
+ 
+
         public List<CharacterBody> enemyBodies = new List<CharacterBody>();
 
         public float maxSlopeAngle = 90;
@@ -81,7 +83,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public virtual float BlastDamage()
         {
-            return base.characterBody.damage * RifterStaticValues.primaryRiftCoefficient;
+            return characterBody.damage * RifterStaticValues.primaryRiftCoefficient;
         }
 
         public virtual bool IsOvercharged()
@@ -100,18 +102,13 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             enemyHit = enemyHitHealthbox.body;
             //enemyHit.TryGetComponent(out CharacterMotor motor);
             //enemyHit.TryGetComponent(out RigidbodyMotor rbmotor);
-            if (RifterPlugin.blacklistBodyNames.Contains(enemyHit.name) || enemyHit.teamComponent.teamIndex == TeamIndex.Lunar)
+            if (RifterPlugin.blacklistBodyNames.Contains(enemyHit.name))
             {
                 Debug.Log("notgettingteleported");
                 //Add Effect here later
                 return;
             }
             enemyBodies.AddDistinct(enemyHit);
-            //enemyTeleportTo = GetTeleportLocation(enemyHit);
-            //if (motor || rbmotor)
-            //{
-            //    TryTeleport(enemyHit, enemyTeleportTo);
-            //}
         }
 
         public virtual void BlastOvercharge(BlastAttack.Result result)
@@ -129,13 +126,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                         return;
                     }
                     enemyBodies.AddDistinct(enemyHit);
-                    //enemyTeleportTo = GetTeleportLocation(enemyHit);
-                    //enemyHit.TryGetComponent(out CharacterMotor motor);
-                    //enemyHit.TryGetComponent(out RigidbodyMotor rbmotor);
-                    //if (motor || rbmotor)
-                    //{
-                    //    TryTeleport(enemyHit, enemyTeleportTo);
-                    //}
                 }
 
             }
@@ -155,7 +145,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 {
                     TryTeleport(body, enemyTeleportTo);
                 }
-                
+
+
             }
 
         }
@@ -183,8 +174,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public virtual Vector3 GetTeleportLocation(CharacterBody body)
         {
-            Vector3 baseDirection = (body.corePosition - base.characterBody.corePosition).normalized;
-            Ray ray = new Ray(base.characterBody.corePosition, baseDirection);
+            Vector3 baseDirection = (body.corePosition - characterBody.corePosition).normalized;
+            Ray ray = new Ray(characterBody.corePosition, baseDirection);
             Vector3 location;
             if (body.isFlying || !body.characterMotor.isGrounded)
             {
@@ -194,7 +185,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance) + (Vector3.up);
             }
-            Vector3 direction = (location - base.characterBody.corePosition).normalized;
+            Vector3 direction = (location - characterBody.corePosition).normalized;
             RaycastHit raycastHit;
             Vector3 position = location;
             float distance = Vector3.Distance(body.corePosition, location);
@@ -213,26 +204,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             return position;
         }
 
-        public override void OnSerialize(NetworkWriter writer)
-        {
-            base.OnSerialize(writer);
-            //writer.Write(base.gameObject.transform.position);
-            writer.Write(enemyTeleportTo);
-            //for (int i = 0; i < enemyBodies.Count; i++)
-            //{
-            //    writer.Write(enemyBodies[i].gameObject);
-            //}
-        }
-
-        public override void OnDeserialize(NetworkReader reader)
-        {
-            base.OnDeserialize(reader);
-            //originalPosition = reader.ReadVector3();
-            enemyTeleportTo = reader.ReadVector3();
-            //while (reader.Position < reader.Length)
-            //{
-            //    enemyBodies.Add(reader.ReadGameObject().GetComponent<CharacterBody>());
-            //}
-        }
+        
     }
 }

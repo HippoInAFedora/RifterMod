@@ -41,6 +41,10 @@ namespace RifterMod.Survivors.Rifter
             #endregion
 
             #region Passive
+            Language.Add(prefix + "PASSIVE_RIFT_BOOST", "Shatter");
+            Language.Add(prefix + "PASSIVE_RIFT_BOOST_DESCRIPTION", "Rifts  <style=cIsHealth>shatter </style> a percent of enemy health and armor.");
+
+
             Language.Add(prefix + "PASSIVE_RIFT_FRACTURE", "Rift/Fracture");
             Language.Add(prefix + "PASSIVE_RIFT_FRACTURE_DESCRIPTION", "Rifts weaken if closer to you. Ranged rifts are connected by weaker Fracture Lines that deal <style=cIsDamage>100% damage</style> that are  <style=cIsHealth>unable to activate item effects</style>.");
 

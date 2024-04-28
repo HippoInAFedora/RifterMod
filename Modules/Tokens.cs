@@ -4,11 +4,19 @@
     {
         public const string overchargedPrefix = "<style=cIsUtility>Overcharge</style>";
 
-        public const string stuntingPrefix = "<style=cIsUtility>Stunting</style>";
+        public const string overchargedChainedPrefix = "<style=cIsUtility>Overcharge</style>";
 
-        public static string overchargedKeyword = KeywordText("Overcharged", "Enemies hit are teleported to your primary-rift distance.");
+        public const string stuntingPrefix = "<style=cIsUtility>Inverse Falloff</style>";
 
-        public static string stuntingKeyword = KeywordText("Stunting", "Rift is weaker if hitting closer to you.");
+        public const string fracturePrefix = "<style=cIsUtility>Inverse Falloff</style>";
+
+        public static string overchargedKeyword = KeywordText("Overcharged", "Enemies hit are teleported to Rifter's primary-rift distance.");
+
+        public static string overchargedChainedKeyword = KeywordText("Overcharged", "Enemies hit are teleported to the next Rift's location.");
+
+        public static string stuntingKeyword = KeywordText("Inverse Falloff", "Rift is weaker the closer it is to Rifter.");
+
+        public static string fractureKeyword = KeywordText("Fracture", "Fracture shot deals <style=cIsDamage>80% damage</style>. Cannot crit, cannot proc.");
 
         public static string DamageText(string text)
         {

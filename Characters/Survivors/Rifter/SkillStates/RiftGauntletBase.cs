@@ -30,10 +30,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
 
 
-
         public float duration;
-
-        public int currentTeleportActive { get; set; }
 
         public RifterOverchargePassive rifterStep;
 
@@ -49,26 +46,21 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             base.OnEnter();
 
-            rifterStep = base.GetComponent<RifterOverchargePassive>();
+            rifterStep = GetComponent<RifterOverchargePassive>();
 
-            this.duration = baseDuration / base.attackSpeedStat;
-            Ray aimRay = base.GetAimRay();
-            base.StartAimMode(aimRay, 2f, false);
+            this.duration = baseDuration / attackSpeedStat;
+            Ray aimRay = GetAimRay();
+            StartAimMode(aimRay, 2f, false);
             base.PlayAnimation("Gesture Additive, Right", "FirePistol, Right");
-            Util.PlaySound(FireBarrage.fireBarrageSoundString, base.gameObject);
-            base.AddRecoil(-0.6f, 0.6f, -0.6f, 0.6f);
+            Util.PlaySound(FireBarrage.fireBarrageSoundString, gameObject);
+            AddRecoil(-0.6f, 0.6f, -0.6f, 0.6f);
             if (FireBarrage.effectPrefab)
             {
-                EffectManager.SimpleMuzzleFlash(FireBarrage.effectPrefab, base.gameObject, "MuzzleRight", false);
+                EffectManager.SimpleMuzzleFlash(FireBarrage.effectPrefab, gameObject, "MuzzleRight", false);
             }
 
-
-            if (base.isAuthority)
-            {
-                RiftAndFracture();
-                TeleportEnemies();
-            }
-            
+            RiftAndFracture();         
+            TeleportEnemies();
         }
 
         //This method runs once at the end
@@ -87,7 +79,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (base.fixedAge >= this.duration && base.isAuthority)
+            if (fixedAge >= this.duration && isAuthority)
             {
                 outer.SetNextStateToMain();
                 return;
@@ -102,7 +94,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public virtual void RiftAndFracture()
         {
-            Ray aimRay = base.GetAimRay();
+            Ray aimRay = GetAimRay();
             //Blast Attack Stuff
             Vector3 vector = aimRay.GetPoint(RiftDistance());
 
@@ -134,117 +126,117 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 shouldDistanceAssist = true;
             }
 
-            BlastAttack blastAttack = new BlastAttack();
-            blastAttack.attacker = base.gameObject;
-            blastAttack.inflictor = base.gameObject;
-            blastAttack.teamIndex = TeamIndex.Player;
-            blastAttack.radius = BlastRadius();
-            blastAttack.falloffModel = BlastAttack.FalloffModel.None;
-            blastAttack.baseDamage = BlastDamage() * isRiftHitGround;
-            blastAttack.crit = base.RollCrit();
-            blastAttack.procCoefficient = .8f;
-            blastAttack.canRejectForce = false;
-            blastAttack.position = vector;
-            blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
-            blastAttack.AddModdedDamageType(Damage.riftDamage);
-            var result = blastAttack.Fire();
-
-            EffectData effectData = new EffectData();
-            blastEffectPrefab.transform.localScale = Vector3.one;
-            effectData.scale = BlastRadius() * 1.5f;
-            effectData.origin = vector;
-            if (!IsOvercharged())
+            if (isAuthority)
             {
-                EffectManager.SpawnEffect(blastEffectPrefab, effectData, transmit: true);
-            }
-            else
-            {
-                EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: true);
-            }
+                BlastAttack blastAttack = new BlastAttack();
+                blastAttack.attacker = gameObject;
+                blastAttack.inflictor = gameObject;
+                blastAttack.teamIndex = TeamIndex.Player;
+                blastAttack.radius = BlastRadius();
+                blastAttack.falloffModel = BlastAttack.FalloffModel.None;
+                blastAttack.baseDamage = BlastDamage() * isRiftHitGround;
+                blastAttack.crit = RollCrit();
+                blastAttack.procCoefficient = .8f;
+                blastAttack.canRejectForce = false;
+                blastAttack.position = vector;
+                blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
+                blastAttack.AddModdedDamageType(Damage.riftDamage);
+                var result = blastAttack.Fire();
 
-
-
-
-
-            foreach (var hit in result.hitPoints)
-            {
-                if (hit.hurtBox != null)
+                EffectData effectData = new EffectData();
+                blastEffectPrefab.transform.localScale = Vector3.one;
+                effectData.scale = BlastRadius() * 1.5f;
+                effectData.origin = vector;
+                if (!IsOvercharged())
                 {
-                    if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
+                    EffectManager.SpawnEffect(blastEffectPrefab, effectData, transmit: true);
+                }
+                else
+                {
+                    EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: true);
+                }
+
+                foreach (var hit in result.hitPoints)
+                {
+                    if (hit.hurtBox != null)
                     {
-                        ignoreList1.AddDistinct(hurtBox.healthComponent.gameObject);
-                        ignoreList2.AddDistinct(hurtBox.healthComponent.gameObject);
-
-                        if (IsOvercharged() && hurtBox.healthComponent.alive)
+                        if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
                         {
-                            BlastOvercharge(result);
+                            ignoreList1.AddDistinct(hurtBox.healthComponent.gameObject);
+                            ignoreList2.AddDistinct(hurtBox.healthComponent.gameObject);
+
+                            if (IsOvercharged() && hurtBox.healthComponent.alive)
+                            {
+                                BlastOvercharge(result);
+                            }
                         }
+
                     }
+                };
 
-                }
-            };
-
-            for (int i = 0; i < result.hitPoints.Length; i++)
-            {
-                var hit = result.hitPoints[i];
-            }
-
-            if (shouldDistanceAssist)
-            {
-                RunDistanceAssist(vector, result);
-            }
-
-
-            BulletAttack bulletAttack = new BulletAttack();
-            bulletAttack.owner = base.gameObject;
-            bulletAttack.weapon = base.gameObject;
-            bulletAttack.origin = vector;
-            bulletAttack.aimVector = -aimRay.direction;
-            bulletAttack.minSpread = 0f;
-            bulletAttack.maxSpread = base.characterBody.spreadBloomAngle;
-            bulletAttack.damage = base.characterBody.damage * 1f;
-            bulletAttack.bulletCount = 1U;
-            bulletAttack.procCoefficient = 0f;
-            bulletAttack.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
-            bulletAttack.radius = .75f;
-            bulletAttack.tracerEffectPrefab = tracerEffectPrefab;
-            bulletAttack.muzzleName = "MuzzleRight";
-            bulletAttack.hitEffectPrefab = this.hitEffectPrefab;
-            bulletAttack.isCrit = false;
-            bulletAttack.HitEffectNormal = false;
-            bulletAttack.stopperMask = LayerIndex.playerBody.mask;
-            bulletAttack.smartCollision = true;
-            bulletAttack.maxDistance = vectorDistance;
-
-
-            bulletAttack.modifyOutgoingDamageCallback = delegate (BulletAttack _bulletAttack, ref BulletAttack.BulletHit hitInfo, DamageInfo damageInfo) //changed to _bulletAttack
-            {
-                if (hitInfo.hitHurtBox != null)
+                for (int i = 0; i < result.hitPoints.Length; i++)
                 {
-                    if (hitInfo.hitHurtBox.TryGetComponent(out HurtBox hurtBox))
+                    var hit = result.hitPoints[i];
+                }
+
+                if (shouldDistanceAssist)
+                {
+                    RunDistanceAssist(vector, result);
+                }
+
+
+                BulletAttack bulletAttack = new BulletAttack();
+                bulletAttack.owner = gameObject;
+                bulletAttack.weapon = gameObject;
+                bulletAttack.origin = vector;
+                bulletAttack.aimVector = -aimRay.direction;
+                bulletAttack.minSpread = 0f;
+                bulletAttack.maxSpread = characterBody.spreadBloomAngle;
+                bulletAttack.damage = characterBody.damage * RifterStaticValues.fractureCoefficient;
+                bulletAttack.bulletCount = 1U;
+                bulletAttack.procCoefficient = 0f;
+                bulletAttack.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
+                bulletAttack.radius = .75f;
+                bulletAttack.tracerEffectPrefab = tracerEffectPrefab;
+                bulletAttack.muzzleName = "MuzzleRight";
+                bulletAttack.hitEffectPrefab = this.hitEffectPrefab;
+                bulletAttack.isCrit = false;
+                bulletAttack.HitEffectNormal = false;
+                bulletAttack.stopperMask = LayerIndex.playerBody.mask;
+                bulletAttack.smartCollision = true;
+                bulletAttack.maxDistance = vectorDistance;
+
+
+                bulletAttack.modifyOutgoingDamageCallback = delegate (BulletAttack _bulletAttack, ref BulletAttack.BulletHit hitInfo, DamageInfo damageInfo) //changed to _bulletAttack
+                {
+                    if (hitInfo.hitHurtBox != null)
                     {
-
-                        if (IsOvercharged() && hurtBox.healthComponent.alive)
+                        if (hitInfo.hitHurtBox.TryGetComponent(out HurtBox hurtBox))
                         {
-                            Overcharge(hitInfo, hurtBox);
+
+                            if (IsOvercharged() && hurtBox.healthComponent.alive)
+                            {
+                                Overcharge(hitInfo, hurtBox);
+                            }
                         }
+
                     }
+                };
 
-                }
-            };
-
-            bulletAttack.filterCallback = delegate (BulletAttack _bulletAttack, ref BulletAttack.BulletHit hitInfo)
-            {
-                HealthComponent healthComponent = (hitInfo.hitHurtBox ? hitInfo.hitHurtBox.healthComponent : null);
-                if (healthComponent && healthComponent.alive && ignoreList2.Contains(healthComponent.gameObject))
+                bulletAttack.filterCallback = delegate (BulletAttack _bulletAttack, ref BulletAttack.BulletHit hitInfo)
                 {
-                    return false;
+                    HealthComponent healthComponent = (hitInfo.hitHurtBox ? hitInfo.hitHurtBox.healthComponent : null);
+                    if (healthComponent && healthComponent.alive && ignoreList2.Contains(healthComponent.gameObject))
+                    {
+                        return false;
 
-                }
-                return (!hitInfo.entityObject || (object)hitInfo.entityObject != _bulletAttack.owner) && BulletAttack.defaultFilterCallback(_bulletAttack, ref hitInfo);
-            };
+                    }
+                    return (!hitInfo.entityObject || (object)hitInfo.entityObject != _bulletAttack.owner) && BulletAttack.defaultFilterCallback(_bulletAttack, ref hitInfo);
+                };
 
-            bulletAttack.Fire();
+                bulletAttack.Fire();
+            }
+
         }
 
         public override float RiftDistance()
@@ -254,12 +246,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastRadius()
         {
-            return 7.75f;
+            return RifterStaticValues.blastRadius;
         }
 
         public override float BlastDamage()
         {
-            return base.characterBody.damage * RifterStaticValues.primaryRiftCoefficient;
+            return characterBody.damage * RifterStaticValues.primaryRiftCoefficient;
         }
 
         public override bool IsOvercharged()
@@ -275,21 +267,21 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public virtual void RunDistanceAssist(Vector3 vector, BlastAttack.Result result)
         {
-            Ray aimRay = base.GetAimRay();
+            Ray aimRay = GetAimRay();
 
             BulletAttack bulletAttack = new BulletAttack();
-            bulletAttack.owner = base.gameObject;
-            bulletAttack.weapon = base.gameObject;
+            bulletAttack.owner = gameObject;
+            bulletAttack.weapon = gameObject;
             bulletAttack.origin = vector;
             bulletAttack.aimVector = -aimRay.direction;
             bulletAttack.minSpread = 0f;
-            bulletAttack.maxSpread = base.characterBody.spreadBloomAngle;
+            bulletAttack.maxSpread = characterBody.spreadBloomAngle;
             bulletAttack.damage = BlastDamage() * isRiftHitGround;
             bulletAttack.bulletCount = 1U;
             bulletAttack.procCoefficient = .8f;
             bulletAttack.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
             bulletAttack.radius = BlastRadius() / 2f;
-            bulletAttack.tracerEffectPrefab = RiftGauntletBase.tracerEffectPrefab;
+            bulletAttack.tracerEffectPrefab = tracerEffectPrefab;
             bulletAttack.muzzleName = "MuzzleRight";
             bulletAttack.hitEffectPrefab = this.hitEffectPrefab;
             bulletAttack.isCrit = false;
@@ -331,6 +323,31 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             bulletAttack.Fire();
         }
 
+        public override void OnSerialize(NetworkWriter writer)
+        {
+            base.OnSerialize(writer);
+            //writer.Write(base.gameObject.transform.position);
+            writer.Write(enemyTeleportTo);
+            for (int i = 0; i < enemyBodies.Count; i++)
+            {
+                writer.Write(enemyBodies[i].netId);
+                Debug.Log("serialized enemy body count " + enemyBodies.Count);
+            }
+
+        }
+
+        public override void OnDeserialize(NetworkReader reader)
+        {
+            base.OnDeserialize(reader);
+            //originalPosition = reader.ReadVector3();
+            enemyTeleportTo = reader.ReadVector3();
+            while (reader.Position < reader.Length)
+            {
+                enemyBodies.Add(Util.FindNetworkObject(reader.ReadNetworkId()).GetComponent<CharacterBody>());
+                Debug.Log("enemy body count " + enemyBodies.Count);
+            }
+
+        }
 
     }
 }

@@ -2,6 +2,8 @@
 using EntityStates;
 using UnityEngine;
 using UnityEngine.Networking;
+using R2API;
+using System.Diagnostics;
 
 public class ModifiedTeleport : BaseState
 {
@@ -26,7 +28,7 @@ public class ModifiedTeleport : BaseState
     public override void OnEnter()
     {
         base.OnEnter();
-        initialPosition = base.characterBody.corePosition;
+        initialPosition = characterBody.corePosition;
         modelTransform = GetModelTransform();
         if ((bool)modelTransform)
         {
@@ -43,12 +45,22 @@ public class ModifiedTeleport : BaseState
             int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter + 1;
             hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
         }
+
         if (base.isAuthority)
         {
-            if ((bool)characterBody)
-            {
-                TeleportHelper.TeleportBody(base.characterBody, targetFootPosition);
-            }
+            UnityEngine.Debug.Log("base authority check");
+        }
+
+        if (NetworkServer.active)
+        {
+            UnityEngine.Debug.Log("network server active check");
+        }
+
+        TeleportHelper.TeleportBody(characterBody, targetFootPosition);
+
+
+        if (trailObject)
+        {
             trailObject.transform.position = initialPosition;
             trailObject.transform.LookAt(targetFootPosition);
             teleportTrail = trailObject.AddComponent<TrailRenderer>();
@@ -67,34 +79,32 @@ public class ModifiedTeleport : BaseState
         }
         
 
-
-
     }
 
     public override void FixedUpdate()
     {
         base.FixedUpdate();
         stopwatch += Time.fixedDeltaTime;
-        if ((bool)trailObject && base.isAuthority)
+        if ((bool)trailObject)
         {
             trailObject.transform.position += trailObject.transform.forward * (Vector3.Distance(targetFootPosition, initialPosition) / teleportWaitDuration * Time.fixedDeltaTime);
             teleportTrail.AddPosition((Vector3)trailObject.transform.position);
         }
 
-        if ((bool)base.characterMotor)
+        if ((bool)characterMotor)
         {
-            base.characterMotor.velocity = Vector3.zero;
+            characterMotor.velocity = Vector3.zero;
         }
-        else if ((bool)base.rigidbodyMotor)
+        else if ((bool)rigidbodyMotor)
         {
-            base.rigidbodyMotor.moveVector = Vector3.zero;
+            rigidbodyMotor.moveVector = Vector3.zero;
         }
         else
         {
-            base.transform.position = Vector3.zero;
+            transform.position = Vector3.zero;
         }
 
-        if (stopwatch >= teleportWaitDuration)
+        if (base.isAuthority && stopwatch >= teleportWaitDuration)
         {
             outer.SetNextStateToMain();
         }
@@ -144,5 +154,17 @@ public class ModifiedTeleport : BaseState
     {
         return InterruptPriority.Frozen;
     }
+
+    //public override void OnSerialize(NetworkWriter writer)
+    //{
+    //    base.OnSerialize(writer);
+    //    writer.Write(targetFootPosition);
+    //}
+
+    //public override void OnDeserialize(NetworkReader reader)
+    //{
+    //    base.OnDeserialize(reader);
+    //    targetFootPosition = reader.ReadVector3();
+    //}
 }
 

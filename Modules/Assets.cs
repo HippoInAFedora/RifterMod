@@ -48,10 +48,10 @@ namespace RifterMod.Modules
 
         internal static GameObject CloneTracer(string originalTracerName, string newTracerName)
         {
-            if (RoR2.LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/Tracers/" + originalTracerName) == null)
+            if (LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/Tracers/" + originalTracerName) == null)
                 return null;
 
-            GameObject newTracer = PrefabAPI.InstantiateClone(RoR2.LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/Tracers/" + originalTracerName), newTracerName, true);
+            GameObject newTracer = PrefabAPI.InstantiateClone(LegacyResourcesAPI.Load<GameObject>("Prefabs/Effects/Tracers/" + originalTracerName), newTracerName, true);
 
             if (!newTracer.GetComponent<EffectComponent>()) newTracer.AddComponent<EffectComponent>();
             if (!newTracer.GetComponent<VFXAttributes>()) newTracer.AddComponent<VFXAttributes>();
@@ -60,7 +60,7 @@ namespace RifterMod.Modules
             newTracer.GetComponent<Tracer>().speed = 250f;
             newTracer.GetComponent<Tracer>().length = 50f;
 
-            Modules.Content.CreateAndAddEffectDef(newTracer);
+            Content.CreateAndAddEffectDef(newTracer);
 
             return newTracer;
         }
@@ -77,12 +77,12 @@ namespace RifterMod.Modules
 
         internal static GameObject LoadCrosshair(string crosshairName)
         {
-            GameObject loadedCrosshair = RoR2.LegacyResourcesAPI.Load<GameObject>("Prefabs/Crosshair/" + crosshairName + "Crosshair");
+            GameObject loadedCrosshair = LegacyResourcesAPI.Load<GameObject>("Prefabs/Crosshair/" + crosshairName + "Crosshair");
             if (loadedCrosshair == null)
             {
                 Log.Error($"could not load crosshair with the name {crosshairName}. defaulting to Standard");
 
-                return RoR2.LegacyResourcesAPI.Load<GameObject>("Prefabs/Crosshair/StandardCrosshair");
+                return LegacyResourcesAPI.Load<GameObject>("Prefabs/Crosshair/StandardCrosshair");
             }
 
             return loadedCrosshair;
@@ -109,7 +109,7 @@ namespace RifterMod.Modules
             effect.positionAtReferencedTransform = true;
             effect.soundName = soundName;
 
-            Modules.Content.CreateAndAddEffectDef(newEffect);
+            Content.CreateAndAddEffectDef(newEffect);
 
             return newEffect;
         }
@@ -124,14 +124,14 @@ namespace RifterMod.Modules
             if (!ghostPrefab.GetComponent<NetworkIdentity>()) ghostPrefab.AddComponent<NetworkIdentity>();
             if (!ghostPrefab.GetComponent<ProjectileGhostController>()) ghostPrefab.AddComponent<ProjectileGhostController>();
 
-            Modules.Assets.ConvertAllRenderersToHopooShader(ghostPrefab);
+            ConvertAllRenderersToHopooShader(ghostPrefab);
 
             return ghostPrefab;
         }
 
         internal static GameObject CloneProjectilePrefab(string prefabName, string newPrefabName)
         {
-            GameObject newPrefab = PrefabAPI.InstantiateClone(RoR2.LegacyResourcesAPI.Load<GameObject>("Prefabs/Projectiles/" + prefabName), newPrefabName);
+            GameObject newPrefab = PrefabAPI.InstantiateClone(LegacyResourcesAPI.Load<GameObject>("Prefabs/Projectiles/" + prefabName), newPrefabName);
             return newPrefab;
         }
 

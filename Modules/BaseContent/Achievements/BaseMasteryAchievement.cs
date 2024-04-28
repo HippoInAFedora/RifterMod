@@ -44,7 +44,7 @@ namespace RifterMod.Modules.Achievements
 
                     if (isDifficulty || isInferno || isEclipse)
                     {
-                        base.Grant();
+                        Grant();
                     }
                 }
             }

@@ -160,7 +160,7 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
                 bulletAttackL.aimVector = -leftBlast.direction;
                 bulletAttackL.minSpread = 0f;
                 bulletAttackL.maxSpread = characterBody.spreadBloomAngle;
-                bulletAttackL.damage = characterBody.damage * 1.2f;
+                bulletAttackL.damage = characterBody.damage * RifterStaticValues.fractureCoefficient;
                 bulletAttackL.bulletCount = 1U;
                 bulletAttackL.procCoefficient = 0f;
                 bulletAttackL.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
@@ -207,7 +207,7 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
                 bulletAttackR.aimVector = -rightBlast.direction;
                 bulletAttackR.minSpread = 0f;
                 bulletAttackR.maxSpread = characterBody.spreadBloomAngle;
-                bulletAttackR.damage = characterBody.damage * 1f;
+                bulletAttackR.damage = characterBody.damage * RifterStaticValues.fractureCoefficient;
                 bulletAttackR.bulletCount = 1U;
                 bulletAttackR.procCoefficient = 0f;
                 bulletAttackR.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
@@ -258,12 +258,12 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
 
         public override float BlastRadius()
         {
-            return 7.75f;
+            return RifterStaticValues.blastRadius;
         }
 
         public override float BlastDamage()
         {
-            return characterBody.damage * RifterStaticValues.secondaryRiftCoefficient - 50f;
+            return characterBody.damage * RifterStaticValues.secondaryRiftCoefficientAlt2;
         }
 
         public override InterruptPriority GetMinimumInterruptPriority()

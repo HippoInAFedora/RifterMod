@@ -35,7 +35,7 @@ namespace RifterMod.Modules
             }
             characterModel.baseRendererInfos = prefab.GetComponentInChildren<CharacterModel>().baseRendererInfos;
 
-            Modules.Assets.ConvertAllRenderersToHopooShader(display);
+            Assets.ConvertAllRenderersToHopooShader(display);
 
             return display;
         }
@@ -66,7 +66,7 @@ namespace RifterMod.Modules
 
         public static GameObject CloneCharacterBody(BodyInfo bodyInfo)
         {
-            GameObject clonedBody = RoR2.LegacyResourcesAPI.Load<GameObject>("Prefabs/CharacterBodies/" + bodyInfo.bodyNameToClone + "Body");
+            GameObject clonedBody = LegacyResourcesAPI.Load<GameObject>("Prefabs/CharacterBodies/" + bodyInfo.bodyNameToClone + "Body");
             if (!clonedBody)
             {
                 Log.Error(bodyInfo.bodyNameToClone + " Body to clone is not a valid body, character creation failed");
@@ -132,7 +132,7 @@ namespace RifterMod.Modules
             //SetupRigidbody(newPrefab);
             SetupCapsuleCollider(newBodyPrefab);
 
-            Modules.Content.AddCharacterBodyPrefab(newBodyPrefab);
+            Content.AddCharacterBodyPrefab(newBodyPrefab);
 
             return newBodyPrefab;
         }
@@ -488,7 +488,7 @@ namespace RifterMod.Modules
             footstepHandler.baseFootstepString = "Play_player_footstep";
             footstepHandler.sprintFootstepOverrideString = "";
             footstepHandler.enableFootstepDust = true;
-            footstepHandler.footstepDustPrefab = RoR2.LegacyResourcesAPI.Load<GameObject>("Prefabs/GenericFootstepDust");
+            footstepHandler.footstepDustPrefab = LegacyResourcesAPI.Load<GameObject>("Prefabs/GenericFootstepDust");
         }
 
         private static void SetupRagdoll(GameObject model)
@@ -497,7 +497,7 @@ namespace RifterMod.Modules
 
             if (!ragdollController) return;
 
-            if (ragdollMaterial == null) ragdollMaterial = RoR2.LegacyResourcesAPI.Load<GameObject>("Prefabs/CharacterBodies/CommandoBody").GetComponentInChildren<RagdollController>().bones[1].GetComponent<Collider>().material;
+            if (ragdollMaterial == null) ragdollMaterial = LegacyResourcesAPI.Load<GameObject>("Prefabs/CharacterBodies/CommandoBody").GetComponentInChildren<RagdollController>().bones[1].GetComponent<Collider>().material;
 
             foreach (Transform boneTransform in ragdollController.bones)
             {
@@ -537,18 +537,18 @@ namespace RifterMod.Modules
         public static void CreateGenericDoppelganger(GameObject bodyPrefab, string masterName, string masterToCopy) => CloneDopplegangerMaster(bodyPrefab, masterName, masterToCopy);
         public static GameObject CloneDopplegangerMaster(GameObject bodyPrefab, string masterName, string masterToCopy)
         {
-            GameObject newMaster = PrefabAPI.InstantiateClone(RoR2.LegacyResourcesAPI.Load<GameObject>("Prefabs/CharacterMasters/" + masterToCopy + "MonsterMaster"), masterName, true);
+            GameObject newMaster = PrefabAPI.InstantiateClone(LegacyResourcesAPI.Load<GameObject>("Prefabs/CharacterMasters/" + masterToCopy + "MonsterMaster"), masterName, true);
             newMaster.GetComponent<CharacterMaster>().bodyPrefab = bodyPrefab;
 
-            Modules.Content.AddMasterPrefab(newMaster);
+            Content.AddMasterPrefab(newMaster);
             return newMaster;
         }
 
         public static GameObject CreateBlankMasterPrefab(GameObject bodyPrefab, string masterName)
         {
-            GameObject masterObject = PrefabAPI.InstantiateClone(RoR2.LegacyResourcesAPI.Load<GameObject>("Prefabs/CharacterMasters/CommandoMonsterMaster"), masterName, true);
+            GameObject masterObject = PrefabAPI.InstantiateClone(LegacyResourcesAPI.Load<GameObject>("Prefabs/CharacterMasters/CommandoMonsterMaster"), masterName, true);
             //should the user call this themselves?
-            Modules.ContentPacks.masterPrefabs.Add(masterObject);
+            ContentPacks.masterPrefabs.Add(masterObject);
 
             CharacterMaster characterMaster = masterObject.GetComponent<CharacterMaster>();
             characterMaster.bodyPrefab = bodyPrefab;
@@ -591,7 +591,7 @@ namespace RifterMod.Modules
             characterMaster.bodyPrefab = bodyPrefab;
             characterMaster.teamIndex = TeamIndex.Monster;
 
-            Modules.Content.AddMasterPrefab(newMaster);
+            Content.AddMasterPrefab(newMaster);
             return newMaster;
         }
         #endregion master

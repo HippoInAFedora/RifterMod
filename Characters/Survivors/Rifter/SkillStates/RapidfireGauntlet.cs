@@ -21,7 +21,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void OnEnter()
         {
             base.OnEnter();
-            this.duration = baseDuration / base.attackSpeedStat;
+            this.duration = baseDuration / attackSpeedStat;
 
         }
         public override float RiftDistance()
@@ -40,12 +40,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastRadius()
         {
-            return 7.75f;
+            return RifterStaticValues.blastRadius;
         }
 
         public override float BlastDamage()
         {
-            return base.characterBody.damage * RifterStaticValues.secondaryRiftCoefficient;
+            return characterBody.damage * RifterStaticValues.secondaryRiftCoefficientAlt1;
         }
 
         public override void OnExit()
@@ -61,18 +61,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void RunDistanceAssist(Vector3 vector, BlastAttack.Result result)
         {
             return;
-        }
-
-        public override void OnSerialize(NetworkWriter writer)
-        {
-            base.OnSerialize(writer);
-            writer.Write(enemyTeleportTo);
-        }
-
-        public override void OnDeserialize(NetworkReader reader)
-        {
-            base.OnDeserialize(reader);
-            enemyTeleportTo = reader.ReadVector3();
         }
     }
 }
