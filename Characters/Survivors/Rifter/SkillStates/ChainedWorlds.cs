@@ -17,8 +17,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public Vector3 numPosition;
         public Vector3 basePosition;
+        public Vector3 baseDirection;
+        public Vector3 vector1;
+        public Vector3 vector2;
         float stopwatch;
         float blastWatch;
+        public float blastRadius;
 
         public float recursionRadius;
         public float recursionDamage;
@@ -35,13 +39,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void OnEnter()
         {
             base.OnEnter();
+            aimRay = new Ray(basePosition, baseDirection);
             duration = 1.75f;
-            aimRay = GetAimRay();
-
-            if (blastNum == 0)
-            {
-                basePosition = base.transform.position;              
-            }
             blastNum++;
             numPosition = GetNumPosition(blastNum);
             Debug.Log(blastNum);
@@ -56,7 +55,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             float num2 = RiftDistance() / 5 * (num);
             Vector3 location = aimRay.GetPoint(num2);
             Vector3 position = location;
-            if (Physics.SphereCast(basePosition, 0.05f, aimRay.direction, out var raycastHit, num2, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
+            if (Physics.SphereCast(basePosition, 0.05f, baseDirection, out var raycastHit, num2, LayerIndex.world.mask))
             {
                 position = raycastHit.point;
             }
@@ -135,7 +134,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     {
                         blastNum = blastNum,
                         blastMax = blastMax,
+                        blastRadius = blastRadius,
                         basePosition = basePosition,
+                        baseDirection = baseDirection,
                     });
                     return;
                 }
@@ -251,6 +252,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     {
                         if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
                         {
+
                             if (IsOvercharged() && hurtBox.healthComponent.alive)
                             {
                                 BlastOvercharge(result);
@@ -269,12 +271,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override float BlastRadius()
 
         {
-            return 12f; /// (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
+            return blastRadius; /// (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
         }
 
         public override float BlastDamage()
         {
-            return characterBody.damage * RifterStaticValues.chainedWorldsCoefficient * (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
+            return characterBody.damage * RifterStaticValues.chainedWorldsCoefficient; //* (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
         }
 
         public virtual float ProcCoefficient()
@@ -288,6 +290,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             writer.Write((byte)blastNum);
             writer.Write((byte)blastMax);
             writer.Write(enemyTeleportTo);
+            writer.Write(basePosition);
+            writer.Write(baseDirection);
             for (int i = 0; i < enemyBodies.Count; i++)
             {
                 writer.Write(enemyBodies[i].netId);
@@ -300,8 +304,10 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             base.OnDeserialize(reader);
             blastNum = reader.ReadByte();
-            blastMax = reader.ReadByte();
+            blastMax = reader.ReadByte();            
             enemyTeleportTo = reader.ReadVector3();
+            basePosition = reader.ReadVector3();
+            baseDirection = reader.ReadVector3();
             while (reader.Position < reader.Length)
             {
                 enemyBodies.Add(Util.FindNetworkObject(reader.ReadNetworkId()).GetComponent<CharacterBody>());

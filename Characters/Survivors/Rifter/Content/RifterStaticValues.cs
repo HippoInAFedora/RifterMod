@@ -10,11 +10,11 @@ namespace RifterMod.Survivors.Rifter
 
         public const float primaryRiftCoefficient = 4.2f;
 
-        public const float secondaryRiftCoefficient = 3.8f;
+        public const float secondaryRiftCoefficient = 3.0f;
 
-        public const float secondaryRiftCoefficientAlt1 = 3.0f;
+        public const float secondaryRiftCoefficientAlt1 = 3.2f;
 
-        public const float secondaryRiftCoefficientAlt2 = 3.2f;
+        public const float secondaryRiftCoefficientAlt2 = 3.0f;
 
         public const float riftPrimaryDistance = 52.5f;
 
@@ -24,7 +24,7 @@ namespace RifterMod.Survivors.Rifter
 
         public const float recursionCoefficient = 3.0f;
 
-        public const float chainedWorldsCoefficient = 3.2f;
+        public const float chainedWorldsCoefficient = 5.0f;
 
     }
 }

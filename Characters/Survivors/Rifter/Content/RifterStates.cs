@@ -1,4 +1,5 @@
 ﻿using RifterMod.Characters.Survivors.Rifter.SkillStates;
+using RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates;
 using RifterMod.Survivors.Rifter.SkillStates;
 
 namespace RifterMod.Survivors.Rifter

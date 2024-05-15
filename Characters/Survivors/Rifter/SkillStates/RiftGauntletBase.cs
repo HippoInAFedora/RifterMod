@@ -289,7 +289,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             bulletAttack.stopperMask = LayerIndex.playerBody.mask;
             bulletAttack.smartCollision = true;
             bulletAttack.maxDistance = BlastRadius() * .8f;
-            bulletAttack.AddModdedDamageType(Damage.riftAssistDamage);
+            bulletAttack.AddModdedDamageType(Damage.riftDamage);
 
 
             bulletAttack.modifyOutgoingDamageCallback = delegate (BulletAttack _bulletAttack, ref BulletAttack.BulletHit hitInfo, DamageInfo damageInfo) //changed to _bulletAttack
@@ -299,6 +299,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     if (hitInfo.hitHurtBox.TryGetComponent(out HurtBox hurtBox))
                     {
                         ignoreList2.AddDistinct(hurtBox.healthComponent.gameObject);
+
                         if (IsOvercharged())
                         {
                             Overcharge(hitInfo, hurtBox);

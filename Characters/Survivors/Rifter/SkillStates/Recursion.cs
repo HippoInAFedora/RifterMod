@@ -22,7 +22,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public float recursionRadius;
         public float recursionDamage;
         public int blastNum;
-        public int blastMax;
+        public int blastMax = 5;
 
         public EntityStates.EntityState setNextState = null;
 
@@ -33,16 +33,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void OnEnter()
         {
             base.OnEnter();
-            duration = 1f;
-            if (blastNum == 0)
-            {
-                basePosition = transform.position;
-            }
+            duration = 1.5f;
             blastNum++;
             Fire();
             Debug.Log(blastNum);
-            Debug.Log(blastMax);
-            TeleportEnemies();
+            //Debug.Log(blastMax);
+            //TeleportEnemies();
             
         }
 
@@ -139,36 +135,36 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         }
 
 
-        public override Vector3 GetTeleportLocation(CharacterBody body)
-        {
-            Vector3 baseDirection = (body.corePosition - characterBody.corePosition).normalized;
-            Ray ray = new Ray(characterBody.corePosition, baseDirection);
-            Vector3 location;
-            if (body.isFlying || !body.characterMotor.isGrounded)
-            {
-                location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance);
-            }
-            else
-            {
-                location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance) + (Vector3.up);
-            }
-            Vector3 direction = (location - characterBody.corePosition).normalized;
-            RaycastHit raycastHit;
-            Vector3 position = location;
-            if (Physics.SphereCast(base.transform.position, 0.05f, direction, out raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
-            {
-                bool normalPlacement = Vector3.Angle(Vector3.up, raycastHit.normal) < maxSlopeAngle;
-                if (normalPlacement)
-                {
-                    position = raycastHit.point;
-                }
-                if (!normalPlacement)
-                {
-                    position = raycastHit.point - direction.normalized;
-                }
-            }
-            return position;
-        }
+        //public override Vector3 GetTeleportLocation(CharacterBody body)
+        //{
+        //    Vector3 baseDirection = (body.corePosition - characterBody.corePosition).normalized;
+        //    Ray ray = new Ray(characterBody.corePosition, baseDirection);
+        //    Vector3 location;
+        //    if (body.isFlying || !body.characterMotor.isGrounded)
+        //    {
+        //        location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance);
+        //    }
+        //    else
+        //    {
+        //        location = ray.GetPoint(RifterStaticValues.riftPrimaryDistance) + (Vector3.up);
+        //    }
+        //    Vector3 direction = (location - characterBody.corePosition).normalized;
+        //    RaycastHit raycastHit;
+        //    Vector3 position = location;
+        //    if (Physics.SphereCast(base.transform.position, 0.05f, direction, out raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
+        //    {
+        //        bool normalPlacement = Vector3.Angle(Vector3.up, raycastHit.normal) < maxSlopeAngle;
+        //        if (normalPlacement)
+        //        {
+        //            position = raycastHit.point;
+        //        }
+        //        if (!normalPlacement)
+        //        {
+        //            position = raycastHit.point - direction.normalized;
+       //         }
+       //     }
+       //     return position;
+       // }
 
         //protected virtual void ModifyBlastOvercharge(BlastAttack.Result result)
         //{
@@ -274,28 +270,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             base.OnSerialize(writer);
             writer.Write((byte)blastNum);
-            writer.Write((byte)blastMax);
-            writer.Write(enemyTeleportTo);
-            for (int i = 0; i < enemyBodies.Count; i++)
-            {
-                writer.Write(enemyBodies[i].netId);
-                Debug.Log("serialized enemy body count " + enemyBodies.Count);
-            }
-
         }
 
         public override void OnDeserialize(NetworkReader reader)
         {
             base.OnDeserialize(reader);
             blastNum = reader.ReadByte();
-            blastMax = reader.ReadByte();
-            enemyTeleportTo = reader.ReadVector3();
-            while (reader.Position < reader.Length)
-            {
-                enemyBodies.Add(Util.FindNetworkObject(reader.ReadNetworkId()).GetComponent<CharacterBody>());
-                Debug.Log("enemy body count " + enemyBodies.Count);
-            }
-
         }
     }
 }

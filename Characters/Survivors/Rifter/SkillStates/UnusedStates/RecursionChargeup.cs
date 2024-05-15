@@ -4,16 +4,17 @@ using R2API;
 using RifterMod.Characters.Survivors.Rifter.SkillStates;
 using RifterMod.Modules;
 using RifterMod.Survivors.Rifter;
+using RifterMod.Survivors.Rifter.SkillStates;
 using RoR2;
 using System;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace RifterMod.Survivors.Rifter.SkillStates
+namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
 {
     public class RecursionChargeup : RiftBase
     {
-        public static GameObject areaIndicatorPrefab = global::EntityStates.Huntress.ArrowRain.areaIndicatorPrefab;
+        public static GameObject areaIndicatorPrefab = EntityStates.Huntress.ArrowRain.areaIndicatorPrefab;
         public static GameObject areaIndicatorInstance;
 
         float stopwatch;
@@ -37,7 +38,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Aura);
             }
             blastNum = 0;
-            chargeDuration = .75f / attackSpeedStat;
+            chargeDuration = .8f / attackSpeedStat;
             body = characterBody;
             if ((bool)areaIndicatorPrefab)
             {
@@ -132,12 +133,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastRadius()
         {
-            return 10f * (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
+            return 10f * (float)Math.Pow(RifterStaticValues.overchargedCoefficient, blastNum);
         }
 
         public override float BlastDamage()
         {
-            return characterBody.damage * RifterStaticValues.recursionCoefficient * (float)Math.Pow((double)RifterStaticValues.overchargedCoefficient, (double)blastNum);
+            return characterBody.damage * RifterStaticValues.recursionCoefficient * (float)Math.Pow(RifterStaticValues.overchargedCoefficient, blastNum);
         }
 
     }

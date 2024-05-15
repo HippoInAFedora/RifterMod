@@ -28,6 +28,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         float chargeDuration;
 
+        public float blastRadius;
+
         public override void OnEnter()
         {
             base.OnEnter();
@@ -36,7 +38,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Aura);
             }
             blastNum = 0;
-            chargeDuration = .75f / attackSpeedStat;
+            chargeDuration = 2f / attackSpeedStat;
             body = characterBody;
             if ((bool)areaIndicatorPrefab)
             {
@@ -52,28 +54,32 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             UpdateAreaIndicator();
         }
 
-        private Vector3 GetNumPosition(int num)
-        {
-            float num2 = RiftDistance() / 5 * (num + 1);
-            Vector3 location = GetAimRay().GetPoint(num2);
-            Vector3 position = location;
-            if (Physics.SphereCast(characterBody.corePosition, 0.05f, GetAimRay().direction, out var raycastHit, num2, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
-            {
-                position = raycastHit.point;
-            }
-            return position;
-        }
+        //private Vector3 GetNumPosition(int num)
+        //{
+        //    float num2 = RiftDistance() / 5 * (num + 1);
+        ////    Vector3 location = GetAimRay().GetPoint(num2);
+        //    Vector3 position = location;
+        //    if (Physics.SphereCast(characterBody.corePosition, 0.05f, GetAimRay().direction, out var raycastHit, num2, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
+        //    {
+        //        position = raycastHit.point;
+        //    }
+        //    return position;
+        //}
 
         private void UpdateAreaIndicator()
         {
             if ((bool)areaIndicatorInstance)
             {
-                areaIndicatorInstance.transform.position = GetNumPosition(blastNum);
-                areaIndicatorInstance.transform.localScale = new Vector3(BlastRadius(), BlastRadius(), BlastRadius());
+                areaIndicatorInstance.transform.position = GetAimRay().GetPoint(RifterStaticValues.riftPrimaryDistance);
+                if (Physics.SphereCast(characterBody.corePosition, 0.05f, GetAimRay().direction, out var raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask))
+                        {
+                            areaIndicatorInstance.transform.position = raycastHit.point;
+                        }
+                    areaIndicatorInstance.transform.localScale = new Vector3(blastRadius, blastRadius, blastRadius);
             }
         }
 
-        public override void FixedUpdate()
+        public void OLDFixedUpdate()
         {
             base.FixedUpdate();
             if (isAuthority && inputBank.skill4.justReleased)
@@ -110,6 +116,24 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         }
 
+        public override void FixedUpdate()
+        {
+            base.FixedUpdate();
+
+            blastRadius = BlastRadius(); 
+            Debug.Log(blastRadius);
+            if (isAuthority && !IsKeyDownAuthority() || base.fixedAge > chargeDuration + 1f)
+            {
+                outer.SetNextState(new ChainedWorlds
+                {
+                    blastNum = 0,
+                    blastMax = 5,
+                    blastRadius = blastRadius,      
+                    basePosition = base.characterBody.corePosition,
+                    baseDirection = base.GetAimRay().direction
+                }) ;
+            }
+        }
         public override void OnExit()
         {
             if ((bool)areaIndicatorInstance)
@@ -125,7 +149,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastRadius()
         {
-            return 12f;
+            float radius = Mathf.Clamp01(base.fixedAge/chargeDuration);
+            if (base.fixedAge > chargeDuration)
+            {
+                radius = 1f;
+            }
+            return radius * 7f + 5f;
         }
 
         public override float BlastDamage()

@@ -62,7 +62,9 @@ namespace RifterMod
         private static void Hook()
         {
             //RoR2.GlobalEventManager.onServerDamageDealt += GlobalEventManager_onServerDamageDealt;
+            On.RoR2.CharacterBody.RecalculateStats += CharacterBody_RecalculateStats;
             On.RoR2.GlobalEventManager.OnHitEnemy += GlobalEventManager_OnHitEnemy;
+            
         }
 
         private static void GlobalEventManager_OnHitEnemy(On.RoR2.GlobalEventManager.orig_OnHitEnemy orig, RoR2.GlobalEventManager self, RoR2.DamageInfo damageInfo, GameObject victim)
@@ -72,7 +74,7 @@ namespace RifterMod
                 CharacterModel model = victim.GetComponent<CharacterModel>();
                 CharacterBody body = victim.GetComponent<CharacterBody>();
 
-            if (damageInfo.HasModdedDamageType(Damage.riftDamage) || damageInfo.HasModdedDamageType(Damage.riftAssistDamage))
+            if (DamageAPI.HasModdedDamageType(damageInfo, Damage.riftDamage))
             {
                 if (body.GetBuffCount(RifterBuffs.shatterDebuff) < 20)
                 {
@@ -80,38 +82,67 @@ namespace RifterMod
                 }
             }
 
-                if (body.HasBuff(RifterBuffs.shatterDebuff))
-                {
-                    int shatterStacks = body.GetBuffCount(RifterBuffs.shatterDebuff);
-                    body.cursePenalty += shatterStacks * 5f / 100f;
-                    if (shatterStacks < 5)
-                    {
-                        body.armor -= shatterStacks * 1f;
-                    }
-                    if (5 <= shatterStacks && shatterStacks < 10)
-                    {
-                        body.armor -= shatterStacks * 2f;
-                    }
-                    if (shatterStacks >= 10)
-                    {
-                        body.armor -= shatterStacks * 4f;
-                    }
-
-                    Debug.Log("armor is " + body.armor);
-                    Debug.Log("curse is " + body.cursePenalty);
-                    body.RecalculateStats();
-                }
+               // if (body.HasBuff(RifterBuffs.shatterDebuff))
+               // {
+                 //   int shatterStacks = body.GetBuffCount(RifterBuffs.shatterDebuff);
+                 //   body.cursePenalty += shatterStacks * 5f / 100f;
+                 //   if (shatterStacks < 5)
+                //    {
+                //        body.armor -= shatterStacks * 1f;
+                //    }
+                //    if (5 <= shatterStacks && shatterStacks < 10)
+                //    {
+                //        body.armor -= shatterStacks * 2f;
+                //    }
+                //    if (shatterStacks >= 10)
+                //    {
+                //        body.armor -= shatterStacks * 4f;
+                //    }
+//
+                //    Debug.Log("armor is " + body.armor);
+                //    Debug.Log("curse is " + body.cursePenalty);
+                //    body.RecalculateStats();
+                //}
             
         }
 
-        public static void AddBodyToBlacklist(string bodyName)
+        private static void CharacterBody_RecalculateStats(On.RoR2.CharacterBody.orig_RecalculateStats orig, CharacterBody self)
+        {
+            orig(self);
+            if (!self)
+            {
+                return;
+            }
+            if (self.HasBuff(RifterBuffs.shatterDebuff))
+            {
+                int shatterStacks = self.GetBuffCount(RifterBuffs.shatterDebuff);
+                self.cursePenalty += shatterStacks * 5f / 100f;
+                if (shatterStacks < 5)
+                {
+                    self.armor -= shatterStacks * 1f;
+                }
+                if (5 <= shatterStacks && shatterStacks < 10)
+                {
+                    self.armor -= shatterStacks * 2f;
+                }
+                if (shatterStacks >= 10)
+                {
+                    self.armor -= shatterStacks * 4f;
+                }
+
+                Debug.Log("armor is " + self.armor);
+                Debug.Log("curse is " + self.cursePenalty);
+            }
+        }
+
+            public static void AddBodyToBlacklist(string bodyName)
         {
             BodyIndex bodyIndex = BodyCatalog.FindBodyIndex(bodyName);
             TeamComponent teamComponent = BodyCatalog.FindBodyPrefab(bodyName).GetComponent<CharacterBody>().teamComponent;
 
             if (bodyIndex != BodyIndex.None)
             {
-                if (blacklistBodyNames.Contains(bodyName) || teamComponent.teamIndex == TeamIndex.Lunar)
+                if (blacklistBodyNames.Contains(bodyName) || teamComponent.teamIndex == TeamIndex.Lunar || teamComponent.teamIndex == TeamIndex.Player)
                 {
                     blacklist.Add(bodyIndex);
                 }

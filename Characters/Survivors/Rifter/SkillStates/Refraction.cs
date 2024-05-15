@@ -140,6 +140,7 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
                                 if (!ignoreList2.Contains(hurtBox.healthComponent.gameObject))
                                 {
                                     ignoreList2.AddDistinct(hurtBox.healthComponent.gameObject);
+                                    
                                 }
                                 if (hurtBox.healthComponent.alive)
                                 {

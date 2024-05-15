@@ -47,7 +47,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             base.OnEnter();
 
-            //TeleportEnemies();
         }
 
         //This method runs once at the end
@@ -203,7 +202,5 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             }
             return position;
         }
-
-        
     }
 }

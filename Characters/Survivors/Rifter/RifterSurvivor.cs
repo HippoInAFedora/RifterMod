@@ -35,6 +35,8 @@ namespace RifterMod.Survivors.Rifter
         //used when registering your survivor's language tokens
         public override string survivorTokenPrefix => Rifter_PREFIX;
 
+        public static Color rifterColor = new Color(129, 227, 185);
+
         public override BodyInfo bodyInfo => new BodyInfo
         {
             bodyName = bodyName,
@@ -42,7 +44,7 @@ namespace RifterMod.Survivors.Rifter
             subtitleNameToken = Rifter_PREFIX + "SUBTITLE",
 
             characterPortrait = assetBundle.LoadAsset<Texture>("texRifterIcon"),
-            bodyColor = Color.white,
+            bodyColor = rifterColor,
             sortPosition = 100,
 
             crosshair = Assets.LoadCrosshair("Standard"),
@@ -221,7 +223,7 @@ namespace RifterMod.Survivors.Rifter
                     "Weapon",
                     false
                 ));
-            primarySkillDef1.keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.stuntingKeyword, Tokens.fractureKeyword };
+            primarySkillDef1.keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.fractureKeyword };
             primarySkillDef1.overchargedIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon");
             primarySkillDef1.overchargedNameToken = Rifter_PREFIX + "SECONDARY_GUN_NAME";
             primarySkillDef1.overchargedDescriptionToken = Rifter_PREFIX + "SECONDARY_GUN_DESCRIPTION";
@@ -238,7 +240,7 @@ namespace RifterMod.Survivors.Rifter
                 skillNameToken = Rifter_PREFIX + "SECONDARY_GAUNTLET",
                 skillDescriptionToken = Rifter_PREFIX + "SECONDARY_GAUNTLET_DESCRIPTION",
                 skillIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon"),
-                keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.stuntingKeyword , Tokens.fractureKeyword },
+                keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.fractureKeyword },
                 activationState = new EntityStates.SerializableEntityStateType(typeof(SkillStates.RiftGauntletShort)),
                 activationStateMachineName = "Weapon",
                 interruptPriority = InterruptPriority.Any,
@@ -262,7 +264,7 @@ namespace RifterMod.Survivors.Rifter
                 skillNameToken = Rifter_PREFIX + "SECONDARY_RAPIDFIRE",
                 skillDescriptionToken = Rifter_PREFIX + "SECONDARY_RAPIDFIRE_DESCRIPTION",
                 skillIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon"),
-                keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.stuntingKeyword, Tokens.fractureKeyword },
+                keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.fractureKeyword },
                 activationState = new EntityStates.SerializableEntityStateType(typeof(SkillStates.RapidfireGauntlet)),
                 activationStateMachineName = "Weapon",
                 interruptPriority = InterruptPriority.Any,
@@ -292,7 +294,7 @@ namespace RifterMod.Survivors.Rifter
                 skillNameToken = Rifter_PREFIX + "SECONDARY_REFRACTION",
                 skillDescriptionToken = Rifter_PREFIX + "SECONDARY_REFRACTION_DESCRIPTION",
                 skillIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon"),
-                keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.stuntingKeyword, Tokens.fractureKeyword },
+                keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.fractureKeyword },
                 activationState = new EntityStates.SerializableEntityStateType(typeof(Refraction)),
                 activationStateMachineName = "Weapon",
                 interruptPriority = InterruptPriority.Any,
@@ -389,7 +391,7 @@ namespace RifterMod.Survivors.Rifter
                 skillDescriptionToken = Rifter_PREFIX + "SPECIAL_RECURSION_DESCRIPTION",
                 skillIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon"),
                 keywordTokens = new[] { Tokens.overchargedKeyword },
-                activationState = new EntityStates.SerializableEntityStateType(typeof(RecursionChargeup)),
+                activationState = new EntityStates.SerializableEntityStateType(typeof(RecursionLocate)),
                 activationStateMachineName = "Weapon",
                 interruptPriority = InterruptPriority.PrioritySkill,
 
