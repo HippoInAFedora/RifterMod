@@ -51,7 +51,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 float maxDistance = 500f;
                 teleportLocatorInstance.transform.position = GetAimRay().GetPoint(maxDistance);
-                if (Physics.Raycast(GetAimRay(), out var hitInfo, maxDistance, LayerIndex.world.mask))
+                if (Physics.Raycast(GetAimRay(), out var hitInfo, maxDistance, LayerIndex.CommonMasks.bullet))
                 {
                     teleportLocatorInstance.transform.position = hitInfo.point;
                 }

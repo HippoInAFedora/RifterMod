@@ -5,11 +5,11 @@ using RoR2;
 using System.Collections.Generic;
 using System.Security;
 using System.Security.Permissions;
-using System.Runtime.CompilerServices;
 using R2API;
 using UnityEngine;
-using UnityEngine.Networking;
-using System.Security.Cryptography;
+using RifterMod.Modules;
+using RoR2.DispatachableEffects;
+
 
 [module: UnverifiableCode]
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
@@ -46,7 +46,7 @@ namespace RifterMod
             // used when you want to properly set up language folders
             Modules.Language.Init();
 
-            Damage.SetupModdedDamage();
+            
 
             // character initialization
             new RifterSurvivor().Initialize();
@@ -61,51 +61,43 @@ namespace RifterMod
 
         private static void Hook()
         {
-            //RoR2.GlobalEventManager.onServerDamageDealt += GlobalEventManager_onServerDamageDealt;
             On.RoR2.CharacterBody.RecalculateStats += CharacterBody_RecalculateStats;
-            On.RoR2.GlobalEventManager.OnHitEnemy += GlobalEventManager_OnHitEnemy;
+            On.RoR2.CharacterBody.OnTakeDamageServer += CharacterBody_OnTakeDamageServer;
+            On.RoR2.CharacterModel.UpdateOverlays += CharacterModel_UpdateOverlays;
+        }
+
+        private static void CharacterModel_UpdateOverlays(On.RoR2.CharacterModel.orig_UpdateOverlays orig, CharacterModel self)
+        {
+            orig(self);
+            if (self && self.body)
+            {
+                CharacterBody body = self.body;
+                ShatterOverlay component = body.gameObject.GetComponent<ShatterOverlay>();               
+            }
             
         }
 
-        private static void GlobalEventManager_OnHitEnemy(On.RoR2.GlobalEventManager.orig_OnHitEnemy orig, RoR2.GlobalEventManager self, RoR2.DamageInfo damageInfo, GameObject victim)
+        private static void CharacterBody_OnTakeDamageServer(On.RoR2.CharacterBody.orig_OnTakeDamageServer orig, CharacterBody self, DamageReport damageReport)
         {
-            //IL_0013: Unknown result type (might be due to invalid IL or missing references)
-            orig(self, damageInfo, victim);
-                CharacterModel model = victim.GetComponent<CharacterModel>();
-                CharacterBody body = victim.GetComponent<CharacterBody>();
-
-            if (DamageAPI.HasModdedDamageType(damageInfo, Damage.riftDamage))
+            orig(self, damageReport);
+            if (!self)
             {
-                if (body.GetBuffCount(RifterBuffs.shatterDebuff) < 20)
+                return;
+            }
+            if (DamageAPI.HasModdedDamageType(damageReport.damageInfo, RifterDamage.riftDamage))
+            {
+                Debug.Log("character can proc riftDamage");
+                if (self.GetBuffCount(RifterBuffs.shatterDebuff) < 20)
                 {
-                    body.AddBuff(RifterBuffs.shatterDebuff);
+                    self.AddBuff(RifterBuffs.shatterDebuff);
+                    if (!self.gameObject.GetComponent<ShatterOverlay>())
+                    {
+                        self.gameObject.AddComponent<ShatterOverlay>();
+                    }
+                    
                 }
             }
-
-               // if (body.HasBuff(RifterBuffs.shatterDebuff))
-               // {
-                 //   int shatterStacks = body.GetBuffCount(RifterBuffs.shatterDebuff);
-                 //   body.cursePenalty += shatterStacks * 5f / 100f;
-                 //   if (shatterStacks < 5)
-                //    {
-                //        body.armor -= shatterStacks * 1f;
-                //    }
-                //    if (5 <= shatterStacks && shatterStacks < 10)
-                //    {
-                //        body.armor -= shatterStacks * 2f;
-                //    }
-                //    if (shatterStacks >= 10)
-                //    {
-                //        body.armor -= shatterStacks * 4f;
-                //    }
-//
-                //    Debug.Log("armor is " + body.armor);
-                //    Debug.Log("curse is " + body.cursePenalty);
-                //    body.RecalculateStats();
-                //}
-            
         }
-
         private static void CharacterBody_RecalculateStats(On.RoR2.CharacterBody.orig_RecalculateStats orig, CharacterBody self)
         {
             orig(self);
@@ -129,20 +121,17 @@ namespace RifterMod
                 {
                     self.armor -= shatterStacks * 4f;
                 }
-
-                Debug.Log("armor is " + self.armor);
-                Debug.Log("curse is " + self.cursePenalty);
             }
         }
 
-            public static void AddBodyToBlacklist(string bodyName)
+        public static void AddBodyToBlacklist(string bodyName)
         {
             BodyIndex bodyIndex = BodyCatalog.FindBodyIndex(bodyName);
             TeamComponent teamComponent = BodyCatalog.FindBodyPrefab(bodyName).GetComponent<CharacterBody>().teamComponent;
 
             if (bodyIndex != BodyIndex.None)
             {
-                if (blacklistBodyNames.Contains(bodyName) || teamComponent.teamIndex == TeamIndex.Lunar || teamComponent.teamIndex == TeamIndex.Player)
+                if (blacklistBodyNames.Contains(bodyName))
                 {
                     blacklist.Add(bodyIndex);
                 }

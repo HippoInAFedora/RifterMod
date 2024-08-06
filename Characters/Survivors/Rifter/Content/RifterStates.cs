@@ -38,6 +38,8 @@ namespace RifterMod.Survivors.Rifter
             Modules.Content.AddEntityState(typeof(ChainedWorldsChargeup));
 
             Modules.Content.AddEntityState(typeof(ChainedWorlds));
+
+            Modules.Content.AddEntityState(typeof(RifterMain));
         }
     }
 }

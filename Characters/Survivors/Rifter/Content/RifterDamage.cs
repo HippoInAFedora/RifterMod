@@ -1,6 +1,6 @@
 ﻿using R2API;
 
-public static class Damage
+public static class RifterDamage
 {
     internal static DamageAPI.ModdedDamageType riftDamage;
 

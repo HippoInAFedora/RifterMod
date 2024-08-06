@@ -35,8 +35,6 @@ namespace RifterMod.Survivors.Rifter
         //used when registering your survivor's language tokens
         public override string survivorTokenPrefix => Rifter_PREFIX;
 
-        public static Color rifterColor = new Color(129, 227, 185);
-
         public override BodyInfo bodyInfo => new BodyInfo
         {
             bodyName = bodyName,
@@ -44,10 +42,10 @@ namespace RifterMod.Survivors.Rifter
             subtitleNameToken = Rifter_PREFIX + "SUBTITLE",
 
             characterPortrait = assetBundle.LoadAsset<Texture>("texRifterIcon"),
-            bodyColor = rifterColor,
+            bodyColor = new Color(0.329f, 0.42f, 0.651f),
             sortPosition = 100,
 
-            crosshair = Assets.LoadCrosshair("Standard"),
+            crosshair = Assets.LoadCrosshair("SimpleDot"),
             podPrefab = LegacyResourcesAPI.Load<GameObject>("Prefabs/NetworkedObjects/SurvivorPod"),
 
             maxHealth = 110f,
@@ -114,6 +112,7 @@ namespace RifterMod.Survivors.Rifter
 
             RifterAssets.Init(assetBundle);
             RifterBuffs.Init(assetBundle);
+            RifterDamage.SetupModdedDamage();
 
             InitializeEntityStateMachines();
             InitializeSkills();
@@ -131,8 +130,7 @@ namespace RifterMod.Survivors.Rifter
             bodyPrefab.AddComponent<RifterWeaponComponent>();
             bodyPrefab.AddComponent<RifterOverchargePassive>();
             bodyPrefab.AddComponent<RiftAndFracture>();
-            //bodyPrefab.AddComponent<HuntressTrackerComopnent>();
-            //anything else here
+
         }
 
         public void AddHitboxes()
@@ -153,7 +151,7 @@ namespace RifterMod.Survivors.Rifter
             //if you set up a custom main characterstate, set it up here
             //don't forget to register custom entitystates in your RifterStates.cs
             //the main "body" state machine has some special properties
-            Prefabs.AddMainEntityStateMachine(bodyPrefab, "Body", typeof(EntityStates.GenericCharacterMain), typeof(EntityStates.SpawnTeleporterState));
+            Prefabs.AddMainEntityStateMachine(bodyPrefab, "Body", typeof(RifterMain), typeof(EntityStates.SpawnTeleporterState));
 
             Prefabs.AddEntityStateMachine(bodyPrefab, "Weapon");
             Prefabs.AddEntityStateMachine(bodyPrefab, "Weapon2");
@@ -229,6 +227,24 @@ namespace RifterMod.Survivors.Rifter
             primarySkillDef1.overchargedDescriptionToken = Rifter_PREFIX + "SECONDARY_GUN_DESCRIPTION";
             primarySkillDef1.usesOvercharge = true;
             Skills.AddPrimarySkills(bodyPrefab, primarySkillDef1);
+
+
+            RifterSkillDef primarySkillDef2 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
+               (
+                   "Rift Gauntlet Scope",
+                   Rifter_PREFIX + "PRIMARY_BUCKSHOT",
+                   Rifter_PREFIX + "PRIMARY_BUCKSHOT_DESCRIPTION",
+                   assetBundle.LoadAsset<Sprite>("texPrimaryIcon"),
+                   new EntityStates.SerializableEntityStateType(typeof(SkillStates.RiftBuckshot)),
+                   "Weapon",
+                   false
+               ));
+            primarySkillDef2.keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.fractureKeyword };
+            primarySkillDef2.overchargedIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon");
+            primarySkillDef2.overchargedNameToken = Rifter_PREFIX + "SECONDARY_GUN_NAME";
+            primarySkillDef2.overchargedDescriptionToken = Rifter_PREFIX + "SECONDARY_GUN_DESCRIPTION";
+            primarySkillDef2.usesOvercharge = true;
+            Skills.AddPrimarySkills(bodyPrefab, primarySkillDef2);
         }
 
         private void AddSecondarySkills()

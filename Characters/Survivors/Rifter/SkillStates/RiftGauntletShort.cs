@@ -13,7 +13,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 {
     public class RiftGauntletShort : RiftGauntletBase
     {
-        public bool isBlastOvercharge = true;
         public override float RiftDistance()
         {
             return RifterStaticValues.riftSecondaryDistance;

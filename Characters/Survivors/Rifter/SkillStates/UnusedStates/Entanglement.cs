@@ -136,7 +136,7 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
                 blastAttack.canRejectForce = false;
                 blastAttack.position = transform.position;
                 blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
-                blastAttack.AddModdedDamageType(Damage.riftDamage);
+                blastAttack.AddModdedDamageType(RifterDamage.riftDamage);
                 var result = blastAttack.Fire();
 
                 blastAttack2 = new BlastAttack
@@ -153,7 +153,7 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
                     position = basePosition,
                     attackerFiltering = AttackerFiltering.NeverHitSelf,
                 };
-                blastAttack2.AddModdedDamageType(Damage.riftDamage);
+                blastAttack2.AddModdedDamageType(RifterDamage.riftDamage);
                 var result2 = blastAttack2.Fire();
 
                 EffectData effectData2 = new EffectData();

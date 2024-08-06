@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using R2API;
 using System.Diagnostics;
+using RifterMod.Survivors.Rifter;
 
 public class ModifiedTeleport : BaseState
 {
@@ -16,7 +17,9 @@ public class ModifiedTeleport : BaseState
 
     private HurtBoxGroup hurtboxGroup;
 
-    GameObject trailObject = new GameObject();
+    GameObject trailObject = RifterAssets.fractureLineTracer;
+    GameObject inEffect = RifterAssets.slipstreamInEffect;
+    GameObject outEffect = RifterAssets.slipstreamOutEffect;
 
     TrailRenderer teleportTrail;
 
@@ -58,25 +61,23 @@ public class ModifiedTeleport : BaseState
 
         TeleportHelper.TeleportBody(characterBody, targetFootPosition);
 
-
-        if (trailObject)
+        EffectData inEffectData = new EffectData
         {
-            trailObject.transform.position = initialPosition;
-            trailObject.transform.LookAt(targetFootPosition);
-            teleportTrail = trailObject.AddComponent<TrailRenderer>();
-            teleportTrail.minVertexDistance = 2f;
-            teleportTrail.material = LegacyResourcesAPI.Load<Material>("RoR2 / Base / Golem / matZap1");
-            teleportTrail.material.color = new Color(66, 135, 245);
-            teleportTrail.startWidth = 0.05f;
-            teleportTrail.endWidth = 0f;
-            teleportTrail.AddPosition(trailObject.transform.position);
-            teleportTrail.generateLightingData = true;
-            teleportTrail.startColor = new Color(184, 128, 237);
-            teleportTrail.time = .25f;
-            teleportTrail.emitting = true;
-            teleportTrail.widthMultiplier = .1f;
-            teleportTrail.autodestruct = true;
-        }
+            origin = characterBody.corePosition,
+            scale = base.characterBody.radius * 2.5f
+        };
+        EffectManager.SpawnEffect(inEffect, inEffectData, true);
+
+        //if (trailObject)
+        //{
+        //    EffectData effectData = new EffectData
+        //    {
+        //        origin = targetFootPosition,
+        //        start = characterBody.corePosition,
+        //    };
+        //    effectData.SetHurtBoxReference(base.characterBody.mainHurtBox);
+        //    EffectManager.SpawnEffect(trailObject, effectData, true);
+        //}
         
 
     }
@@ -85,11 +86,11 @@ public class ModifiedTeleport : BaseState
     {
         base.FixedUpdate();
         stopwatch += Time.fixedDeltaTime;
-        if ((bool)trailObject)
-        {
-            trailObject.transform.position += trailObject.transform.forward * (Vector3.Distance(targetFootPosition, initialPosition) / teleportWaitDuration * Time.fixedDeltaTime);
-            teleportTrail.AddPosition((Vector3)trailObject.transform.position);
-        }
+        //if ((bool)trailObject)
+        //{
+        //    trailObject.transform.position += trailObject.transform.forward * (Vector3.Distance(targetFootPosition, initialPosition) / teleportWaitDuration * Time.fixedDeltaTime);
+        //    teleportTrail.AddPosition((Vector3)trailObject.transform.position);
+        //}
 
         if ((bool)characterMotor)
         {
@@ -106,6 +107,10 @@ public class ModifiedTeleport : BaseState
 
         if (base.isAuthority && stopwatch >= teleportWaitDuration)
         {
+            if (RifterConfig.cursed.Value == true)
+            {
+                outer.SetNextState(new Idle());
+            }
             outer.SetNextStateToMain();
         }
     }
@@ -147,6 +152,14 @@ public class ModifiedTeleport : BaseState
             int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter - 1;
             hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
         }
+
+        EffectData outEffectData = new EffectData
+        {
+            origin = targetFootPosition,
+            scale = base.characterBody.radius * 5f
+        };
+        EffectManager.SpawnEffect(outEffect, outEffectData, true);
+
         base.OnExit();
     }
 

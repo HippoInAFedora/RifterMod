@@ -237,12 +237,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 blastAttack.canRejectForce = false;
                 blastAttack.position = GetNumPosition(blastNum);
                 blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
-                blastAttack.AddModdedDamageType(Damage.riftDamage);
+                blastAttack.AddModdedDamageType(RifterDamage.riftDamage);
                 var result = blastAttack.Fire();
 
                 EffectData effectData = new EffectData();
-                blastEffectPrefab.transform.localScale = Vector3.one;
-                effectData.scale = BlastRadius() * 1.5f;
+                effectData.scale = BlastRadius() / 10f;
                 effectData.origin = blastAttack.position;
                 EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: true);
 

@@ -206,19 +206,26 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 blastAttack.canRejectForce = false;
                 blastAttack.position = basePosition;
                 blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
-                blastAttack.AddModdedDamageType(Damage.riftDamage);
+                blastAttack.AddModdedDamageType(RifterDamage.riftDamage);
                 result = blastAttack.Fire();
 
                 EffectData effectData = new EffectData();
-                blastEffectPrefab.transform.localScale = Vector3.one;
-                effectData.scale = BlastRadius() * 1.5f;
+                effectData.scale = BlastRadius() / 10f;
                 effectData.origin = basePosition;
                 if (blastNum < blastMax)
                 {
+                    //blastEffectPrefab.transform.GetChild(0).localScale = Vector3.one * BlastRadius() / 7.5f;    
+                    //blastEffectPrefab.transform.GetChild(1).localScale = Vector3.one * BlastRadius() / 7.5f;
+                    //blastEffectPrefab.transform.GetChild(2).localScale = Vector3.one * BlastRadius() / 7.5f;
                     EffectManager.SpawnEffect(blastEffectPrefab, effectData, transmit: true);
+                    
                 }
                 else
                 {
+
+                    //overchargedEffectPrefab.transform.GetChild(0).localScale = Vector3.one * BlastRadius() / 7.5f;
+                    //overchargedEffectPrefab.transform.GetChild(1).localScale = Vector3.one * BlastRadius() / 7.5f;
+                    //overchargedEffectPrefab.transform.GetChild(2).localScale = Vector3.one * BlastRadius() / 7.5f;
                     EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: true);
                 }
 

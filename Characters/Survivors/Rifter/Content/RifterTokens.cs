@@ -53,6 +53,9 @@ namespace RifterMod.Survivors.Rifter
             #region Primary
             Language.Add(prefix + "PRIMARY_GAUNTLET_RANGED", "Rift Gauntlet Ranged");
             Language.Add(prefix + "PRIMARY_GAUNTLET_RANGED_DESCRIPTION", $"Shoot a far-ranged rift for <style=cIsDamage>{100f * RifterStaticValues.primaryRiftCoefficient}% damage</style>. Can be <style=cIsUtility>overcharged</style>.");
+
+            Language.Add(prefix + "PRIMARY_BUCKSHOT", "Rift Buckshot");
+            Language.Add(prefix + "PRIMARY_BUCKSHOT_DESCRIPTION", $"Shoot a far-ranged rift for <style=cIsDamage>{100f * RifterStaticValues.buckshotRiftCoefficient}% damage</style>, along with  <style=cIsDamage>5 x {100f * RifterStaticValues.buckshotWeakRiftCoefficient}% damage</style> inaccurate small rifts. <style=cIsUtility>Overcharge</style> adds <style=cIsDamage>3 x {100f * RifterStaticValues.buckshotWeakRiftCoefficient}% damage</style> rifts.");
             #endregion
 
             #region Secondary
@@ -71,12 +74,12 @@ namespace RifterMod.Survivors.Rifter
             Language.Add(prefix + "UTILITY_SLIPSTREAM_DESCRIPTION", "Teleport a short distance, <style=cIsUtility>briefly turning invulnerable</style>. The next shot is <style=cIsUtility>overcharged</style>.");
 
             Language.Add(prefix + "UTILITY_RIFT_RIDER", "Rift Rider");
-            Language.Add(prefix + "UTILITY_RIFT_RIDER_DESCRIPTION", "Travel through a long-range Fracture Line, dealing <style=cIsDamage>100% damage</style>. All hit enemies will be <style=cIsUtility>teleported to your previous location</style>.");
+            Language.Add(prefix + "UTILITY_RIFT_RIDER_DESCRIPTION", "Travel through a long-range Fracture Line, dealing <style=cIsDamage>100% damage</style>. Each hit enemy will be <style=cIsUtility>teleported to your previous location</style> and add 1 <style=cIsUtility>overcharge</style>.");
             #endregion
 
             #region Special
             Language.Add(prefix + "SPECIAL_RECURSION", "Recursion");
-            Language.Add(prefix + "SPECIAL_RECURSION_DESCRIPTION", $"Position 5 stacked rifts, dealing <style=cIsDamage>{100f * 22f}% damage</style>. Each rift is <style=cIsDamage>20% larger</style> than the last.");
+            Language.Add(prefix + "SPECIAL_RECURSION_DESCRIPTION", $"Position 5 stacked rifts, dealing <style=cIsDamage>{100f * 26f}% damage</style>. Each rift is <style=cIsDamage>20% larger</style> than the last.");
 
             Language.Add(prefix + "SPECIAL_CHAINED_WORLDS", "Chained Worlds");
             Language.Add(prefix + "SPECIAL_CHAINED_WORLDS_DESCRIPTION", $"Charge and shoot 5 rifts in a line, dealing <style=cIsDamage>{100f * RifterStaticValues.chainedWorldsCoefficient}% damage</style> per rift. Rifts <style=cIsUtility>teleport enemies to the next</style>.");

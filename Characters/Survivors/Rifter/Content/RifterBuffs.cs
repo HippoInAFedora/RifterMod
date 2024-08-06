@@ -8,15 +8,18 @@ namespace RifterMod.Survivors.Rifter
         // armor buff gained during roll
         public static BuffDef shatterDebuff;
 
+        public static AssetBundle _assetBundle;
+
+        public static Sprite shatterIcon = RifterAssets.shatterIcon;
+
         public static void Init(AssetBundle assetBundle)
         {
 
             shatterDebuff = Modules.Content.CreateAndAddBuff("Shatter",
-                null,
+                shatterIcon,
                 Color.white,
                 true,
                 false);
-            shatterDebuff.isHidden = false;
         }
     }
 }

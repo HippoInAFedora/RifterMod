@@ -1,19 +1,10 @@
 ﻿
 
 using EntityStates;
-using EntityStates.Commando.CommandoWeapon;
-using RifterMod.Survivors.Rifter;
 using RoR2;
 using UnityEngine;
-using System;
 using System.Collections.Generic;
-using IL.RoR2.Skills;
-using static UnityEngine.SendMouseEvents;
-using R2API;
-using UnityEngine.AddressableAssets;
-using static RoR2.Skills.SkillFamily;
 using RifterMod.Characters.Survivors.Rifter.Components;
-using UnityEngine.Networking;
 using Newtonsoft.Json.Utilities;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
@@ -103,8 +94,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             //enemyHit.TryGetComponent(out RigidbodyMotor rbmotor);
             if (RifterPlugin.blacklistBodyNames.Contains(enemyHit.name))
             {
-                Debug.Log("notgettingteleported");
-                //Add Effect here later
                 return;
             }
             enemyBodies.AddDistinct(enemyHit);
@@ -135,6 +124,10 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
             for (int i = 0; i < enemyBodies.Count; i++)
             {
+                if (enemyBodies[i].teamComponent.teamIndex == TeamIndex.Player && RifterConfig.teleportYourFriends.Value == false)
+                {
+                    return;
+                }
                 CharacterBody body = enemyBodies[i];
                 originalPosition = body.gameObject.transform.position;
                 enemyTeleportTo = GetTeleportLocation(body);

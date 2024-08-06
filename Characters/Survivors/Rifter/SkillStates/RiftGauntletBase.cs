@@ -11,6 +11,7 @@ using Newtonsoft.Json.Utilities;
 using RifterMod.Characters.Survivors.Rifter.Components;
 using RifterMod.Modules;
 using UnityEngine.Networking;
+using System.Linq;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
@@ -20,15 +21,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public bool shot = false;
         public bool shouldDistanceAssist;
         float isRiftHitGround;
+        public bool shouldBuckshot = false;
 
         public bool isBlastOvercharge = false;
-        public static GameObject tracerEffectPrefabOld = RifterAssets.fractureLineEffect;
+        //public static GameObject tracerEffectPrefabOld = RifterAssets.fractureLineEffect;
 
-        public static GameObject tracerEffectPrefab = RifterAssets.fractureLineEffect;
-
-
-
-
+        public static GameObject tracerEffectPrefab = RifterAssets.fractureLineTracer;
 
         public float duration;
 
@@ -38,7 +36,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         List<GameObject> ignoreList1 = new List<GameObject>();
         List<GameObject> ignoreList2 = new List<GameObject>();
-
 
         //OnEnter() runs once at the start of the skill
         //All we do here is create a BulletAttack and fire it
@@ -95,18 +92,13 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public virtual void RiftAndFracture()
         {
             Ray aimRay = GetAimRay();
-            //Blast Attack Stuff
             Vector3 vector = aimRay.GetPoint(RiftDistance());
-
-
 
             if (Physics.Raycast(aimRay, out var endPoint, RiftDistance(), LayerIndex.world.mask, QueryTriggerInteraction.UseGlobal))
             {
                 float hit = endPoint.distance;
                 vector = aimRay.GetPoint(hit);
             }
-
-
 
             float vectorDistance = Vector3.Distance(aimRay.origin, vector);
             if (vectorDistance < RiftDistance() * 2 / 3)
@@ -140,21 +132,10 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 blastAttack.canRejectForce = false;
                 blastAttack.position = vector;
                 blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
-                blastAttack.AddModdedDamageType(Damage.riftDamage);
+                blastAttack.AddModdedDamageType(RifterDamage.riftDamage);
                 var result = blastAttack.Fire();
 
-                EffectData effectData = new EffectData();
-                blastEffectPrefab.transform.localScale = Vector3.one;
-                effectData.scale = BlastRadius() * 1.5f;
-                effectData.origin = vector;
-                if (!IsOvercharged())
-                {
-                    EffectManager.SpawnEffect(blastEffectPrefab, effectData, transmit: true);
-                }
-                else
-                {
-                    EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: true);
-                }
+                ImpactEffect(vector);
 
                 foreach (var hit in result.hitPoints)
                 {
@@ -184,12 +165,17 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     RunDistanceAssist(vector, result);
                 }
 
+                if (shouldBuckshot)
+                {
+                    Buckshot(vector);
+                }
+
 
                 BulletAttack bulletAttack = new BulletAttack();
                 bulletAttack.owner = gameObject;
                 bulletAttack.weapon = gameObject;
-                bulletAttack.origin = vector;
-                bulletAttack.aimVector = -aimRay.direction;
+                bulletAttack.origin = aimRay.origin;
+                bulletAttack.aimVector = aimRay.direction;
                 bulletAttack.minSpread = 0f;
                 bulletAttack.maxSpread = characterBody.spreadBloomAngle;
                 bulletAttack.damage = characterBody.damage * RifterStaticValues.fractureCoefficient;
@@ -205,7 +191,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 bulletAttack.stopperMask = LayerIndex.playerBody.mask;
                 bulletAttack.smartCollision = true;
                 bulletAttack.maxDistance = vectorDistance;
-
 
                 bulletAttack.modifyOutgoingDamageCallback = delegate (BulletAttack _bulletAttack, ref BulletAttack.BulletHit hitInfo, DamageInfo damageInfo) //changed to _bulletAttack
                 {
@@ -249,6 +234,20 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             return RifterStaticValues.blastRadius;
         }
 
+        private void ImpactEffect(Vector3 vector)
+        {
+            EffectData effectData = new EffectData();
+            effectData.origin = vector;
+            effectData.scale = BlastRadius() / 10f;
+            if (!IsOvercharged())
+            {
+                EffectManager.SpawnEffect(blastEffectPrefab, effectData, transmit: true);
+            }
+            else
+            {
+                EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: true);
+            }
+        }
         public override float BlastDamage()
         {
             return characterBody.damage * RifterStaticValues.primaryRiftCoefficient;
@@ -281,7 +280,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             bulletAttack.procCoefficient = .8f;
             bulletAttack.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
             bulletAttack.radius = BlastRadius() / 2f;
-            bulletAttack.tracerEffectPrefab = tracerEffectPrefab;
             bulletAttack.muzzleName = "MuzzleRight";
             bulletAttack.hitEffectPrefab = this.hitEffectPrefab;
             bulletAttack.isCrit = false;
@@ -289,7 +287,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             bulletAttack.stopperMask = LayerIndex.playerBody.mask;
             bulletAttack.smartCollision = true;
             bulletAttack.maxDistance = BlastRadius() * .8f;
-            bulletAttack.AddModdedDamageType(Damage.riftDamage);
+            bulletAttack.AddModdedDamageType(RifterDamage.riftDamage);
 
 
             bulletAttack.modifyOutgoingDamageCallback = delegate (BulletAttack _bulletAttack, ref BulletAttack.BulletHit hitInfo, DamageInfo damageInfo) //changed to _bulletAttack
@@ -324,6 +322,10 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             bulletAttack.Fire();
         }
 
+
+        public virtual void Buckshot(Vector3 origin)
+        {
+        }
         public override void OnSerialize(NetworkWriter writer)
         {
             base.OnSerialize(writer);

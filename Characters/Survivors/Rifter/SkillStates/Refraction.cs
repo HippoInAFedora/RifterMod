@@ -157,8 +157,8 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
                 BulletAttack bulletAttackL = new BulletAttack();
                 bulletAttackL.owner = gameObject;
                 bulletAttackL.weapon = gameObject;
-                bulletAttackL.origin = vectorLeft;
-                bulletAttackL.aimVector = -leftBlast.direction;
+                bulletAttackL.origin = leftBlast.origin;
+                bulletAttackL.aimVector = leftBlast.direction;
                 bulletAttackL.minSpread = 0f;
                 bulletAttackL.maxSpread = characterBody.spreadBloomAngle;
                 bulletAttackL.damage = characterBody.damage * RifterStaticValues.fractureCoefficient;
@@ -204,8 +204,8 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
                 BulletAttack bulletAttackR = new BulletAttack();
                 bulletAttackR.owner = gameObject;
                 bulletAttackR.weapon = gameObject;
-                bulletAttackR.origin = vectorRight;
-                bulletAttackR.aimVector = -rightBlast.direction;
+                bulletAttackR.origin = rightBlast.origin;
+                bulletAttackR.aimVector = rightBlast.direction;
                 bulletAttackR.minSpread = 0f;
                 bulletAttackR.maxSpread = characterBody.spreadBloomAngle;
                 bulletAttackR.damage = characterBody.damage * RifterStaticValues.fractureCoefficient;
@@ -277,7 +277,7 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
             BlastAttack blastAttack = new BlastAttack();
             blastAttack.attacker = gameObject;
             blastAttack.inflictor = gameObject;
-            blastAttack.teamIndex = TeamIndex.None;
+            blastAttack.teamIndex = TeamIndex.Player;
             blastAttack.radius = radius;
             blastAttack.falloffModel = BlastAttack.FalloffModel.None;
             blastAttack.baseDamage = BlastDamage() * isHitGround;
@@ -286,12 +286,11 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
             blastAttack.canRejectForce = false;
             blastAttack.position = position;
             blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
-            blastAttack.AddModdedDamageType(Damage.riftDamage);
+            blastAttack.AddModdedDamageType(RifterDamage.riftDamage);
             result = blastAttack.Fire();
 
             EffectData effectData = new EffectData();
-            blastEffectPrefab.transform.localScale = Vector3.one;
-            effectData.scale = BlastRadius() * 1.5f;
+            effectData.scale = BlastRadius() / 10f;
             effectData.origin = position;
             EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: false);
 

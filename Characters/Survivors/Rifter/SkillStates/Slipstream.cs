@@ -19,10 +19,14 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
         private Vector3 forwardDirection;
         private Animator animator;
         private Vector3 startPosition;
+        private bool startedStateGrounded;
 
         private CharacterModel characterModel;
         private HurtBoxGroup hurtboxGroup;
         private Transform modelTransform;
+
+        private GameObject slipstreamIn = RifterAssets.slipstreamInEffect;
+        private GameObject slipstreamOut = RifterAssets.slipstreamOutEffect;
 
         private float stopwatch;
 
@@ -51,8 +55,15 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
             {
                 if ((bool)characterMotor)
                 {
-                    forwardDirection = ((inputBank.moveVector == Vector3.zero) ? characterDirection.forward : inputBank.moveVector).normalized; ;
+                    forwardDirection = ((inputBank.moveVector == Vector3.zero) ? characterDirection.forward : inputBank.moveVector).normalized;
+                    startedStateGrounded = base.characterMotor.isGrounded;
                 }
+
+                EffectData inEffect = new EffectData();
+                inEffect.origin = base.characterBody.corePosition;
+                inEffect.scale = 3f;
+                EffectManager.SpawnEffect(slipstreamIn, inEffect, true);
+
                 finalPosition = transform.position + forwardDirection * speed;
                 startPosition = transform.position;
             }
@@ -65,8 +76,10 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
             stopwatch += Time.fixedDeltaTime;
             if (stopwatch < duration && (bool)characterMotor && (bool)characterDirection)
             {
+                Vector3 num = Vector3.zero;
+                num = (!startedStateGrounded) ? forwardDirection + new Vector3(0, .5f, 0) : forwardDirection;
                 characterMotor.velocity = Vector3.zero;
-                characterMotor.rootMotion += forwardDirection * (speed / duration * Time.fixedDeltaTime);
+                characterMotor.rootMotion += num * (speed / duration * Time.fixedDeltaTime);
             }
             if (stopwatch > duration && isAuthority)
             {
@@ -91,6 +104,12 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
             {
                 characterMotor.disableAirControlUntilCollision = false;
             }
+
+            EffectData outEffect = new EffectData();
+            outEffect.scale = 3f;
+            outEffect.origin = base.characterBody.corePosition;
+            EffectManager.SpawnEffect(slipstreamOut, outEffect, true);
+
             base.OnExit();
         }
 

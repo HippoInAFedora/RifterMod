@@ -11,6 +11,7 @@ using R2API;
 using System.Collections.Generic;
 using Newtonsoft.Json.Utilities;
 using UnityEngine.Networking;
+using RifterMod.Characters.Survivors.Rifter.Components;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
@@ -24,14 +25,21 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public GameObject hitEffectPrefab = FireBarrage.hitEffectPrefab;
 
+        public GameObject tracerEffectPrefab = RifterAssets.fractureLineTracer;
+
+        private GameObject riftIn = RifterAssets.slipstreamInEffect;
+
         public bool isResults;
 
         List<GameObject> ignoreList1 = new List<GameObject>();
+
+        public RifterOverchargePassive step;
 
         public override void OnEnter()
         {
             base.OnEnter();
             Ray aimRay = GetAimRay();
+            step = base.GetComponent<RifterOverchargePassive>();
             initialPosition = characterBody.corePosition;
             if (isAuthority)
             {
@@ -74,21 +82,28 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 blastAttack.canRejectForce = false;
                 blastAttack.position = targetFootPosition;
                 blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
-                blastAttack.AddModdedDamageType(Damage.riftDamage);
+                blastAttack.AddModdedDamageType(RifterDamage.riftDamage);
                 var result = blastAttack.Fire();
 
                 EffectData effectData = new EffectData();
-                blastEffectPrefab.transform.localScale = Vector3.one;
-                effectData.scale = BlastRadius() * 1.5f;
-                effectData.origin = blastAttack.position;
-                EffectManager.SpawnEffect(blastEffectPrefab, effectData, transmit: false);
+                effectData.scale = BlastRadius() / 10f;
+                effectData.origin = blastAttack.position;              
 
+                if (result.hitCount > 0)
+                {
+                    EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: true);
+                }
+                else
+                {
+                    EffectManager.SpawnEffect(blastEffectPrefab, effectData, transmit: true);
+                }
                 foreach (var hit in result.hitPoints)
                 {
                     if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
                     {
                         ignoreList1.AddDistinct(hurtBox.healthComponent.gameObject);
                         isResults = true;
+                        step.rifterOverchargePassive++;
                         if (IsOvercharged() && hurtBox.healthComponent.alive && isBlastOvercharge)
                         {
                             BlastOvercharge(result);
@@ -96,7 +111,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
                         }
                     }
-
                 };
 
 
@@ -116,7 +130,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 bulletAttack.procCoefficient = 0f;
                 bulletAttack.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
                 bulletAttack.radius = 4f;
-                bulletAttack.tracerEffectPrefab = RiftGauntletBase.tracerEffectPrefab;
+                bulletAttack.tracerEffectPrefab = tracerEffectPrefab;
                 bulletAttack.muzzleName = "MuzzleRight";
                 bulletAttack.hitEffectPrefab = this.hitEffectPrefab;
                 bulletAttack.isCrit = false;
@@ -131,8 +145,10 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     if (hitInfo.hitHurtBox.TryGetComponent(out HurtBox hurtBox))
                     {
                         isResults = true;
+                        step.rifterOverchargePassive++;
                         if (IsOvercharged() && hurtBox.healthComponent.alive)
                         {
+                            
                             Overcharge(hitInfo, hurtBox);
                         }
                     }
@@ -167,12 +183,13 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 blastAttack2.canRejectForce = false;
                 blastAttack2.position = initialPosition;
                 blastAttack2.attackerFiltering = AttackerFiltering.NeverHitSelf;
-                blastAttack2.AddModdedDamageType(Damage.riftDamage);
+                blastAttack2.AddModdedDamageType(RifterDamage.riftDamage);
                 var result2 = blastAttack.Fire();
 
                 EffectData effectData3 = new EffectData();
                 effectData3.origin = blastAttack2.position;
-                EffectManager.SpawnEffect(GlobalEventManager.CommonAssets.igniteOnKillExplosionEffectPrefab, effectData3, transmit: false);
+                effectData3.scale = blastAttack2.radius;
+                EffectManager.SpawnEffect(riftIn, effectData3, transmit: false);
 
                 foreach (var hit in result2.hitPoints)
                 {
@@ -180,9 +197,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     {
                         ignoreList1.AddDistinct(hurtBox.healthComponent.gameObject);
                         isResults = true;
+                        step.rifterOverchargePassive++;
 
                         if (IsOvercharged() && hurtBox.healthComponent.alive && isBlastOvercharge)
                         {
+                            
                             BlastOvercharge(result);
 
                         }
