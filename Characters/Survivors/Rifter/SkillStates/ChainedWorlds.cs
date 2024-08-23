@@ -20,8 +20,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public Vector3 baseDirection;
         public Vector3 vector1;
         public Vector3 vector2;
-        float stopwatch;
-        float blastWatch;
+        public float stopwatch;
+        public float blastWatch;
         public float blastRadius;
 
         public float recursionRadius;
@@ -34,7 +34,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public EntityStates.EntityState setNextState = null;
 
         BlastAttack blastAttack;
-        float duration;
+        public float duration;
 
         public override void OnEnter()
         {
@@ -52,7 +52,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         private Vector3 GetNumPosition(int num)
         {
-            float num2 = RiftDistance() / 5 * (num);
+            float num2 = RiftDistance() / blastMax * (num) + 10f ;
             Vector3 location = aimRay.GetPoint(num2);
             Vector3 position = location;
             if (Physics.SphereCast(basePosition, 0.05f, baseDirection, out var raycastHit, num2, LayerIndex.world.mask))
@@ -109,25 +109,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             stopwatch += Time.fixedDeltaTime;
             
 
-            //if (blastNum != blastMax)
-            //{
-            //    blastWatch += Time.fixedDeltaTime;
-            //    if (blastWatch > duration / 5)
-            //    {
-            //        numPosition = GetNumPosition(blastNum);
-            //        Fire();
-            //        blastNum++;
-            //        blastWatch = 0;
-            //    }
-
-            //}
-
             if (stopwatch >= (duration / 5) && isAuthority)
             {
-                if (cameraTargetParams)
-                {
-                    cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Standard);
-                }
                 if (blastNum < blastMax)
                 {
                     outer.SetNextState(new ChainedWorlds

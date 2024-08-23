@@ -40,6 +40,10 @@ namespace RifterMod.Survivors.Rifter
             Modules.Content.AddEntityState(typeof(ChainedWorlds));
 
             Modules.Content.AddEntityState(typeof(RifterMain));
+
+            Modules.Content.AddEntityState(typeof(RecursionLocateScepter));
+
+            Modules.Content.AddEntityState(typeof(ChainedWorldsChargeupScepter));
         }
     }
 }

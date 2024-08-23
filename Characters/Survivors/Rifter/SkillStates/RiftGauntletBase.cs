@@ -27,6 +27,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         //public static GameObject tracerEffectPrefabOld = RifterAssets.fractureLineEffect;
 
         public static GameObject tracerEffectPrefab = RifterAssets.fractureLineTracer;
+        public static GameObject tracerEffectPrefabOvercharged = RifterAssets.fractureLineTracerOvercharged;
+        public GameObject tracer;
 
         public float duration;
 
@@ -170,6 +172,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     Buckshot(vector);
                 }
 
+                tracer = IsOvercharged() ? tracerEffectPrefabOvercharged : tracerEffectPrefab;
 
                 BulletAttack bulletAttack = new BulletAttack();
                 bulletAttack.owner = gameObject;
@@ -183,7 +186,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 bulletAttack.procCoefficient = 0f;
                 bulletAttack.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
                 bulletAttack.radius = .75f;
-                bulletAttack.tracerEffectPrefab = tracerEffectPrefab;
+                bulletAttack.tracerEffectPrefab = tracer;
                 bulletAttack.muzzleName = "MuzzleRight";
                 bulletAttack.hitEffectPrefab = this.hitEffectPrefab;
                 bulletAttack.isCrit = false;
@@ -334,7 +337,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             for (int i = 0; i < enemyBodies.Count; i++)
             {
                 writer.Write(enemyBodies[i].netId);
-                Debug.Log("serialized enemy body count " + enemyBodies.Count);
             }
 
         }
@@ -347,7 +349,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             while (reader.Position < reader.Length)
             {
                 enemyBodies.Add(Util.FindNetworkObject(reader.ReadNetworkId()).GetComponent<CharacterBody>());
-                Debug.Log("enemy body count " + enemyBodies.Count);
             }
 
         }

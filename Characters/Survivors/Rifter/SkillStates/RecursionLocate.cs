@@ -18,7 +18,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             if ((bool)teleportLocatorPrefab)
             {
                 teleportLocatorInstance = Object.Instantiate(teleportLocatorPrefab);
-                teleportLocatorInstance.transform.localScale = new Vector3(12, 12, 12);
+                teleportLocatorInstance.transform.localScale = new Vector3(10, 10, 10);
             }
 
         }

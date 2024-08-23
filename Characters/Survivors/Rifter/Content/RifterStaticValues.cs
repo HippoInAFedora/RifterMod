@@ -4,7 +4,7 @@ namespace RifterMod.Survivors.Rifter
 {
     public static class RifterStaticValues
     {
-        public const float blastRadius = 7.5f;
+        public const float blastRadius = 6.75f;
 
         public const float fractureCoefficient = .8f;
 

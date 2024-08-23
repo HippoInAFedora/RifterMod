@@ -9,7 +9,7 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
 {
     public class Slipstream : BaseSkillState
     {
-        public static float duration = 0.15f;
+        public static float duration = 0.18f;
         private float speed = 12f;
 
         public static string dodgeSoundString = "HenryRoll";
@@ -50,6 +50,10 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
                 HurtBoxGroup hurtBoxGroup = hurtboxGroup;
                 int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter + 1;
                 hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
+            }
+            if (NetworkServer.active)
+            {
+                Util.CleanseBody(base.characterBody, removeDebuffs: true, removeBuffs: false, removeCooldownBuffs: false, removeDots: true, removeStun: true, removeNearbyProjectiles: false);
             }
             if (isAuthority)
             {
@@ -104,8 +108,29 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
             {
                 characterMotor.disableAirControlUntilCollision = false;
             }
-
-            EffectData outEffect = new EffectData();
+            if (!outer.destroying)
+            {
+                modelTransform = GetModelTransform();
+                if ((bool)modelTransform)
+                {
+                    TemporaryOverlay temporaryOverlay = modelTransform.gameObject.AddComponent<TemporaryOverlay>();
+                    temporaryOverlay.duration = 0.6f;
+                    temporaryOverlay.animateShaderAlpha = true;
+                    temporaryOverlay.alphaCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
+                    temporaryOverlay.destroyComponentOnEnd = true;
+                    temporaryOverlay.originalMaterial = RifterAssets.matTeleport;
+                    temporaryOverlay.AddToCharacerModel(modelTransform.GetComponent<CharacterModel>());
+                    //TemporaryOverlay temporaryOverlay2 = modelTransform.gameObject.AddComponent<TemporaryOverlay>();
+                    //temporaryOverlay2.duration = 0.7f;
+                    //temporaryOverlay2.animateShaderAlpha = true;
+                    //temporaryOverlay2.alphaCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
+                    //temporaryOverlay2.destroyComponentOnEnd = true;
+                    //temporaryOverlay2.originalMaterial = LegacyResourcesAPI.Load<Material>("Materials/matHuntressFlashExpanded");
+                    //temporaryOverlay2.AddToCharacerModel(modelTransform.GetComponent<CharacterModel>());
+                    //}
+                }
+            }
+                EffectData outEffect = new EffectData();
             outEffect.scale = 3f;
             outEffect.origin = base.characterBody.corePosition;
             EffectManager.SpawnEffect(slipstreamOut, outEffect, true);

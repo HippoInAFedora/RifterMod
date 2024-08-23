@@ -20,6 +20,7 @@ namespace RifterMod.Survivors.Rifter
                 Color.white,
                 true,
                 false);
+            shatterDebuff.isHidden = true;
         }
     }
 }

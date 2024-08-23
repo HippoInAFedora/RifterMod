@@ -41,6 +41,10 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             Ray aimRay = GetAimRay();
             step = base.GetComponent<RifterOverchargePassive>();
             initialPosition = characterBody.corePosition;
+            if (NetworkServer.active)
+            {
+                Util.CleanseBody(base.characterBody, removeDebuffs: true, removeBuffs: false, removeCooldownBuffs: false, removeDots: true, removeStun: true, removeNearbyProjectiles: false);
+            }
             if (isAuthority)
             {
                 targetFootPosition = aimRay.GetPoint(RiftDistance());
@@ -92,6 +96,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 if (result.hitCount > 0)
                 {
                     EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: true);
+                    step.rifterOverchargePassive++;
                 }
                 else
                 {
@@ -103,7 +108,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     {
                         ignoreList1.AddDistinct(hurtBox.healthComponent.gameObject);
                         isResults = true;
-                        step.rifterOverchargePassive++;
+                        
                         if (IsOvercharged() && hurtBox.healthComponent.alive && isBlastOvercharge)
                         {
                             BlastOvercharge(result);
@@ -145,7 +150,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     if (hitInfo.hitHurtBox.TryGetComponent(out HurtBox hurtBox))
                     {
                         isResults = true;
-                        step.rifterOverchargePassive++;
                         if (IsOvercharged() && hurtBox.healthComponent.alive)
                         {
                             
@@ -161,8 +165,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     if (healthComponent && healthComponent.alive && ignoreList1.Contains(healthComponent.gameObject))
                     {
                         return false;
-
                     }
+                    step.rifterOverchargePassive++;
                     return (!hitInfo.entityObject || (object)hitInfo.entityObject != _bulletAttack.owner) && BulletAttack.defaultFilterCallback(_bulletAttack, ref hitInfo);
                 };
 
@@ -223,6 +227,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     targetFootPosition = targetFootPosition,
                     teleportWaitDuration = .5f,
                     isResults = isResults,
+                    showEffect = true
                 });
             }
 

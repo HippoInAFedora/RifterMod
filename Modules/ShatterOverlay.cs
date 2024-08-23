@@ -33,7 +33,7 @@ namespace RifterMod.Modules
                 temporaryOverlay.duration = float.PositiveInfinity;
                 temporaryOverlay.originalMaterial = matShatter;
                 //temporaryOverlay.AddToCharacerModel(modelTransform.GetComponent<CharacterModel>());
-                Debug.Log("Temp Overlay Added");
+               // Debug.Log("Temp Overlay Added");
             }
         }
 
@@ -50,8 +50,8 @@ namespace RifterMod.Modules
             if ((bool)temporaryOverlay)
             {
                 temporaryOverlay.originalMaterial.SetFloat("_ClipVal", _ClipVal);
-                Debug.Log(_ClipVal);
-                Debug.Log("material has" + temporaryOverlay.originalMaterial.GetFloat("_ClipVal") + "for _ClipVal");
+               // Debug.Log(_ClipVal);
+                //Debug.Log("material has" + temporaryOverlay.originalMaterial.GetFloat("_ClipVal") + "for _ClipVal");
 
             }         
 

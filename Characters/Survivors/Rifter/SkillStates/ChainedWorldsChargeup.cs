@@ -15,28 +15,24 @@ namespace RifterMod.Survivors.Rifter.SkillStates
     {
         public static GameObject areaIndicatorPrefab = global::EntityStates.Huntress.ArrowRain.areaIndicatorPrefab;
         public static GameObject areaIndicatorInstance;
-        float stopwatch;
-        float blastWatch;
+        public float stopwatch;
+        public float blastWatch;
 
 
         CharacterBody body;
 
-        int blastNum;
+        public int blastNum;
 
 
-        bool specialReleasedOnce;
+        public bool specialReleasedOnce;
 
-        float chargeDuration;
+        public float chargeDuration;
 
         public float blastRadius;
 
         public override void OnEnter()
         {
             base.OnEnter();
-            if (cameraTargetParams)
-            {
-                cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Aura);
-            }
             blastNum = 0;
             chargeDuration = 2f / attackSpeedStat;
             body = characterBody;
@@ -140,20 +136,17 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 Destroy(areaIndicatorInstance.gameObject);
             }
-            if (cameraTargetParams)
-            {
-                cameraTargetParams.RequestAimType(CameraTargetParams.AimType.Standard);
-            }
             base.OnExit();
         }
 
         public override float BlastRadius()
         {
-            float radius = Mathf.Clamp01(base.fixedAge/chargeDuration);
-            if (base.fixedAge > chargeDuration)
-            {
-                radius = 1f;
-            }
+            //float radius = Mathf.Clamp01(base.fixedAge/chargeDuration);
+            //if (base.fixedAge > chargeDuration)
+            //{
+            //    radius = 1f;
+            //}
+            float radius = 1f;
             return radius * 7f + 5f;
         }
 

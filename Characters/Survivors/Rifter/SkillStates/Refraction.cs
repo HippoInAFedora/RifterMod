@@ -154,6 +154,8 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
                 }
                 bool shotL = false;
 
+                tracer = IsOvercharged() ? tracerEffectPrefabOvercharged : tracerEffectPrefab;
+
                 BulletAttack bulletAttackL = new BulletAttack();
                 bulletAttackL.owner = gameObject;
                 bulletAttackL.weapon = gameObject;
@@ -166,7 +168,7 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
                 bulletAttackL.procCoefficient = 0f;
                 bulletAttackL.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
                 bulletAttackL.radius = .75f;
-                bulletAttackL.tracerEffectPrefab = tracerEffectPrefab;
+                bulletAttackL.tracerEffectPrefab = tracer;
                 bulletAttackL.muzzleName = "MuzzleRight";
                 bulletAttackL.hitEffectPrefab = hitEffectPrefab;
                 bulletAttackL.isCrit = false;
@@ -213,7 +215,7 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
                 bulletAttackR.procCoefficient = 0f;
                 bulletAttackR.falloffModel = BulletAttack.FalloffModel.DefaultBullet;
                 bulletAttackR.radius = .75f;
-                bulletAttackR.tracerEffectPrefab = tracerEffectPrefab;
+                bulletAttackR.tracerEffectPrefab = tracer;
                 bulletAttackR.muzzleName = "MuzzleRight";
                 bulletAttackR.hitEffectPrefab = hitEffectPrefab;
                 bulletAttackR.isCrit = false;

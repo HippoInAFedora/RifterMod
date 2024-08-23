@@ -40,6 +40,15 @@
 		<PackageReference Include="R2API.Language" Version="1.*" />
 		<PackageReference Include="R2API.Sound" Version="1.*" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="AncientScepter">
+	    <HintPath>C:\Users\15039\AppData\Roaming\r2modmanPlus-local\RiskOfRain2\profiles\Dev\BepInEx\plugins\amogus_lovers-StandaloneAncientScepter\AncientScepter.dll</HintPath>
+	  </Reference>
+	  <Reference Include="RiskOfOptions">
+	    <HintPath>C:\Users\15039\AppData\Roaming\r2modmanPlus-local\RiskOfRain2\profiles\Dev\BepInEx\plugins\Rune580-Risk_Of_Options\RiskOfOptions\RiskOfOptions.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="&#xD;&#xA;copy /Y &quot;$(TargetPath)&quot; &quot;$(ProjectDir)..\Build\plugins&quot;&#xD;&#xA;&#xD;&#xA;REM follow the Building Your Mod page on the Riftertutorial wiki for more information on this&#xD;&#xA;REM change this to your username (or add yours if you're working in a team or somethin)&#xD;&#xA;if &quot;$(Username)&quot; == &quot;15039&quot; set build=true&#xD;&#xA;&#xD;&#xA;if defined build (&#xD;&#xA;&#xD;&#xA;REM copy the built mod to our Build folder&#xD;&#xA;copy &quot;$(TargetPath)&quot; &quot;$(ProjectDir)..\Build\plugins&quot;&#xD;&#xA;&#xD;&#xA;REM copy the assetbundle from our unity project to our Build folder&#xA;REM change these paths to your (now hopefully renamed) folders&#xA;if exist &quot;$(ProjectDir)..\RifterUnityProject\AssetBundles\rifterassetbundle&quot; (&#xA;copy &quot;$(ProjectDir)..\RifterUnityProject\AssetBundles\rifterassetbundle&quot; &quot;$(ProjectDir)..\Build\plugins\AssetBundles&quot;&#xA;)&#xD;&#xA;&#xD;&#xA;REM copy the whole Build\plugins folder into your r2modman profile. This mimics how r2modman will install your mod&#xA;Xcopy /E /I /Y &quot;$(ProjectDir)..\Build\plugins&quot; &quot;C:\Users\15039\AppData\Roaming\r2modmanPlus-local\RiskOfRain2\profiles\Dev\ Returns\BepInEx\plugins\Blake-Rifter\&quot;&#xD;&#xA;)&#xD;&#xA;" />
   </Target>

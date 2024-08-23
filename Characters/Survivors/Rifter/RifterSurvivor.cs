@@ -2,14 +2,12 @@
 using EntityStates;
 using RifterMod.Characters.Survivors.Rifter.Components;
 using RifterMod.Characters.Survivors.Rifter.SkillStates;
-using RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates;
 using RifterMod.Modules;
 using RifterMod.Modules.Characters;
 using RifterMod.Survivors.Rifter.Components;
 using RifterMod.Survivors.Rifter.SkillStates;
 using RoR2;
-using RoR2.Skills;
-using System;
+using AncientScepter;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -45,7 +43,7 @@ namespace RifterMod.Survivors.Rifter
             bodyColor = new Color(0.329f, 0.42f, 0.651f),
             sortPosition = 100,
 
-            crosshair = Assets.LoadCrosshair("SimpleDot"),
+            crosshair = RifterMod.Modules.Assets.LoadCrosshair("SimpleDot"),
             podPrefab = LegacyResourcesAPI.Load<GameObject>("Prefabs/NetworkedObjects/SurvivorPod"),
 
             maxHealth = 110f,
@@ -62,16 +60,23 @@ namespace RifterMod.Survivors.Rifter
         {
                 new CustomRendererInfo
                 {
-                    childName = "SwordModel",
-                    material = assetBundle.LoadMaterial("matHenry"),
+                    childName = "HeadPiece"
+                },
+                 new CustomRendererInfo
+                {
+                    childName = "GlassArm",
+                },
+                  new CustomRendererInfo
+                {
+                    childName = "GlassLeg",
                 },
                 new CustomRendererInfo
                 {
-                    childName = "GunModel",
+                    childName = "MainBody",
                 },
                 new CustomRendererInfo
                 {
-                    childName = "Model",
+                    childName = "BackVentTransparent", material = assetBundle.LoadMaterial("matBacklight")
                 }
         };
 
@@ -120,7 +125,7 @@ namespace RifterMod.Survivors.Rifter
             InitializeCharacterMaster();
 
             AdditionalBodySetup();
-
+            
             AddHooks();
         }
 
@@ -130,7 +135,8 @@ namespace RifterMod.Survivors.Rifter
             bodyPrefab.AddComponent<RifterWeaponComponent>();
             bodyPrefab.AddComponent<RifterOverchargePassive>();
             bodyPrefab.AddComponent<RiftAndFracture>();
-
+            bodyPrefab.AddComponent<OverchargeMeter>();
+            bodyPrefab.GetComponent<OverchargeMeter>().passive = bodyPrefab.GetComponent<RifterOverchargePassive>();
         }
 
         public void AddHitboxes()
@@ -170,6 +176,10 @@ namespace RifterMod.Survivors.Rifter
             AddSecondarySkills();
             AddUtiitySkills();
             AddSpecialSkills();
+            if (RifterPlugin.ScepterInstalled)
+            {
+                InitializeScepter();
+            }
         }
 
         //if this is your first look at skilldef creation, take a look at Secondary first
@@ -442,10 +452,58 @@ namespace RifterMod.Survivors.Rifter
                 mustKeyPress = false,
                 cancelSprintingOnActivation = true,
             });
-            specialSkillDef1.usesOvercharge = false;
+            specialSkillDef2.usesOvercharge = false;
             Skills.AddSpecialSkills(bodyPrefab, specialSkillDef2);
         }
 
+
+        private void InitializeScepter()
+        {
+            RifterSkillDef scepterSkillDef1 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
+            {
+                skillName = "To Singularity",
+                skillNameToken = Rifter_PREFIX + "SPECIAL_RECURSION_SCEPTER",
+                skillDescriptionToken = Rifter_PREFIX + "SPECIAL_RECURSION_DESCRIPTION_SCEPTER",
+                skillIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon"),
+                keywordTokens = new[] { Tokens.overchargedKeyword },
+                activationState = new EntityStates.SerializableEntityStateType(typeof(RecursionLocateScepter)),
+                activationStateMachineName = "Weapon2",
+                interruptPriority = InterruptPriority.PrioritySkill,
+
+                baseMaxStock = 1,
+                baseRechargeInterval = 12f,
+
+                beginSkillCooldownOnSkillEnd = true,
+                isCombatSkill = true,
+                mustKeyPress = false,
+                cancelSprintingOnActivation = true,
+            });
+            scepterSkillDef1.usesOvercharge = false;
+            ItemBase<AncientScepterItem>.instance.RegisterScepterSkill(scepterSkillDef1, bodyName, SkillSlot.Special, 0);
+
+            RifterSkillDef scepterSkillDef2 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
+            {
+                skillName = "Colliding Worlds",
+                skillNameToken = Rifter_PREFIX + "SPECIAL_CHAINED_WORLDS_SCEPTER",
+                skillDescriptionToken = Rifter_PREFIX + "SPECIAL_CHAINED_WORLDS_DESCRIPTION_SCEPTER",
+                skillIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon"),
+
+                activationState = new EntityStates.SerializableEntityStateType(typeof(ChainedWorldsChargeupScepter)),
+                keywordTokens = new[] { Tokens.overchargedChainedKeyword },
+                activationStateMachineName = "Weapon2",
+                interruptPriority = InterruptPriority.PrioritySkill,
+
+                baseMaxStock = 1,
+                baseRechargeInterval = 15f,
+
+                beginSkillCooldownOnSkillEnd = true,
+                isCombatSkill = true,
+                mustKeyPress = false,
+                cancelSprintingOnActivation = true,
+            });
+            scepterSkillDef2.usesOvercharge = false;
+            ItemBase<AncientScepterItem>.instance.RegisterScepterSkill(scepterSkillDef2, bodyName, SkillSlot.Special, 1);
+        }
 
         #endregion skills
 
@@ -540,6 +598,7 @@ namespace RifterMod.Survivors.Rifter
         {
             R2API.RecalculateStatsAPI.GetStatCoefficients += RecalculateStatsAPI_GetStatCoefficients;
         }
+
 
         private void RecalculateStatsAPI_GetStatCoefficients(CharacterBody sender, R2API.RecalculateStatsAPI.StatHookEventArgs args)
         {

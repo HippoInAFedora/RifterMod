@@ -17,11 +17,12 @@ public class ModifiedTeleport : BaseState
 
     private HurtBoxGroup hurtboxGroup;
 
-    GameObject trailObject = RifterAssets.fractureLineTracer;
     GameObject inEffect = RifterAssets.slipstreamInEffect;
     GameObject outEffect = RifterAssets.slipstreamOutEffect;
 
-    TrailRenderer teleportTrail;
+    public static GameObject tracerEffectPrefabOvercharged = RifterAssets.fractureLineTracerOvercharged;
+
+    public bool showEffect = false;
 
     private float stopwatch;
     public float teleportTimer;
@@ -61,23 +62,24 @@ public class ModifiedTeleport : BaseState
 
         TeleportHelper.TeleportBody(characterBody, targetFootPosition);
 
-        EffectData inEffectData = new EffectData
+        if (!showEffect)
         {
-            origin = characterBody.corePosition,
-            scale = base.characterBody.radius * 2.5f
-        };
-        EffectManager.SpawnEffect(inEffect, inEffectData, true);
+            EffectData inEffectData = new EffectData
+            {
+                origin = characterBody.corePosition,
+                scale = base.characterBody.radius * 2.5f
+            };
+            EffectManager.SpawnEffect(inEffect, inEffectData, true);
 
-        //if (trailObject)
-        //{
-        //    EffectData effectData = new EffectData
-        //    {
-        //        origin = targetFootPosition,
-        //        start = characterBody.corePosition,
-        //    };
-        //    effectData.SetHurtBoxReference(base.characterBody.mainHurtBox);
-        //    EffectManager.SpawnEffect(trailObject, effectData, true);
-        //}
+            BulletAttack tracerAttack = new BulletAttack();
+            tracerAttack.damage = 0f;
+            tracerAttack.origin = initialPosition;
+            tracerAttack.aimVector = targetFootPosition - initialPosition;
+            tracerAttack.maxDistance = Vector3.Distance(initialPosition, targetFootPosition);
+            tracerAttack.tracerEffectPrefab = tracerEffectPrefabOvercharged;
+            tracerAttack.Fire();
+        }
+
         
 
     }
@@ -86,11 +88,7 @@ public class ModifiedTeleport : BaseState
     {
         base.FixedUpdate();
         stopwatch += Time.fixedDeltaTime;
-        //if ((bool)trailObject)
-        //{
-        //    trailObject.transform.position += trailObject.transform.forward * (Vector3.Distance(targetFootPosition, initialPosition) / teleportWaitDuration * Time.fixedDeltaTime);
-        //    teleportTrail.AddPosition((Vector3)trailObject.transform.position);
-        //}
+
 
         if ((bool)characterMotor)
         {
@@ -107,10 +105,10 @@ public class ModifiedTeleport : BaseState
 
         if (base.isAuthority && stopwatch >= teleportWaitDuration)
         {
-            if (RifterConfig.cursed.Value == true)
-            {
-                outer.SetNextState(new Idle());
-            }
+            //if (RifterConfig.cursed.Value == true)
+            //{
+            //    outer.SetNextState(new Idle());
+            //}
             outer.SetNextStateToMain();
         }
     }
@@ -120,27 +118,23 @@ public class ModifiedTeleport : BaseState
         if (!outer.destroying)
         {
             modelTransform = GetModelTransform();
-            if ((bool)modelTransform)
+            if ((bool)modelTransform && showEffect)
             {
                 TemporaryOverlay temporaryOverlay = modelTransform.gameObject.AddComponent<TemporaryOverlay>();
                 temporaryOverlay.duration = 0.6f;
                 temporaryOverlay.animateShaderAlpha = true;
                 temporaryOverlay.alphaCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
                 temporaryOverlay.destroyComponentOnEnd = true;
-                temporaryOverlay.originalMaterial = LegacyResourcesAPI.Load<Material>("Materials/matHuntressFlashBright");
+                temporaryOverlay.originalMaterial = RifterAssets.matTeleport;
                 temporaryOverlay.AddToCharacerModel(modelTransform.GetComponent<CharacterModel>());
-                TemporaryOverlay temporaryOverlay2 = modelTransform.gameObject.AddComponent<TemporaryOverlay>();
-                temporaryOverlay2.duration = 0.7f;
-                temporaryOverlay2.animateShaderAlpha = true;
-                temporaryOverlay2.alphaCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
-                temporaryOverlay2.destroyComponentOnEnd = true;
-                temporaryOverlay2.originalMaterial = LegacyResourcesAPI.Load<Material>("Materials/matHuntressFlashExpanded");
-                temporaryOverlay2.AddToCharacerModel(modelTransform.GetComponent<CharacterModel>());
+                //TemporaryOverlay temporaryOverlay2 = modelTransform.gameObject.AddComponent<TemporaryOverlay>();
+                //temporaryOverlay2.duration = 0.7f;
+                //temporaryOverlay2.animateShaderAlpha = true;
+                //temporaryOverlay2.alphaCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
+                //temporaryOverlay2.destroyComponentOnEnd = true;
+                //temporaryOverlay2.originalMaterial = LegacyResourcesAPI.Load<Material>("Materials/matHuntressFlashExpanded");
+                //temporaryOverlay2.AddToCharacerModel(modelTransform.GetComponent<CharacterModel>());
             }
-        }
-        if (trailObject)
-        {
-            Destroy(trailObject);
         }
         if ((bool)characterModel)
         {
@@ -153,12 +147,16 @@ public class ModifiedTeleport : BaseState
             hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
         }
 
-        EffectData outEffectData = new EffectData
+        if (!showEffect)
         {
-            origin = targetFootPosition,
-            scale = base.characterBody.radius * 5f
-        };
-        EffectManager.SpawnEffect(outEffect, outEffectData, true);
+            EffectData outEffectData = new EffectData
+            {
+                origin = targetFootPosition,
+                scale = base.characterBody.radius * 5f
+            };
+            EffectManager.SpawnEffect(outEffect, outEffectData, true);
+        }
+        
 
         base.OnExit();
     }

@@ -32,19 +32,19 @@ namespace RifterMod.Survivors.Rifter
         public static GameObject riftExplosionEffect;
         public static GameObject riftExplosionEffectOvercharged;
         public static GameObject fractureLineTracer;
+        public static GameObject fractureLineTracerOvercharged;
         public static GameObject distanceRenderer;
         public static GameObject fractureBeam;
         public static GameObject distanceOrb;
 
         public static Sprite shatterIcon;
 
-        public static Material[] riftOverlayMat;
-        public static Material riftMat;
-        public static Material riftEnemyMaterial;
-        public static Material fractureMaterial;
+        public static Material matTeleport;
         public static Material matShatter;
 
-        public static Color riftColor = new Color(66, 135, 245);
+        public static GameObject overchargeHUD;
+
+        public static Color riftColor = new Color(14, 44, 153);
         public static Color overchargedColor = new Color(150, 66, 245);
 
         // networked hit sounds
@@ -89,33 +89,23 @@ namespace RifterMod.Survivors.Rifter
             swordSwingEffect = _assetBundle.LoadEffect("RifterSwordSwingEffect", true);
             swordHitImpactEffect = _assetBundle.LoadEffect("ImpactRifterSlash");
             distanceRenderer = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Golem/LaserGolem.prefab").WaitForCompletion();
-            var gradient = new Gradient();
-            var colors = new GradientColorKey[2];
-            colors[0] = new GradientColorKey(riftColor, 0.0f);
-            colors[1] = new GradientColorKey(overchargedColor, 1.0f);
-            var alphas = new GradientAlphaKey[1];
-            alphas[0] = new GradientAlphaKey(1.0f, 0.0f);
-            gradient.SetKeys(colors, alphas);
-            LineRenderer dLine = distanceRenderer.GetComponent<LineRenderer>();
-            dLine.colorGradient = gradient;
+
             matShatter = _assetBundle.LoadMaterial("matShatter");
+            matTeleport = Addressables.LoadAssetAsync<Material>("RoR2/Base/Huntress/matHuntressFlashBright.mat").WaitForCompletion();
+            matTeleport.SetColor("_TintColor", riftColor);
 
             distanceOrb = _assetBundle.LoadEffect("DistanceOrb");
-            distanceOrb.AddComponent<EffectComponent>();
-
-            //distanceRenderer = _assetBundle.LoadEffect("FractureTrail");
-            distanceRenderer.AddComponent<EffectComponent>();
-            Content.CreateAndAddEffectDef(distanceRenderer);
-            Content.CreateAndAddEffectDef(distanceOrb);
 
             CreateRift();
             CreateFracture();
+            CreateHUD();
         }
 
         private static void CreateRift()
         {
             //riftEnemyMaterial = _assetBundle.LoadMaterial("matEnemyMask");
-            riftExplosionEffect = _assetBundle.LoadEffect("riftObjectTypical");                   
+            riftExplosionEffect = _assetBundle.LoadEffect("riftObjectTypical");   
+            riftExplosionEffect.transform.GetChild(2).gameObject.SetActive(false);
             riftExplosionEffect.AddComponent<NetworkIdentity>();
             riftExplosionEffect.AddComponent<DestroyOnTimer>().duration = .6f;
             riftExplosionEffect.AddComponent<EffectComponent>();
@@ -129,19 +119,8 @@ namespace RifterMod.Survivors.Rifter
             }
             PrefabAPI.RegisterNetworkPrefab(riftExplosionEffect);
 
-            //riftExplosionEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Engi/BubbleShieldEndEffect.prefab").WaitForCompletion().InstantiateClone("RiftExplosionEffect");
-            //riftExplosionEffect = _assetBundle.LoadEffect("RiftObjectTypical");
-            riftOverlayMat = new Material[2];
-            riftOverlayMat[0] = Addressables.LoadAssetAsync<Material>("RoR2/Base/bazaar/matBazaarIceDistortion.mat").WaitForCompletion();
-            riftOverlayMat[1] = Addressables.LoadAssetAsync<Material>("RoR2/Base/EliteIce/matAffixWhiteSphereExplosion.mat").WaitForCompletion();
-            //riftExplosionEffect.GetComponent<DestroyOnTimer>().duration = .75f;
-            //riftExplosionEffect.transform.GetChild(0).gameObject.GetComponent<ParticleSystemRenderer>().material = riftOverlayMat[0];
-            //riftExplosionEffect.transform.GetChild(1).gameObject.GetComponent<ParticleSystemRenderer>().material = riftOverlayMat[1];
-            //riftExplosionEffect.transform.GetChild(1).gameObject.GetComponent<ParticleSystemRenderer>().material.SetColor("_Color", riftColor);
-
-            //riftExplosionEffect.transform.GetChild(2).gameObject.SetActive(false);
-
             riftExplosionEffectOvercharged = _assetBundle.LoadEffect("RiftOvercharged");
+            riftExplosionEffectOvercharged.transform.GetChild(2).gameObject.SetActive(false);
             riftExplosionEffectOvercharged.AddComponent<NetworkIdentity>();
             riftExplosionEffectOvercharged.AddComponent<DestroyOnTimer>().duration = .6f;
             riftExplosionEffectOvercharged.AddComponent<EffectComponent>();
@@ -184,17 +163,6 @@ namespace RifterMod.Survivors.Rifter
             PrefabAPI.RegisterNetworkPrefab(slipstreamOutEffect);
 
 
-
-            //riftExplosionEffectOvercharged = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Engi/BubbleShieldEndEffect.prefab").WaitForCompletion().InstantiateClone("RiftExplosionEffectOvercharged");
-            //riftExplosionEffectOvercharged.AddComponent<NetworkIdentity>();
-            //riftExplosionEffectOvercharged.GetComponent<DestroyOnTimer>().duration = .75f;
-            //riftExplosionEffectOvercharged.transform.GetChild(0).gameObject.GetComponent<ParticleSystemRenderer>().material = riftOverlayMat[0];
-            //riftExplosionEffectOvercharged.transform.GetChild(1).gameObject.GetComponent<ParticleSystemRenderer>().material = riftOverlayMat[1];
-            //riftExplosionEffectOvercharged.transform.GetChild(1).gameObject.GetComponent<ParticleSystemRenderer>().material.SetColor("_Color", overchargedColor);
-            //riftExplosionEffectOvercharged.transform.GetChild(2).gameObject.SetActive(false);
-            //Content.CreateAndAddEffectDef(riftExplosionEffectOvercharged);
-
-
         }
 
         private static void CreateFracture()        
@@ -205,57 +173,116 @@ namespace RifterMod.Survivors.Rifter
             fractureLineTracer.AddComponent<EventFunctions>();
             fractureLineTracer.AddComponent<Tracer>();
             fractureLineTracer.AddComponent<BeamPointsFromTransforms>();
-            fractureLineTracer.AddComponent<DestroyOnTimer>().duration = .5f;
+            fractureLineTracer.AddComponent<DestroyOnTimer>().duration = .375f;
+            Transform midpointTransform1 = fractureLineTracer.transform.GetChild(3).transform;
+            Transform midpointTransform2 = fractureLineTracer.transform.GetChild(4).transform;
+            Transform midpointTransform3 = fractureLineTracer.transform.GetChild(5).transform;
+            if (midpointTransform1)
+            {
+                FractureBeamComponent beamComp1 = midpointTransform1.gameObject.AddComponent<FractureBeamComponent>();
+                beamComp1.trans1 = fractureLineTracer.transform.GetChild(0).transform;
+                beamComp1.trans2 = midpointTransform2;
+                //beamComp1.offsetVector = new Vector3(0.2f, 1f, 0.5f);
+            }
+            if (midpointTransform2)
+            {
+                FractureBeamComponent beamComp2 = midpointTransform2.gameObject.AddComponent<FractureBeamComponent>();
+                beamComp2.trans1 = fractureLineTracer.transform.GetChild(0).transform;
+                beamComp2.trans2 = fractureLineTracer.transform.GetChild(1).transform;
+                //beamComp2.offsetVector = Vector3.zero;
+            }
+            if (midpointTransform3)
+            {
+                FractureBeamComponent beamComp3 = midpointTransform3.gameObject.AddComponent<FractureBeamComponent>();
+                beamComp3.trans1 = midpointTransform2;
+                beamComp3.trans2 = fractureLineTracer.transform.GetChild(1).transform;
+                //beamComp3.offsetVector = new Vector3(-0.8f, -0.2f, .3f);
+            }
 
             if (fractureLineTracer.TryGetComponent(out BeamPointsFromTransforms beamPoints))
             {
                 beamPoints.target = fractureLineTracer.GetComponent<LineRenderer>();
-                Transform[] transforms = new Transform[2];
+                Transform[] transforms = new Transform[5];
                 transforms[0] = fractureLineTracer.transform.GetChild(0).transform;
-                transforms[1] = fractureLineTracer.transform.GetChild(1).transform;
+                transforms[1] = midpointTransform1;
+                transforms[2] = midpointTransform2;
+                transforms[3] = midpointTransform3;
+                transforms[4] = fractureLineTracer.transform.GetChild(1).transform;
 
                 beamPoints.pointTransforms = transforms;
-            }
-
-            fractureLineTracer.transform.GetChild(2).gameObject.AddComponent<BeamPointsFromTransforms>();
-            if (fractureLineTracer.transform.GetChild(2).gameObject.TryGetComponent(out BeamPointsFromTransforms beamPoints2))
-            {
-                beamPoints2.target = fractureLineTracer.GetComponent<LineRenderer>();
-                Transform[] transforms2 = new Transform[2];
-                transforms2[0] = fractureLineTracer.transform.GetChild(2).transform;
-                transforms2[1] = fractureLineTracer.transform.GetChild(2).GetChild(0).transform;
-
-                beamPoints2.pointTransforms = transforms2;
             }
 
             if (fractureLineTracer.TryGetComponent(out Tracer tracer))
             {
                 tracer.headTransform = fractureLineTracer.transform.GetChild(0).transform;
                 tracer.tailTransform = fractureLineTracer.transform.GetChild(1).transform;
-                tracer.startTransform = fractureLineTracer.transform.GetChild(2).GetChild(0).transform;
-                tracer.beamObject = fractureLineTracer.transform.GetChild(2).gameObject;
-                tracer.beamDensity = 1f;
-                tracer.speed = 300f;
-                tracer.length = 10f;
+                tracer.startTransform = fractureLineTracer.transform.GetChild(2).transform;
+                tracer.speed = 1000f;
+                tracer.length = 100f;
             }
 
             Content.CreateAndAddEffectDef(fractureLineTracer);
 
 
 
-            //fractureLineTracer = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/GoldGat/TracerGoldGat.prefab").WaitForCompletion();
-            //LineRenderer lineRenderer = fractureBeam.GetComponent<LineRenderer>();
-            ///fractureLineTracer.GetComponent<LineRenderer>().material = lineRenderer.material;
-            //fractureLineTracer.GetComponent<LineRenderer>().positionCount = lineRenderer.positionCount;
-            //for (int i = 0; i < lineRenderer.positionCount; i++)
-            //{
-            //    fractureLineTracer.GetComponent<LineRenderer>().SetPosition(i, lineRenderer.GetPosition(i));
-            //}
-            //fractureLineTracer.GetComponent<LineRenderer>().startWidth = lineRenderer.startWidth;
-            //fractureLineTracer.GetComponent<LineRenderer>().endWidth = lineRenderer.endWidth;
+            fractureLineTracerOvercharged = _assetBundle.LoadEffect("FractureTrailOvercharged");
+            fractureLineTracerOvercharged.AddComponent<EffectComponent>();
+            fractureLineTracerOvercharged.AddComponent<EventFunctions>();
+            fractureLineTracerOvercharged.AddComponent<Tracer>();
+            fractureLineTracerOvercharged.AddComponent<BeamPointsFromTransforms>();
+            fractureLineTracerOvercharged.AddComponent<DestroyOnTimer>().duration = .375f;
+            Transform midpointTransformOvercharged1 = fractureLineTracerOvercharged.transform.GetChild(3).transform;
+            Transform midpointTransformOvercharged2 = fractureLineTracerOvercharged.transform.GetChild(4).transform;
+            Transform midpointTransformOvercharged3 = fractureLineTracerOvercharged.transform.GetChild(5).transform;
+            if (midpointTransformOvercharged1)
+            {
+                FractureBeamComponent beamComp1 = midpointTransformOvercharged1.gameObject.AddComponent<FractureBeamComponent>();
+                beamComp1.trans1 = fractureLineTracerOvercharged.transform.GetChild(0).transform;
+                beamComp1.trans2 = midpointTransformOvercharged2;
+                //beamComp1.offsetVector = new Vector3(0.2f, 1f, 0.5f);
+            }
+            if (midpointTransformOvercharged2)
+            {
+                FractureBeamComponent beamComp2 = midpointTransformOvercharged2.gameObject.AddComponent<FractureBeamComponent>();
+                beamComp2.trans1 = fractureLineTracerOvercharged.transform.GetChild(0).transform;
+                beamComp2.trans2 = fractureLineTracerOvercharged.transform.GetChild(1).transform;
+                //beamComp2.offsetVector = Vector3.zero;
+            }
+            if (midpointTransformOvercharged3)
+            {
+                FractureBeamComponent beamComp3 = midpointTransformOvercharged3.gameObject.AddComponent<FractureBeamComponent>();
+                beamComp3.trans1 = midpointTransformOvercharged2;
+                beamComp3.trans2 = fractureLineTracerOvercharged.transform.GetChild(1).transform;
+                //beamComp3.offsetVector = new Vector3(-0.8f, -0.2f, .3f);
+            }
+//
+            if (fractureLineTracerOvercharged.TryGetComponent(out BeamPointsFromTransforms beamPointsOvercharged))
+            {
+                beamPointsOvercharged.target = fractureLineTracerOvercharged.GetComponent<LineRenderer>();
+                Transform[] transforms = new Transform[5];
+                transforms[0] = fractureLineTracerOvercharged.transform.GetChild(0).transform;
+                transforms[1] = midpointTransformOvercharged1;
+                transforms[2] = midpointTransformOvercharged2;
+                transforms[3] = midpointTransformOvercharged3;
+                transforms[4] = fractureLineTracerOvercharged.transform.GetChild(1).transform;
+                beamPointsOvercharged.pointTransforms = transforms;
+            }
+//
+            if (fractureLineTracerOvercharged.TryGetComponent(out Tracer tracerOvercharged))
+            {
+                tracerOvercharged.headTransform = fractureLineTracerOvercharged.transform.GetChild(0).transform;
+                tracerOvercharged.tailTransform = fractureLineTracerOvercharged.transform.GetChild(1).transform;
+                tracerOvercharged.startTransform = fractureLineTracerOvercharged.transform.GetChild(2).transform;
+                tracerOvercharged.speed = 1000f;
+                tracerOvercharged.length = 100f;
+            }
 
+            Content.CreateAndAddEffectDef(fractureLineTracerOvercharged);
+        }
 
-
+        private static void CreateHUD()
+        {
+            overchargeHUD = _assetBundle.LoadAsset<GameObject>("HUDOvercharge");
         }
 
         private static void CreateBombExplosionEffect()
