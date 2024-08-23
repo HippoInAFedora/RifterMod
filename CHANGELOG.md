@@ -1,5 +1,59 @@
 # ChangeLog
 
+ver 0.4.6
+ - RiskOfOptions Support!
+ - AncientScepter Support!
+ - Shatter reworked. Cripple is our friend now.
+ - Updated descriptions.
+ - Slipstream and Rift Rider now cleanse debuffs. I kept forgetting to do this. I also didn't test if this works.
+ - Gauntlet 25, Scattering has a new mechanic. I will not elaborate.
+ - Rifts and Fractures vfx changed once again. This is a neverending story.
+ - Distance assist beam should no longer spawn at world 0,0,0 if not in use
+ - I should really make this a 0.5.0 update. But I'm reserving that for bigger changes, aka, animations or sfx.
+ 
+ ToDo/Next update, expect:
+ - adjust model to be more accurate to vision (the backlight is still being mean to me)
+ - unlockables!
+ - hitEffects
+ 
+
+
+ver 0.4.5
+ - MODEL
+
+ver 0.4.4
+ - HUD should work only when you're Rifter now.
+ 
+ver 0.4.3
+ - rift redesign #3.
+ - all rifts have been shrunken a little bit.
+ - tracer redesign #2.
+ - Experimental HUD overlay added to keep track of overcharge stacks. I have not tested if it is multiplayer compatible. You can disable it in the config (HUD).
+
+ver 0.4.2
+ - Small rifts in Buckshot Rift do not apply shatter.
+ - No longer destroys tracer is an enemy is teleported or teleporting with Rift Rider.
+ - Shatter Icon added
+ - small fixes here and there. Hopefully some major fixes... got fixed this time.
+
+ver 0.4.1
+ - CONFIG OPTIONS. I have not fully tested if they work entirely, but they exist now.
+ - Added "Distance Assist" laser to help visualize primary distance.
+ - Buckshot Rift logic improved on small rifts.
+ - Buckshot Rift adds more rifts if overcharged.
+ - Slipstream angle in air reduced.
+ - Temp VFX for Tracer (Woo! Could look terrible)
+ - Rift Rider now can stack overcharge if hits enemies.
+ - Recursion damage increased from 2200% to 2600%
+ - Mild fixes here and there
+
+ver 0.4.0
+ - New Primary! Buckshot Rifts
+ - Slipstream now moves at an upwards angle if airborne
+ - Color scheme on loadout screen
+ - bug fixes that I don't remember what they were before
+ - Beginning of VFX rework
+
 ver 0.3.0
  - Description changes
  - Specials reworked! Recursion is now a ranged tool, and Chained Worlds acts as god intended (or so I hope).
