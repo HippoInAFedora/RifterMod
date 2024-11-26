@@ -1,85 +1,88 @@
-# Rifter v0.4.6
+# Rifter v1.0.1
 
 Adds Rifter, a positional-based character that utilizes sweet-spots and teleportation to deal massive damage.
-This is in playtesting stage.
 
+the special thanks to:
 MODEL DONE BY COMMANDER JOJO. HE IS AMAZING.
+ANIMATIONS DONE BY JESTANANIMATOR. ABSOLUTE GOAT.
+ICONS DONE BY ANARTOAST. UNBELIEVABLE. EXCEPTIONAL.
+WITHOUT BUNS THIS WOULDN'T BE WHERE IT IS TODAY.
+TRYAGAIN2711 THE MASTER OF WORDING.
+and many others. I'll add y'all below.
 
 So what's the build?
 
 ## Passives:
 
-> Shatter
+> Imperfection
 
-Rifts shatter armor and total health, up to 60 armor, and 50% health.
+Rifts have the chance to cripple enemies. The chance increases each time an enemy is hit.
 
 > Rift/Fracture
 
-Your shots consist of Rifts and Fracture Lines. Rift are sweet-spot damage at the end of your shot. Primary and Secondary shots are connected by weaker Fracture Lines that deal 80% damage that are unable to activate item effects. Rifts are weakened if they hit the ground before max distance.
+Your shots consist of Rifts and Fracture Lines. Rift are sweet-spot damage at the end of your shot. Primary  shots are connected by weaker Fracture Lines that deal 80% damage that are unable to activate item effects. Rifts are weakened if they hit the ground before max distance.
 
 > Overcharge
 
-Overcharge teleports enemies hit by a skill to your far-range rifts.
+Overcharged abilities teleport enemies to your far-range rifts, OR to Timelock if it is out.
 
 
 ## Primary: 
 
-> Gauntlet Range 50, Perfected
+> Focused Rifts
 
-Shoot a far-ranged rift for 500% damage.
+Shoot a far-ranged rift for 500% damage. Hold primary and secondary for a mid-range rift, that is 20% smaller and weaker.
 
-> Gauntlet Range 50, Buckshot
+> Buckshot Rifts
 
-Shoot a rift for 280% damage, with 5 x 120% smaller and scattered rifts surrounding it. *Overcharge* adds an additional 3 x 120% rifts.
+Shoot a far-ranged rift for 280% damage (+ 5 x 120% smaller rifts). Hold primary and secondary for a mid-range rift, that is 20% smaller and weaker.
+Shoots faster, and has a higher proccing chance than the Focused Rift.
+
 
 ## Secondaries: 
 
-> Gauntlet Range 25, Scattering
+> Fracture Shots
 
-Shoot a mid-range rift for 300% damage. Incurs no cooldown.
+Shoot 3 fracture shots for 80% damage each. Each shot is overcharged.
+Let's act like the other secondary doesn't exist.
 
-> Gauntlet Range 25, Rapidfire
-
-Shoot a mid-range rift for 300% damage. Hold up to 3. Last shot is *overcharged*.
-
-> Gauntlet Range 25, Refracted
-
-Shoot a spread of 3 mid-range rifts for 300% damage each. Always *overcharged*.
 
 ## Utilities:
 
 > Slipstream
 
-Teleport a short distance, briefly turning invulnerable. Your next shot is *overcharged*.
+Teleport a short distance. Replenishes secondary skill stock.
 
-> Rift Rider
+> Quantum Portals
 
-Travel through your primary rift. Hit enemies are teleported to your previous location. Enemies hit add to overcharge.
-
+Dash back and create two portals, each blasting for 150% damage per second. Portals teleport to each other. (Currently broken in multiplayer).
 
 
 ## Special
 
-> Recursion
+> Timelock
 
-Position 5 stacked rifts, dealing 2600% total damage.
-*note*: the first rift starts at 350% damage and a radius of 10m. Subsequent rifts are 20% stronger and larger than the last.
+Create a field that Nullifies enemies. Hitting the field with a well-placed Rift can cause it to explode, dealing 500% (+100% per enemy hit)!
+*while active, all rifts will teleport enemies to the Timelock.
 
-> Chained Worlds
-
-Charge and shoot 5 rifts in a line, dealing 500% damage per rift. Each rift teleports enemies to the next.
 
 # Ending Notes
 
-Discord exists! link is https://discord.gg/5ckGhPy5nJ. If it ain't Hippo Mods, I have lied and let me know in the RoR2 Modding discord (@Hippo).
+Emote compatibility is pending.
+New sound effects are pending.
+Extra polish, hitEffects, etc. pending.
 
-If you like the mod and want to support me, I have a ko-fi now! (I know he's not finished quite yet, but I'm gonna do my best!)
+Discord exists! link is https://discord.gg/5ckGhPy5nJ.
+
+If you have any issues, please contact me through the discord. It's where I will be most active and likely to see it.
+
+If you like the mod and want to support me, I have a ko-fi!
 https://ko-fi.com/hippo7557
 
-Feedback is heavily appreciated.
+Feedback is appreciated.
 
 Special thanks to a lot of people.
-Tsuyoikenko, S***ter, TRYAGAIN211, TimeSweeper, Chinchi, MotherEgg, Wavy, Randomly Awesome, Nines and other people I forgot. Thanks a bunch!
+Buns, JestAnAnimator, Anartoast, Tsuyoikenko, S***ter, TRYAGAIN211, TimeSweeper, Chinchi, MotherEgg, Wavy, Randomly Awesome, Nines, Violet, .Score, all those that are testing the character and providing feedback, and other people I forgot. Thanks a bunch!
 
 
 

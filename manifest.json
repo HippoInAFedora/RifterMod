@@ -1,16 +1,17 @@
 {
     "name": "Rifter",
     "author": "Blake",
-    "version_number": "0.4.6",
+    "version_number": "1.0.1",
     "website_url": "",
-    "description": "Adds Rifter, a positional-based survivor. Now with RiskOfOptions and AncientScepter support!",
+    "description": "Adds Rifter, a positional-based survivor.",
     "dependencies": [
-        "bbepis-BepInExPack-5.4.1905",
-        "RiskofThunder-R2API_Core-5.0.3",
-        "RiskofThunder-R2API_Prefab-1.0.1",
-        "RiskofThunder-R2API_RecalculateStats-1.0.0",
+        "bbepis-BepInExPack-5.4.2117",
+        "RiskofThunder-R2API_Core-5.1.1",
+        "RiskofThunder-R2API_Prefab-1.0.4",
+        "RiskofThunder-R2API_RecalculateStats-1.4.0",
         "RiskofThunder-R2API_Language-1.0.1",
-        "RiskofThunder-R2API_Sound-1.0.2",
-        "RiskofThunder-R2API_DamageType-1.0.4"
+        "RiskofThunder-R2API_Sound-1.0.3",
+        "RiskofThunder-R2API_DamageType-1.1.1",
+        "RiskofThunder-R2API_Deployable-1.0.1"
     ]
 }

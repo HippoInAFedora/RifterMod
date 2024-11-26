@@ -1,4 +1,84 @@
 # ChangeLog
+ver 1.0.1
+- Mostly a visual update.
+- Finalized icons for all moves! Thank you Anartoast once again.
+- MainHurtbox origin relocated. This fixes a bug where certain item displays (e.g. oddly shaped opal sphere) were not centered on the character.
+- Item displays added for base game and sotv items.
+- Ragdoll on death added.
+- README corrections.
+- I will be working on onHit vfx one of these days...
+- Sounds effects are being worked on, but will take some time before any implementation.
+- I will try to network the portal soon.
+
+ver 1.0.0
+- we calling it full release because WE GOT ANIMAIONS BABYYYYYYYYYYYYYYY
+- many updated icons by the outstanding Anartoast
+- animations by JestAnAnimator. Phenominal
+- config cleanup. 
+
+ver 0.5.8
+ - wip icons. Anartoast is goated.
+ - that's it, I think. Small update.
+ 
+ver 0.5.7
+ - double heh. Unlockable should display correctly now (thanks Mightysmallfy for the fix!)
+ - portal input adjustments
+ - PORTAL IS NOT MULTIPLAYER FRIENDLY. LIFE WILL BE TERRIBLE IF TWO PEOPLE PLAY RIFTER AND HAVE PORTALS. THERE CAN ONLY BE ONE. I'm gonna fix that.
+
+ver 0.5.6
+ - portals should not proc on use. Blast around portal still procs.
+ - fixed spelling error that TryAgain pointed out, but I couldn't find it again until now.
+ - log has minor revisions.
+
+ver 0.5.5
+ - New Utility: Quantum Portals. Have fun with it. If it's a hit, I might phase out slipstream
+ - Complete rework of teleportation mechanic (totally did not steal Kenko Seamstress code without permission. Thx tho lol)
+ - Back vent display mesh removed. It looks much cleaner now.
+ 
+ - roadmap for those interested:
+  - Alt abilities, unlock abilities
+  - hit effects (and sfx???)
+  - skill icons... eventually. Soon or late idk
+  - expect at least 3 months for animations to even start
+  
+  
+ver 0.5.4
+ - heh
+
+ver 0.5.3
+ - updated unlockable token
+
+ver 0.5.2
+ - Bug fixes
+  - Overlays scale correctly
+  - Distance assist logic should be improved, with a midrange color swap
+ - Updated skill texts (TryAgain being a goat once again)
+ - Added lore
+ - Scattered Rift should be an unlcockable now
+ - Teleportation is still buggy. Working on it
+ - Back vent display improvement
+
+ver 0.5.1
+ - Bug fix: rifts now teleport enemies to Timelock if there is one out.
+ - Fracture shots recharging if all shots connected was a silly idea. Too silly, even.
+ - Removing Chained Worlds for now -- too buggy right now. I want to look at it and fix it in my own time.
+ - Figured out why Buckshot wasn't working. It's now working.
+ - Some text adjustments.
+
+ver 0.5.0
+ - Major Rework!
+ - SOTS Compatible!
+ - Primary now has a long-range and mid-range distance. Hold Primary and Secondary for the mid-range distance.
+ - All New Secondaries!!!
+ - Secondary: Fracture Shot - shoot 3 consecutive fracture lines that teleport hit enemies.
+ - Secondary Alt: Chained Worlds - shoot up to 5 rifts that teleport enemies to the next. You may recall this used to be a special.
+ - All New Special!
+ - Special: Timelock - create a space which nullifies all enemies within. If present, enemies will be teleported to the Timelock instead of primary distance. Shooting the Timelock with a Rift will cause it to explode!
+ - *Should* be networked. Though it might be finicky.
+ - Teleports are inconsistent. I will wait to see if Gearbox update will help with this.
+ - I have removed a lot of alts and abilities for this build. If it seems like it's working better, I'll start adding some alts back in and new alts.
+ - There is no longer ancient scepter items :(
+ - Cripple chance is removed for the time being.
 
 ver 0.4.6
  - RiskOfOptions Support!
