@@ -15,10 +15,8 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
         public static string dodgeSoundString = "HenryRoll";
         public static float dodgeFOV = EntityStates.Commando.DodgeState.dodgeFOV;
 
-        private Vector3 finalPosition;
+
         private Vector3 forwardDirection;
-        private Animator animator;
-        private Vector3 startPosition;
         private bool startedStateGrounded;
 
         private CharacterModel characterModel;
@@ -28,14 +26,26 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
         private GameObject slipstreamIn = RifterAssets.slipstreamInEffect;
         private GameObject slipstreamOut = RifterAssets.slipstreamOutEffect;
 
+        public Animator modelAnimator;
+
+        private int utilityStateHash = Animator.StringToHash("Utility");
+        private int utilityPlaybackHash = Animator.StringToHash("Utility.playbackRate");
+
+        private int utilityFullBodyStateHash = Animator.StringToHash("FullBody Descend");
+
         private float stopwatch;
 
 
         public override void OnEnter()
         {
             base.OnEnter();
-            animator = GetModelAnimator();
             modelTransform = GetModelTransform();
+            modelAnimator = GetModelAnimator();
+            if (modelAnimator)
+            {
+                PlayCrossfade("FullBody, Override", utilityFullBodyStateHash, utilityPlaybackHash, .3f, .25f);
+                PlayCrossfade("Gesture, Override", utilityStateHash, utilityPlaybackHash, .3f, .25f);
+            }
             if ((bool)modelTransform)
             {
                 characterModel = modelTransform.GetComponent<CharacterModel>();
@@ -65,11 +75,9 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
 
                 EffectData inEffect = new EffectData();
                 inEffect.origin = base.characterBody.corePosition;
-                inEffect.scale = 3f;
+                inEffect.scale = 2.5f;
                 EffectManager.SpawnEffect(slipstreamIn, inEffect, true);
 
-                finalPosition = transform.position + forwardDirection * speed;
-                startPosition = transform.position;
             }
 
 
@@ -80,8 +88,10 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
             stopwatch += Time.fixedDeltaTime;
             if (stopwatch < duration && (bool)characterMotor && (bool)characterDirection)
             {
+                base.characterBody.isSprinting = true;
                 Vector3 num = Vector3.zero;
-                num = (!startedStateGrounded) ? forwardDirection + new Vector3(0, .5f, 0) : forwardDirection;
+                //num = (!startedStateGrounded) ? forwardDirection + new Vector3(0, .5f, 0) : forwardDirection;
+                num = forwardDirection;
                 characterMotor.velocity = Vector3.zero;
                 characterMotor.rootMotion += num * (speed / duration * Time.fixedDeltaTime);
             }
@@ -93,7 +103,6 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
 
         public override void OnExit()
         {
-            if (cameraTargetParams) cameraTargetParams.fovOverride = -1f;
             if ((bool)characterModel)
             {
                 characterModel.invisibilityCount--;
@@ -113,27 +122,24 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
                 modelTransform = GetModelTransform();
                 if ((bool)modelTransform)
                 {
-                    TemporaryOverlay temporaryOverlay = modelTransform.gameObject.AddComponent<TemporaryOverlay>();
+                    TemporaryOverlayInstance temporaryOverlay = TemporaryOverlayManager.AddOverlay(modelTransform.gameObject);
                     temporaryOverlay.duration = 0.6f;
                     temporaryOverlay.animateShaderAlpha = true;
                     temporaryOverlay.alphaCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
                     temporaryOverlay.destroyComponentOnEnd = true;
                     temporaryOverlay.originalMaterial = RifterAssets.matTeleport;
-                    temporaryOverlay.AddToCharacerModel(modelTransform.GetComponent<CharacterModel>());
-                    //TemporaryOverlay temporaryOverlay2 = modelTransform.gameObject.AddComponent<TemporaryOverlay>();
-                    //temporaryOverlay2.duration = 0.7f;
-                    //temporaryOverlay2.animateShaderAlpha = true;
-                    //temporaryOverlay2.alphaCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
-                    //temporaryOverlay2.destroyComponentOnEnd = true;
-                    //temporaryOverlay2.originalMaterial = LegacyResourcesAPI.Load<Material>("Materials/matHuntressFlashExpanded");
-                    //temporaryOverlay2.AddToCharacerModel(modelTransform.GetComponent<CharacterModel>());
-                    //}
+                    temporaryOverlay.AddToCharacterModel(modelTransform.GetComponent<CharacterModel>());
                 }
             }
-                EffectData outEffect = new EffectData();
-            outEffect.scale = 3f;
+            EffectData outEffect = new EffectData();
+            outEffect.scale = 2.5f;
             outEffect.origin = base.characterBody.corePosition;
             EffectManager.SpawnEffect(slipstreamOut, outEffect, true);
+
+            if (base.skillLocator.secondary.stock < base.skillLocator.secondary.maxStock)
+            {
+                base.skillLocator.secondary.AddOneStock();
+            }
 
             base.OnExit();
         }

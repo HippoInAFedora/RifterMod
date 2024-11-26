@@ -8,6 +8,8 @@ namespace RifterMod.Survivors.Rifter
         // armor buff gained during roll
         public static BuffDef shatterDebuff;
 
+        public static BuffDef postTeleport;
+
         public static AssetBundle _assetBundle;
 
         public static Sprite shatterIcon = RifterAssets.shatterIcon;
@@ -21,6 +23,13 @@ namespace RifterMod.Survivors.Rifter
                 true,
                 false);
             shatterDebuff.isHidden = true;
+
+            postTeleport = Modules.Content.CreateAndAddBuff("Post Teleport",
+               null,
+               Color.white,
+               true,
+               false);
+            postTeleport.isHidden = true;
         }
     }
 }

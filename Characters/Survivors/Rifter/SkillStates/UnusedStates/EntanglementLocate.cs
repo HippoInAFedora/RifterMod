@@ -1,6 +1,5 @@
 ﻿using EntityStates;
 using IL.RoR2.Skills;
-using RifterMod.Survivors.Rifter.SkillStates;
 using RoR2;
 using UnityEngine;
 using UnityEngine.Networking;

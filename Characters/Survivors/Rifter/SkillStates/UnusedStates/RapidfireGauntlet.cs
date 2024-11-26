@@ -9,33 +9,22 @@ using System;
 using IL.RoR2.Skills;
 using RifterMod.Modules;
 using UnityEngine.Networking;
+using RifterMod.Survivors.Rifter.SkillStates;
 
-namespace RifterMod.Survivors.Rifter.SkillStates
+namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
 {
-    public class RapidfireGauntlet : RiftGauntletBase
+    public class RapidfireGauntlet : RiftBase
     {
-        public float baseDuration = .4f;
-        public bool isBlastOvercharge = true;
-
 
         public override void OnEnter()
         {
             base.OnEnter();
-            this.duration = baseDuration / attackSpeedStat;
+            baseDuration = .4f;
 
         }
         public override float RiftDistance()
         {
             return RifterStaticValues.riftSecondaryDistance;
-        }
-
-        public override bool IsOvercharged()
-        {
-            if (rifterStep.rapidfireShot == true)
-            {
-                return true;
-            }
-            return base.IsOvercharged();
         }
 
         public override float BlastRadius()
@@ -45,7 +34,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastDamage()
         {
-            return characterBody.damage * RifterStaticValues.secondaryRiftCoefficientAlt1;
+            return characterBody.damage * RifterStaticValues.secondaryRiftCoefficient;
         }
 
         public override void OnExit()
@@ -56,11 +45,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override InterruptPriority GetMinimumInterruptPriority()
         {
             return InterruptPriority.PrioritySkill;
-        }
-
-        public override void RunDistanceAssist(Vector3 vector, BlastAttack.Result result)
-        {
-            return;
         }
     }
 }

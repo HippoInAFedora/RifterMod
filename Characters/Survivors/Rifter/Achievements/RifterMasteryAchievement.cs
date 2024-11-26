@@ -3,8 +3,8 @@ using RifterMod.Modules.Achievements;
 
 namespace RifterMod.Survivors.Rifter.Achievements
 {
-    //automatically creates language tokens "ACHIEVMENT_{identifier.ToUpper()}_NAME" and "ACHIEVMENT_{identifier.ToUpper()}_DESCRIPTION" 
-    [RegisterAchievement(identifier, unlockableIdentifier, null, null)]
+    //Automatically creates language tokens "ACHIEVMENT_{identifier.ToUpper()}_NAME" and "ACHIEVMENT_{identifier.ToUpper()}_DESCRIPTION" 
+    [RegisterAchievement(identifier, unlockableIdentifier, null, 10)]
     public class RifterMasteryAchievement : BaseMasteryAchievement
     {
         public const string identifier = RifterSurvivor.Rifter_PREFIX + "masteryAchievement";

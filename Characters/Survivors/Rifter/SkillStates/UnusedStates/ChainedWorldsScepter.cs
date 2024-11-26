@@ -1,13 +1,19 @@
-﻿using RifterMod.Survivors.Rifter;
+﻿
+using EntityStates;
+using Newtonsoft.Json.Utilities;
+using R2API;
+using RifterMod.Modules;
+using RifterMod.Survivors.Rifter;
 using RifterMod.Survivors.Rifter.SkillStates;
+using RoR2;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
+using UnityEngine.Networking;
 
-namespace RifterMod.Characters.Survivors.Rifter.SkillStates
+namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
 {
-    internal class RecursionScepter : Recursion
+    public class ChainedWorldsScepter : ChainedWorlds
     {
 
         public override void FixedUpdate()
@@ -15,15 +21,18 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
             base.FixedUpdate();
             stopwatch += Time.fixedDeltaTime;
 
-            if (stopwatch >= (duration / 5) && isAuthority)
+
+            if (stopwatch >= duration / 5 && isAuthority)
             {
                 if (blastNum < blastMax)
                 {
-                    outer.SetNextState(new RecursionScepter
+                    outer.SetNextState(new ChainedWorldsScepter
                     {
                         blastNum = blastNum,
                         blastMax = blastMax,
-                        basePosition = basePosition
+                        blastRadius = blastRadius,
+                        basePosition = basePosition,
+                        baseDirection = baseDirection,
                     });
                     return;
                 }
@@ -35,14 +44,11 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
             }
 
         }
-        public override float BlastRadius()
-        {
-            return 20f * (float)Math.Pow((double).95, (double)blastNum);
-        }
-
         public override float BlastDamage()
         {
-            return characterBody.damage * RifterStaticValues.recursionCoefficient * (float)Math.Pow((double)1.2, (double)blastNum);
+            return characterBody.damage * RifterStaticValues.secondaryRiftCoefficient * (float)Math.Pow((double)1.2, blastNum);
         }
     }
 }
+
+

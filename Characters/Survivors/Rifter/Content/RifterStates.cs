@@ -11,39 +11,38 @@ namespace RifterMod.Survivors.Rifter
 
             Modules.Content.AddEntityState(typeof(RiftBase));
 
-            Modules.Content.AddEntityState(typeof(Slipstream));
-
-            Modules.Content.AddEntityState(typeof(ModifiedTeleport));
-
-            Modules.Content.AddEntityState(typeof(RiftRiderLocate));
-
-            Modules.Content.AddEntityState(typeof(AirBourneOut));
-
-            Modules.Content.AddEntityState(typeof(RiftGauntletBase));
+            Modules.Content.AddEntityState(typeof(RiftFocus));
 
             Modules.Content.AddEntityState(typeof(RiftGauntletShort));
 
-            Modules.Content.AddEntityState(typeof(RiftRider));
+            Modules.Content.AddEntityState(typeof(RiftBuckshot));
 
-            Modules.Content.AddEntityState(typeof(RiftRiderOut));
+            Modules.Content.AddEntityState(typeof(SlipstreamIn));
+            Modules.Content.AddEntityState(typeof(Slipstream));
 
-            Modules.Content.AddEntityState(typeof(Refraction));
+            Modules.Content.AddEntityState(typeof(PortalBaseState));
 
-            Modules.Content.AddEntityState(typeof(RapidfireGauntlet));
+            Modules.Content.AddEntityState(typeof(PortalMainDrop));
 
-            Modules.Content.AddEntityState(typeof(RecursionChargeup));
+            Modules.Content.AddEntityState(typeof(PortalAuxLocate));
 
-            Modules.Content.AddEntityState(typeof(Recursion));
+            Modules.Content.AddEntityState(typeof(PortalAuxDrop));
 
-            Modules.Content.AddEntityState(typeof(ChainedWorldsChargeup));
+            Modules.Content.AddEntityState(typeof(ModifiedTeleport));
+
+            Modules.Content.AddEntityState(typeof(FractureShot));
+
+            Modules.Content.AddEntityState(typeof(FaultLine));
 
             Modules.Content.AddEntityState(typeof(ChainedWorlds));
 
+            Modules.Content.AddEntityState(typeof(ChainedWorldsStartup));
+
+            Modules.Content.AddEntityState(typeof(TimelockLocate));
+
+            Modules.Content.AddEntityState(typeof(TimelockDrop));
+
             Modules.Content.AddEntityState(typeof(RifterMain));
-
-            Modules.Content.AddEntityState(typeof(RecursionLocateScepter));
-
-            Modules.Content.AddEntityState(typeof(ChainedWorldsChargeupScepter));
         }
     }
 }

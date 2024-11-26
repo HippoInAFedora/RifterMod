@@ -2,16 +2,15 @@
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using RifterMod.Modules;
-using System;
+using RifterMod.Characters.Survivors.Rifter.Components;
 using RoR2.Projectile;
 using R2API;
 using System.Collections.Generic;
-using LeTai.Asset.TranslucentImage;
 using UnityEngine.Networking;
-using R2API.Utils;
-using Rewired;
-using UnityEngine.UIElements;
-using UnityEngine.Events;
+using EntityStates;
+using RifterMod.Characters.Survivors.Rifter.SkillStates;
+using RifterMod.Survivors.Rifter.SkillStates;
+using IL.RoR2.RemoteGameBrowser;
 
 namespace RifterMod.Survivors.Rifter
 {
@@ -33,18 +32,26 @@ namespace RifterMod.Survivors.Rifter
         public static GameObject riftExplosionEffectOvercharged;
         public static GameObject fractureLineTracer;
         public static GameObject fractureLineTracerOvercharged;
-        public static GameObject distanceRenderer;
         public static GameObject fractureBeam;
-        public static GameObject distanceOrb;
+
+        public static GameObject portal;
+        public static GameObject portalBlast;
+
+        public static GameObject hitEffect;
+
+        public static GameObject timelockMain;
 
         public static Sprite shatterIcon;
 
+        public static GameObject riftIndicator;
+
         public static Material matTeleport;
-        public static Material matShatter;
+
+        public static Material matBackVent;
 
         public static GameObject overchargeHUD;
 
-        public static Color riftColor = new Color(14, 44, 153);
+        public static Color riftColor = new Color(11, 40, 77);
         public static Color overchargedColor = new Color(150, 66, 245);
 
         // networked hit sounds
@@ -62,7 +69,7 @@ namespace RifterMod.Survivors.Rifter
 
             swordHitSoundEvent = Content.CreateAndAddNetworkSoundEventDef("RifterSwordHit");
 
-            shatterIcon = _assetBundle.LoadAsset<Sprite>("Shatter_Debuff_ver1");
+            shatterIcon = _assetBundle.LoadAsset<Sprite>("texShatterDebuff");
 
             CreateEffects();
 
@@ -84,20 +91,17 @@ namespace RifterMod.Survivors.Rifter
         #region effects
         private static void CreateEffects()
         {
-            CreateBombExplosionEffect();
-
-            swordSwingEffect = _assetBundle.LoadEffect("RifterSwordSwingEffect", true);
-            swordHitImpactEffect = _assetBundle.LoadEffect("ImpactRifterSlash");
-            distanceRenderer = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Golem/LaserGolem.prefab").WaitForCompletion();
-
-            matShatter = _assetBundle.LoadMaterial("matShatter");
             matTeleport = Addressables.LoadAssetAsync<Material>("RoR2/Base/Huntress/matHuntressFlashBright.mat").WaitForCompletion();
             matTeleport.SetColor("_TintColor", riftColor);
+            matTeleport.SetFloat("_Boost", 0.125f);
+            riftIndicator = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Huntress/HuntressTrackingIndicator.prefab").WaitForCompletion();
 
-            distanceOrb = _assetBundle.LoadEffect("DistanceOrb");
+            hitEffect = Addressables.LoadAssetAsync<GameObject>("RoR2/Base/Common/VFX/BrittleDeath.prefab").WaitForCompletion();
 
             CreateRift();
             CreateFracture();
+            CreatePortal();
+            CreateTimelock();
             CreateHUD();
         }
 
@@ -285,6 +289,73 @@ namespace RifterMod.Survivors.Rifter
             overchargeHUD = _assetBundle.LoadAsset<GameObject>("HUDOvercharge");
         }
 
+        private static void CreatePortal()
+        {
+            portal = _assetBundle.LoadAsset<GameObject>("Portal");
+            var stateMachine = portal.AddComponent<EntityStateMachine>();
+            stateMachine.customName = "Main";
+            stateMachine.initialStateType = new EntityStates.SerializableEntityStateType(typeof(PortalBaseState));
+
+            portal.AddComponent<NetworkStateMachine>();
+            portal.AddComponent<PortalController>();
+            portal.AddComponent<GenericOwnership>();
+            portal.AddComponent<EntityLocator>();
+            portal.GetComponent<EntityLocator>().entity = portal;
+            portal.AddComponent<NetworkIdentity>();
+
+            PrefabAPI.RegisterNetworkPrefab(portal);
+
+            //portalBlast = _assetBundle.LoadEffect("riftObjectTypical").InstantiateClone("PortalBlast");
+            //portalBlast.transform.GetChild(0).gameObject.SetActive(false);
+            //portalBlast.transform.GetChild(1).gameObject.SetActive(false);
+            //portalBlast.AddComponent<NetworkIdentity>();
+            //portalBlast.AddComponent<DestroyOnTimer>().duration = .6f;
+            //portalBlast.AddComponent<EffectComponent>();
+            //if (portalBlast.GetComponent<EffectComponent>())
+            //{
+            //    portalBlast.GetComponent<EffectComponent>().applyScale = true;
+            //}
+            //if (portalBlast == null)
+            //{
+            //    Debug.Log("effect is not being loaded");
+            //}
+            //PrefabAPI.RegisterNetworkPrefab(portalBlast);
+
+        }
+        private static void CreateTimelock()
+        {
+            timelockMain = _assetBundle.LoadAsset<GameObject>("Timelock");
+            timelockMain.layer = LayerIndex.defaultLayer.intVal;
+            timelockMain.AddComponent<GenericOwnership>();
+            timelockMain.AddComponent<DestroyOnRift>();
+            timelockMain.AddComponent<EntityLocator>();
+            timelockMain.GetComponent<EntityLocator>().entity = timelockMain;
+            timelockMain.AddComponent<NetworkIdentity>();
+            timelockMain.AddComponent<TeamFilter>();
+            BuffWard nullifyBuff = timelockMain.AddComponent<BuffWard>();
+            nullifyBuff.shape = BuffWard.BuffWardShape.Sphere;
+            nullifyBuff.radius = 10f;
+            nullifyBuff.interval = .2f;
+            nullifyBuff.rangeIndicator = timelockMain.transform.GetChild(0).transform;
+            nullifyBuff.buffDuration = 1.5f;
+            nullifyBuff.floorWard = false;
+            nullifyBuff.expires = true;
+            nullifyBuff.invertTeamFilter = true;
+            nullifyBuff.expireDuration = 10f;
+            nullifyBuff.animateRadius = false;
+            nullifyBuff.radiusCoefficientCurve = null;
+            nullifyBuff.removalSoundString = null;
+            nullifyBuff.removalTime = 10f;
+            nullifyBuff.requireGrounded = false;
+            timelockMain.AddComponent<Deployable>();
+            timelockMain.AddComponent<EventFunctions>();
+            timelockMain.GetComponent<SphereCollider>().radius = nullifyBuff.radius;
+
+            ParticleSystem.MainModule pmain = timelockMain.transform.GetChild(0).GetComponent<ParticleSystem>().main;
+            pmain.duration = nullifyBuff.expireDuration;
+
+            PrefabAPI.RegisterNetworkPrefab(timelockMain);
+        }
         private static void CreateBombExplosionEffect()
         {
             bombExplosionEffect = _assetBundle.LoadEffect("BombExplosionEffect", "RifterBombExplosion");
@@ -318,7 +389,7 @@ namespace RifterMod.Survivors.Rifter
         private static void CreateBombProjectile()
         {
             //highly recommend setting up projectiles in editor, but this is a quick and dirty way to prototype if you want
-            bombProjectilePrefab = Assets.CloneProjectilePrefab("CommandoGrenadeProjectile", "RifterBombProjectile");
+            bombProjectilePrefab = MyCharacterAssets.CloneProjectilePrefab("CommandoGrenadeProjectile", "RifterBombProjectile");
 
             //remove their ProjectileImpactExplosion component and start from default values
             UnityEngine.Object.Destroy(bombProjectilePrefab.GetComponent<ProjectileImpactExplosion>());

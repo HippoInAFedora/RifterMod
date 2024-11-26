@@ -4,16 +4,17 @@ using R2API;
 using RifterMod.Characters.Survivors.Rifter.SkillStates;
 using RifterMod.Modules;
 using RifterMod.Survivors.Rifter;
+using RifterMod.Survivors.Rifter.SkillStates;
 using RoR2;
 using System;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace RifterMod.Survivors.Rifter.SkillStates
+namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
 {
     public class ChainedWorldsChargeup : RiftBase
     {
-        public static GameObject areaIndicatorPrefab = global::EntityStates.Huntress.ArrowRain.areaIndicatorPrefab;
+        public static GameObject areaIndicatorPrefab = EntityStates.Huntress.ArrowRain.areaIndicatorPrefab;
         public static GameObject areaIndicatorInstance;
         public float stopwatch;
         public float blastWatch;
@@ -68,10 +69,10 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 areaIndicatorInstance.transform.position = GetAimRay().GetPoint(RifterStaticValues.riftPrimaryDistance);
                 if (Physics.SphereCast(characterBody.corePosition, 0.05f, GetAimRay().direction, out var raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask))
-                        {
-                            areaIndicatorInstance.transform.position = raycastHit.point;
-                        }
-                    areaIndicatorInstance.transform.localScale = new Vector3(blastRadius, blastRadius, blastRadius);
+                {
+                    areaIndicatorInstance.transform.position = raycastHit.point;
+                }
+                areaIndicatorInstance.transform.localScale = new Vector3(blastRadius, blastRadius, blastRadius);
             }
         }
 
@@ -93,7 +94,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     blastWatch = 0;
                 }
             }
-            if (isAuthority && ((inputBank.skill4.justPressed && specialReleasedOnce) || inputBank.skill1.justPressed || inputBank.skill2.justPressed))
+            if (isAuthority && (inputBank.skill4.justPressed && specialReleasedOnce || inputBank.skill1.justPressed || inputBank.skill2.justPressed))
             {
                 outer.SetNextState(new ChainedWorlds
                 {
@@ -116,18 +117,18 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             base.FixedUpdate();
 
-            blastRadius = BlastRadius(); 
+            blastRadius = BlastRadius();
             Debug.Log(blastRadius);
-            if (isAuthority && !IsKeyDownAuthority() || base.fixedAge > chargeDuration + 1f)
+            if (isAuthority && !IsKeyDownAuthority() || fixedAge > chargeDuration + 1f)
             {
                 outer.SetNextState(new ChainedWorlds
                 {
                     blastNum = 0,
                     blastMax = 5,
-                    blastRadius = blastRadius,      
-                    basePosition = base.characterBody.corePosition,
-                    baseDirection = base.GetAimRay().direction
-                }) ;
+                    blastRadius = blastRadius,
+                    basePosition = characterBody.corePosition,
+                    baseDirection = GetAimRay().direction
+                });
             }
         }
         public override void OnExit()
@@ -152,7 +153,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override float BlastDamage()
         {
-            return characterBody.damage * RifterStaticValues.chainedWorldsCoefficient;
+            return characterBody.damage * RifterStaticValues.secondaryRiftCoefficient;
         }
 
     }

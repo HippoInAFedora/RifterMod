@@ -12,8 +12,9 @@ using System.Collections.Generic;
 using Newtonsoft.Json.Utilities;
 using UnityEngine.Networking;
 using RifterMod.Characters.Survivors.Rifter.Components;
+using RifterMod.Survivors.Rifter.SkillStates;
 
-namespace RifterMod.Survivors.Rifter.SkillStates
+namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
 {
     public class RiftRider : RiftBase
     {
@@ -39,11 +40,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             base.OnEnter();
             Ray aimRay = GetAimRay();
-            step = base.GetComponent<RifterOverchargePassive>();
+            step = GetComponent<RifterOverchargePassive>();
             initialPosition = characterBody.corePosition;
             if (NetworkServer.active)
             {
-                Util.CleanseBody(base.characterBody, removeDebuffs: true, removeBuffs: false, removeCooldownBuffs: false, removeDots: true, removeStun: true, removeNearbyProjectiles: false);
+                Util.CleanseBody(characterBody, removeDebuffs: true, removeBuffs: false, removeCooldownBuffs: false, removeDots: true, removeStun: true, removeNearbyProjectiles: false);
             }
             if (isAuthority)
             {
@@ -91,7 +92,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
                 EffectData effectData = new EffectData();
                 effectData.scale = BlastRadius() / 10f;
-                effectData.origin = blastAttack.position;              
+                effectData.origin = blastAttack.position;
 
                 if (result.hitCount > 0)
                 {
@@ -108,7 +109,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     {
                         ignoreList1.AddDistinct(hurtBox.healthComponent.gameObject);
                         isResults = true;
-                        
+
                         if (IsOvercharged() && hurtBox.healthComponent.alive && isBlastOvercharge)
                         {
                             BlastOvercharge(result);
@@ -137,7 +138,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 bulletAttack.radius = 4f;
                 bulletAttack.tracerEffectPrefab = tracerEffectPrefab;
                 bulletAttack.muzzleName = "MuzzleRight";
-                bulletAttack.hitEffectPrefab = this.hitEffectPrefab;
+                bulletAttack.hitEffectPrefab = hitEffectPrefab;
                 bulletAttack.isCrit = false;
                 bulletAttack.HitEffectNormal = false;
                 bulletAttack.stopperMask = LayerIndex.playerBody.mask;
@@ -152,7 +153,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                         isResults = true;
                         if (IsOvercharged() && hurtBox.healthComponent.alive)
                         {
-                            
+
                             Overcharge(hitInfo, hurtBox);
                         }
                     }
@@ -161,7 +162,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
                 bulletAttack.filterCallback = delegate (BulletAttack _bulletAttack, ref BulletAttack.BulletHit hitInfo)
                 {
-                    HealthComponent healthComponent = (hitInfo.hitHurtBox ? hitInfo.hitHurtBox.healthComponent : null);
+                    HealthComponent healthComponent = hitInfo.hitHurtBox ? hitInfo.hitHurtBox.healthComponent : null;
                     if (healthComponent && healthComponent.alive && ignoreList1.Contains(healthComponent.gameObject))
                     {
                         return false;
@@ -181,7 +182,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 blastAttack2.teamIndex = TeamIndex.Player;
                 blastAttack2.radius = 10f;
                 blastAttack2.falloffModel = BlastAttack.FalloffModel.None;
-                blastAttack2.baseDamage = RifterStaticValues.recursionCoefficient;
+                blastAttack2.baseDamage = RifterStaticValues.riftPrimaryDistance;
                 blastAttack2.crit = RollCrit();
                 blastAttack2.procCoefficient = .8f;
                 blastAttack2.canRejectForce = false;
@@ -205,14 +206,14 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
                         if (IsOvercharged() && hurtBox.healthComponent.alive && isBlastOvercharge)
                         {
-                            
+
                             BlastOvercharge(result);
 
                         }
                     }
 
                 };
-            }         
+            }
             TeleportEnemies();
         }
 

@@ -11,7 +11,7 @@ using Path = System.IO.Path;
 
 namespace RifterMod.Modules
 {
-    internal static class Assets
+    internal static class MyCharacterAssets
     {
         //cache bundles if multiple characters use the same one
         internal static Dictionary<string, AssetBundle> loadedBundles = new Dictionary<string, AssetBundle>();

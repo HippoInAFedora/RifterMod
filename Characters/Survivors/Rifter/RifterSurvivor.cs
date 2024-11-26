@@ -7,9 +7,12 @@ using RifterMod.Modules.Characters;
 using RifterMod.Survivors.Rifter.Components;
 using RifterMod.Survivors.Rifter.SkillStates;
 using RoR2;
-using AncientScepter;
 using System.Collections.Generic;
 using UnityEngine;
+using RoR2.Skills;
+using static R2API.DeployableAPI;
+using RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates;
+using R2API;
 
 namespace RifterMod.Survivors.Rifter
 {
@@ -43,7 +46,7 @@ namespace RifterMod.Survivors.Rifter
             bodyColor = new Color(0.329f, 0.42f, 0.651f),
             sortPosition = 100,
 
-            crosshair = RifterMod.Modules.Assets.LoadCrosshair("SimpleDot"),
+            crosshair = RifterMod.Modules.MyCharacterAssets.LoadCrosshair("SimpleDot"),
             podPrefab = LegacyResourcesAPI.Load<GameObject>("Prefabs/NetworkedObjects/SurvivorPod"),
 
             maxHealth = 110f,
@@ -54,6 +57,8 @@ namespace RifterMod.Survivors.Rifter
 
             damage = 14f, //changed from 12
             damageGrowth = 14f * 0.2f, //changed 12f to 14f
+
+            aimOriginPosition = new Vector3(0,1.5f,0)
     };
 
         public override CustomRendererInfo[] customRendererInfos => new CustomRendererInfo[]
@@ -62,13 +67,13 @@ namespace RifterMod.Survivors.Rifter
                 {
                     childName = "HeadPiece"
                 },
-                 new CustomRendererInfo
+                new CustomRendererInfo
                 {
-                    childName = "GlassArm",
+                    childName = "GlassArm", dontHotpoo = true
                 },
-                  new CustomRendererInfo
+                new CustomRendererInfo
                 {
-                    childName = "GlassLeg",
+                    childName = "GlassLeg", dontHotpoo = true
                 },
                 new CustomRendererInfo
                 {
@@ -76,7 +81,7 @@ namespace RifterMod.Survivors.Rifter
                 },
                 new CustomRendererInfo
                 {
-                    childName = "BackVentTransparent", material = assetBundle.LoadMaterial("matBacklight")
+                    childName = "BackVentTransparent", dontHotpoo = true
                 }
         };
 
@@ -93,6 +98,14 @@ namespace RifterMod.Survivors.Rifter
         public override CharacterModel prefabCharacterModel { get; protected set; }
         public override GameObject displayPrefab { get; protected set; }
 
+        public static DeployableSlot timelockSlot;
+
+        public static DeployableSlot portalSlot;
+
+        
+        public static int maxTimelocks = 3;
+        public static int maxPortals = 3;
+
         public override void Initialize()
         {
             //uncomment if you have multiple characters
@@ -102,6 +115,11 @@ namespace RifterMod.Survivors.Rifter
             //    return;
 
             base.Initialize();
+
+            GetDeployableSameSlotLimit timelockLimit = (CharacterMaster self, int deployableCountMultiplier) => maxTimelocks;
+            timelockSlot = DeployableAPI.RegisterDeployableSlot(timelockLimit);
+            GetDeployableSameSlotLimit portalLimit = (CharacterMaster self, int deployableCountMultiplier) => maxPortals;
+            portalSlot = DeployableAPI.RegisterDeployableSlot(portalLimit);
         }
 
         public override void InitializeCharacter()
@@ -137,15 +155,13 @@ namespace RifterMod.Survivors.Rifter
             bodyPrefab.AddComponent<RiftAndFracture>();
             bodyPrefab.AddComponent<OverchargeMeter>();
             bodyPrefab.GetComponent<OverchargeMeter>().passive = bodyPrefab.GetComponent<RifterOverchargePassive>();
+            bodyPrefab.AddComponent<RifterTracker>();
+            bodyPrefab.AddComponent<PortalInstanceTracker>();
         }
 
         public void AddHitboxes()
         {
-            ChildLocator childLocator = characterModelObject.GetComponent<ChildLocator>();
 
-            //example of how to create a hitbox
-            Transform hitBoxTransform = childLocator.FindChild("SwordHitbox");
-            Prefabs.SetupHitBoxGroup(characterModelObject, "SwordGroup", hitBoxTransform);
         }
 
         public override void InitializeEntityStateMachines()
@@ -176,10 +192,10 @@ namespace RifterMod.Survivors.Rifter
             AddSecondarySkills();
             AddUtiitySkills();
             AddSpecialSkills();
-            if (RifterPlugin.ScepterInstalled)
-            {
-                InitializeScepter();
-            }
+            //if (RifterPlugin.ScepterInstalled)
+            //{
+            //    InitializeScepter();
+            //}
         }
 
         //if this is your first look at skilldef creation, take a look at Secondary first
@@ -189,160 +205,93 @@ namespace RifterMod.Survivors.Rifter
             skillLocator.passiveSkill.enabled = true;
             skillLocator.passiveSkill.skillNameToken = Rifter_PREFIX + "PASSIVE_RIFT_BOOST";
             skillLocator.passiveSkill.skillDescriptionToken = Rifter_PREFIX + "PASSIVE_RIFT_BOOST_DESCRIPTION";
-            skillLocator.passiveSkill.icon = assetBundle.LoadAsset<Sprite>("texPrimaryIcon");
-
-
-            //RiftAndFracture component = bodyPrefab.GetComponent<RiftAndFracture>();
-            // RoR2.SkillLocator component2 = bodyPrefab.GetComponent<RoR2.SkillLocator>();
-            //component2.passiveSkill.enabled = false;
-            //component.riftAndFracturePassive = Skills.CreateSkillDef(new SkillDefInfo
-            //{
-            //    skillName = Rifter_PREFIX + "PASSIVE_RIFT_FRACTURE",
-            //    skillNameToken = Rifter_PREFIX + "PASSIVE_RIFT_FRACTURE",
-            //    skillDescriptionToken = Rifter_PREFIX + "PASSIVE_RIFT_FRACTURE_DESCRIPTION",
-            //    skillIcon = assetBundle.LoadAsset<Sprite>("texPrimaryIcon"),
-            //     activationState = new EntityStates.SerializableEntityStateType(typeof(Idle)),              
-            //});
-            //Skills.AddPassiveSkills(component.passiveSkillSlot.skillFamily, component.riftAndFracturePassive);
-            //
-            // component.riftOvercharge = Skills.CreateSkillDef(new SkillDefInfo
-            // {
-            //     skillName = Rifter_PREFIX + "PASSIVE_OVERCHARGED",
-            //     skillNameToken = Rifter_PREFIX + "PASSIVE_OVERCHARGED",
-            //     skillDescriptionToken = Rifter_PREFIX + "PASSIVE_OVERCHARGED_DESCRIPTION",
-            //     skillIcon = assetBundle.LoadAsset<Sprite>("texPrimaryIcon"),
-            //     activationState = new EntityStates.SerializableEntityStateType(typeof(Idle)),
-            // });
-            //Skills.AddPassiveSkills(component.overchargeSkillSlot.skillFamily, component.riftOvercharge);
-
+            skillLocator.passiveSkill.icon = assetBundle.LoadAsset<Sprite>("texImperfectionFinal");
         }
 
         private void AddPrimarySkills()
         {
-            //the primary skill is created using a constructor for a typical primary
-            //it is also a SteppedSkillDef. Custom Skilldefs are very useful for custom behaviors related to casting a skill. see ror2's different skilldefs for reference
-            RifterSkillDef primarySkillDef1 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
+            SkillDef primarySkillDef1 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
                 (
-                    "Rift Gauntlet Scope",
+                    "Focused Rifts",
                     Rifter_PREFIX + "PRIMARY_GAUNTLET_RANGED",
                     Rifter_PREFIX + "PRIMARY_GAUNTLET_RANGED_DESCRIPTION",
-                    assetBundle.LoadAsset<Sprite>("texPrimaryIcon"),
-                    new EntityStates.SerializableEntityStateType(typeof(SkillStates.RiftGauntletBase)),
+                    assetBundle.LoadAsset<Sprite>("texFocusedRiftFinal"),
+                    new EntityStates.SerializableEntityStateType(typeof(RiftFocus)),
                     "Weapon",
                     false
                 ));
-            primarySkillDef1.keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.fractureKeyword };
-            primarySkillDef1.overchargedIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon");
-            primarySkillDef1.overchargedNameToken = Rifter_PREFIX + "SECONDARY_GUN_NAME";
-            primarySkillDef1.overchargedDescriptionToken = Rifter_PREFIX + "SECONDARY_GUN_DESCRIPTION";
-            primarySkillDef1.usesOvercharge = true;
-            Skills.AddPrimarySkills(bodyPrefab, primarySkillDef1);
+            primarySkillDef1.keywordTokens = new[] { Tokens.fractureKeyword };
+            //Skills.AddPrimarySkills(bodyPrefab, primarySkillDef1);
 
-
-            RifterSkillDef primarySkillDef2 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
+            SkillDef primarySkillDef2 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
                (
-                   "Rift Gauntlet Scope",
+                   "Gauntlet Range 50, Buckshot",
                    Rifter_PREFIX + "PRIMARY_BUCKSHOT",
                    Rifter_PREFIX + "PRIMARY_BUCKSHOT_DESCRIPTION",
-                   assetBundle.LoadAsset<Sprite>("texPrimaryIcon"),
-                   new EntityStates.SerializableEntityStateType(typeof(SkillStates.RiftBuckshot)),
+                   assetBundle.LoadAsset<Sprite>("texScatteredRiftFinal"),
+                   new EntityStates.SerializableEntityStateType(typeof(RiftBuckshot)),
                    "Weapon",
                    false
                ));
-            primarySkillDef2.keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.fractureKeyword };
-            primarySkillDef2.overchargedIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon");
-            primarySkillDef2.overchargedNameToken = Rifter_PREFIX + "SECONDARY_GUN_NAME";
-            primarySkillDef2.overchargedDescriptionToken = Rifter_PREFIX + "SECONDARY_GUN_DESCRIPTION";
-            primarySkillDef2.usesOvercharge = true;
-            Skills.AddPrimarySkills(bodyPrefab, primarySkillDef2);
+            primarySkillDef2.keywordTokens = new[] { Tokens.fractureKeyword };
+            Skills.AddPrimarySkills(bodyPrefab, primarySkillDef1, primarySkillDef2);
+            Skills.AddUnlockablesToFamily(bodyPrefab.GetComponent<SkillLocator>().primary.skillFamily, null, RifterUnlockables.buckshotUnlockableDef);
         }
 
         private void AddSecondarySkills()
         {
-            //here is a basic skill def with all fields accounted for
-            RifterSkillDef secondarySkillDef1 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
+
+            SkillDef secondarySkillDef1 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
             {
-                skillName = "Rift Gauntlet",
-                skillNameToken = Rifter_PREFIX + "SECONDARY_GAUNTLET",
-                skillDescriptionToken = Rifter_PREFIX + "SECONDARY_GAUNTLET_DESCRIPTION",
-                skillIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon"),
-                keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.fractureKeyword },
-                activationState = new EntityStates.SerializableEntityStateType(typeof(SkillStates.RiftGauntletShort)),
-                activationStateMachineName = "Weapon",
-                interruptPriority = InterruptPriority.Any,
-
-                isCombatSkill = true,
-                canceledFromSprinting = false,
-                cancelSprintingOnActivation = true,
-                forceSprintDuringState = false,
-
-            });
-            secondarySkillDef1.lastChargeOvercharge = true;
-            secondarySkillDef1.overchargedIcon = assetBundle.LoadAsset<Sprite>("texPrimaryIcon");
-            secondarySkillDef1.overchargedNameToken = Rifter_PREFIX + "PRIMARY_SLASH_NAME";
-            secondarySkillDef1.overchargedDescriptionToken = Rifter_PREFIX + "PRIMARY_SLASH_DESCRIPTION";
-            secondarySkillDef1.usesOvercharge = true;
-            Skills.AddSecondarySkills(bodyPrefab, secondarySkillDef1);
-
-            RapidfireSkillDef secondarySkillDef2 = Skills.CreateSkillDef<RapidfireSkillDef>(new SkillDefInfo
-            {
-                skillName = "Rapidfire Gauntlet",
-                skillNameToken = Rifter_PREFIX + "SECONDARY_RAPIDFIRE",
-                skillDescriptionToken = Rifter_PREFIX + "SECONDARY_RAPIDFIRE_DESCRIPTION",
-                skillIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon"),
-                keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.fractureKeyword },
-                activationState = new EntityStates.SerializableEntityStateType(typeof(SkillStates.RapidfireGauntlet)),
-                activationStateMachineName = "Weapon",
-                interruptPriority = InterruptPriority.Any,
-
-                baseMaxStock = 3,
-                rechargeStock = 1,
-                isCombatSkill = true,
-                canceledFromSprinting = false,
-                cancelSprintingOnActivation = true,
-                forceSprintDuringState = false,
-
-            });
-            secondarySkillDef2.newRecharge = 3.5f;
-            secondarySkillDef2.baseRechargeInterval = 2f;
-            secondarySkillDef2.lastChargeOvercharge = true;
-            secondarySkillDef2.resetCooldownTimerOnUse = true;
-            secondarySkillDef2.overchargedIcon = assetBundle.LoadAsset<Sprite>("texPrimaryIcon");
-            secondarySkillDef2.overchargedNameToken = Rifter_PREFIX + "PRIMARY_SLASH_NAME";
-            secondarySkillDef2.overchargedDescriptionToken = Rifter_PREFIX + "PRIMARY_SLASH_DESCRIPTION";
-            secondarySkillDef2.usesOvercharge = true;
-
-            Skills.AddSecondarySkills(bodyPrefab, secondarySkillDef2);
-
-            RifterSkillDef secondarySkillDef3 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
-            {
-                skillName = "Refraction",
-                skillNameToken = Rifter_PREFIX + "SECONDARY_REFRACTION",
-                skillDescriptionToken = Rifter_PREFIX + "SECONDARY_REFRACTION_DESCRIPTION",
-                skillIcon = assetBundle.LoadAsset<Sprite>("texSecondaryIcon"),
-                keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.fractureKeyword },
-                activationState = new EntityStates.SerializableEntityStateType(typeof(Refraction)),
+                skillName = "Fracture Shot",
+                skillNameToken = Rifter_PREFIX + "SECONDARY_FRACTURE",
+                skillDescriptionToken = Rifter_PREFIX + "SECONDARY_FRACTURE_DESCRIPTION",
+                skillIcon = assetBundle.LoadAsset<Sprite>("texFractureFinal"),
+                keywordTokens = new[] { Tokens.fractureKeyword, Tokens.overchargedKeyword },
+                activationState = new EntityStates.SerializableEntityStateType(typeof(FractureShot)),
                 activationStateMachineName = "Weapon",
                 interruptPriority = InterruptPriority.Any,
 
                 baseMaxStock = 1,
-                baseRechargeInterval = 3f,
-                resetCooldownTimerOnUse = true,
-                fullRestockOnAssign = false,
+
+                baseRechargeInterval = 4f,
+
+                stockToConsume = 1,
+
+                mustKeyPress = false,
+
                 isCombatSkill = true,
                 canceledFromSprinting = false,
                 cancelSprintingOnActivation = true,
                 forceSprintDuringState = false,
 
             });
-            secondarySkillDef3.lastChargeOvercharge = false;
-            secondarySkillDef3.overchargedIcon = assetBundle.LoadAsset<Sprite>("texPrimaryIcon");
-            secondarySkillDef3.overchargedNameToken = Rifter_PREFIX + "PRIMARY_GAUNTLET_RANGED";
-            secondarySkillDef3.overchargedDescriptionToken = Rifter_PREFIX + "PRIMARY_GAUNTLET_RANGED_DESCRIPTION";
-            secondarySkillDef3.usesOvercharge = false;
-            Skills.AddSecondarySkills(bodyPrefab, secondarySkillDef3);
 
 
+            SkillDef secondarySkillDef2 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
+            {
+                skillName = "Fault Line",
+                skillNameToken = Rifter_PREFIX + "SECONDARY_FAULT_LINE",
+                skillDescriptionToken = Rifter_PREFIX + "SECONDARY_FAULT_LINE_DESCRIPTION",
+                skillIcon = assetBundle.LoadAsset<Sprite>("texFractureFinal"),
+                keywordTokens = new[] { Tokens.overchargedChainedKeyword },
+                activationState = new EntityStates.SerializableEntityStateType(typeof(FaultLine)),
+                activationStateMachineName = "Weapon",
+                interruptPriority = InterruptPriority.Any,
+
+                baseMaxStock = 1,
+
+                baseRechargeInterval = 4f,
+
+                mustKeyPress = false,
+
+                isCombatSkill = true,
+                canceledFromSprinting = false,
+                cancelSprintingOnActivation = true,
+                forceSprintDuringState = false,
+
+            });
+            Skills.AddSecondarySkills(bodyPrefab, secondarySkillDef1, secondarySkillDef2);
         }
 
         private void AddUtiitySkills()
@@ -353,7 +302,7 @@ namespace RifterMod.Survivors.Rifter
                 skillName = "Slipstream",
                 skillNameToken = Rifter_PREFIX + "UTILITY_SLIPSTREAM",
                 skillDescriptionToken = Rifter_PREFIX + "UTILITY_SLIPSTREAM_DESCRIPTION",
-                skillIcon = assetBundle.LoadAsset<Sprite>("texUtilityIcon"),
+                skillIcon = assetBundle.LoadAsset<Sprite>("texSlipstreamFinal"),
 
                 activationState = new EntityStates.SerializableEntityStateType(typeof(Slipstream)),
                 //setting this to the "weapon2" EntityStateMachine allows us to cast this skill at the same time primary, which is set to the "weapon" EntityStateMachine
@@ -371,39 +320,33 @@ namespace RifterMod.Survivors.Rifter
                 mustKeyPress = true,
                 beginSkillCooldownOnSkillEnd = true
             });
-            utilitySkillDef1.overchargedIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon");
             utilitySkillDef1.overcharges = true;
             utilitySkillDef1.usesOvercharge = false;
-            Skills.AddUtilitySkills(bodyPrefab, utilitySkillDef1);
-            //here's a skilldef of a typical movement skill. some fields are omitted and will just have default values
 
-            RifterSkillDef utilitySkillDef2 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
+            SkillDef utilitySkillDef2 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
             {
-                skillName = "Rift Rider",
-                skillNameToken = Rifter_PREFIX + "UTILITY_RIFT_RIDER",
-                skillDescriptionToken = Rifter_PREFIX + "UTILITY_RIFT_RIDER_DESCRIPTION",
-                skillIcon = assetBundle.LoadAsset<Sprite>("texUtilityIcon"),
+                skillName = "Quantum Gates",
+                skillNameToken = Rifter_PREFIX + "UTILITY_QUANTUM_RIFT",
+                skillDescriptionToken = Rifter_PREFIX + "UTILITY_QUANTUM_RIFT_DESCRIPTION",
+                skillIcon = assetBundle.LoadAsset<Sprite>("texPortalUtilityFinal"),
 
-                activationState = new EntityStates.SerializableEntityStateType(typeof(RiftRiderLocate)),
+                activationState = new EntityStates.SerializableEntityStateType(typeof(PortalMainDrop)),
                 //setting this to the "weapon2" EntityStateMachine allows us to cast this skill at the same time primary, which is set to the "weapon" EntityStateMachine
-                activationStateMachineName = "Weapon",
+                activationStateMachineName = "Body",
                 interruptPriority = InterruptPriority.PrioritySkill,
-
+                keywordTokens = new[] { Tokens.overchargedKeyword },
                 baseMaxStock = 1,
-                baseRechargeInterval = 10f,
+                baseRechargeInterval = 20f,
 
                 stockToConsume = 1,
 
-                cancelSprintingOnActivation = true,
+                forceSprintDuringState = true,
                 canceledFromSprinting = false,
                 isCombatSkill = false,
                 mustKeyPress = true,
                 beginSkillCooldownOnSkillEnd = true
             });
-            utilitySkillDef2.overchargedIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon");
-            utilitySkillDef2.overcharges = false;
-            utilitySkillDef2.usesOvercharge = false;
-            Skills.AddUtilitySkills(bodyPrefab, utilitySkillDef2);
+            Skills.AddUtilitySkills(bodyPrefab, utilitySkillDef1, utilitySkillDef2);
 
         }
 
@@ -412,17 +355,17 @@ namespace RifterMod.Survivors.Rifter
             //a basic skill
             RifterSkillDef specialSkillDef1 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
             {
-                skillName = "Recursion",
-                skillNameToken = Rifter_PREFIX + "SPECIAL_RECURSION",
-                skillDescriptionToken = Rifter_PREFIX + "SPECIAL_RECURSION_DESCRIPTION",
-                skillIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon"),
-                keywordTokens = new[] { Tokens.overchargedKeyword },
-                activationState = new EntityStates.SerializableEntityStateType(typeof(RecursionLocate)),
+                skillName = "Timelock",
+                skillNameToken = Rifter_PREFIX + "SPECIAL_TIMELOCK",
+                skillDescriptionToken = Rifter_PREFIX + "SPECIAL_TIMELOCK_DESCRIPTION",
+                skillIcon = assetBundle.LoadAsset<Sprite>("texTimelockFinal"),
+                keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.crushingKeyword},
+                activationState = new EntityStates.SerializableEntityStateType(typeof(TimelockLocate)),
                 activationStateMachineName = "Weapon",
                 interruptPriority = InterruptPriority.PrioritySkill,
 
                 baseMaxStock = 1,
-                baseRechargeInterval = 12f,
+                baseRechargeInterval = 20f,
 
                 beginSkillCooldownOnSkillEnd = true,
                 isCombatSkill = true,
@@ -432,28 +375,7 @@ namespace RifterMod.Survivors.Rifter
             specialSkillDef1.usesOvercharge = false;
             Skills.AddSpecialSkills(bodyPrefab, specialSkillDef1);
 
-            RifterSkillDef specialSkillDef2 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
-            {
-                skillName = "Chained Worlds",
-                skillNameToken = Rifter_PREFIX + "SPECIAL_CHAINED_WORLDS",
-                skillDescriptionToken = Rifter_PREFIX + "SPECIAL_CHAINED_WORLDS_DESCRIPTION",
-                skillIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon"),
-
-                activationState = new EntityStates.SerializableEntityStateType(typeof(ChainedWorldsChargeup)),
-                keywordTokens = new[] { Tokens.overchargedChainedKeyword },
-                activationStateMachineName = "Weapon",
-                interruptPriority = InterruptPriority.PrioritySkill,
-
-                baseMaxStock = 1,
-                baseRechargeInterval = 15f,
-
-                beginSkillCooldownOnSkillEnd = true,
-                isCombatSkill = true,
-                mustKeyPress = false,
-                cancelSprintingOnActivation = true,
-            });
-            specialSkillDef2.usesOvercharge = false;
-            Skills.AddSpecialSkills(bodyPrefab, specialSkillDef2);
+           
         }
 
 
@@ -465,8 +387,8 @@ namespace RifterMod.Survivors.Rifter
                 skillNameToken = Rifter_PREFIX + "SPECIAL_RECURSION_SCEPTER",
                 skillDescriptionToken = Rifter_PREFIX + "SPECIAL_RECURSION_DESCRIPTION_SCEPTER",
                 skillIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon"),
-                keywordTokens = new[] { Tokens.overchargedKeyword },
-                activationState = new EntityStates.SerializableEntityStateType(typeof(RecursionLocateScepter)),
+                keywordTokens = new[] { Tokens.overchargedKeyword},
+                //activationState = new EntityStates.SerializableEntityStateType(typeof(RecursionLocateScepter)),
                 activationStateMachineName = "Weapon2",
                 interruptPriority = InterruptPriority.PrioritySkill,
 
@@ -479,30 +401,7 @@ namespace RifterMod.Survivors.Rifter
                 cancelSprintingOnActivation = true,
             });
             scepterSkillDef1.usesOvercharge = false;
-            ItemBase<AncientScepterItem>.instance.RegisterScepterSkill(scepterSkillDef1, bodyName, SkillSlot.Special, 0);
-
-            RifterSkillDef scepterSkillDef2 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
-            {
-                skillName = "Colliding Worlds",
-                skillNameToken = Rifter_PREFIX + "SPECIAL_CHAINED_WORLDS_SCEPTER",
-                skillDescriptionToken = Rifter_PREFIX + "SPECIAL_CHAINED_WORLDS_DESCRIPTION_SCEPTER",
-                skillIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon"),
-
-                activationState = new EntityStates.SerializableEntityStateType(typeof(ChainedWorldsChargeupScepter)),
-                keywordTokens = new[] { Tokens.overchargedChainedKeyword },
-                activationStateMachineName = "Weapon2",
-                interruptPriority = InterruptPriority.PrioritySkill,
-
-                baseMaxStock = 1,
-                baseRechargeInterval = 15f,
-
-                beginSkillCooldownOnSkillEnd = true,
-                isCombatSkill = true,
-                mustKeyPress = false,
-                cancelSprintingOnActivation = true,
-            });
-            scepterSkillDef2.usesOvercharge = false;
-            ItemBase<AncientScepterItem>.instance.RegisterScepterSkill(scepterSkillDef2, bodyName, SkillSlot.Special, 1);
+            //ItemBase<AncientScepterItem>.instance.RegisterScepterSkill(scepterSkillDef1, bodyName, SkillSlot.Special, 0);
         }
 
         #endregion skills
@@ -520,7 +419,7 @@ namespace RifterMod.Survivors.Rifter
             #region DefaultSkin
             //this creates a SkinDef with all default fields
             SkinDef defaultSkin = Skins.CreateSkinDef("DEFAULT_SKIN",
-                assetBundle.LoadAsset<Sprite>("texMainSkin"),
+                assetBundle.LoadAsset<Sprite>("texRifterSkin"),
                 defaultRendererinfos,
                 prefabCharacterModel.gameObject);
 
@@ -597,8 +496,12 @@ namespace RifterMod.Survivors.Rifter
         private void AddHooks()
         {
             R2API.RecalculateStatsAPI.GetStatCoefficients += RecalculateStatsAPI_GetStatCoefficients;
+            RoR2.GlobalEventManager.onCharacterDeathGlobal += GlobalEventManager_onCharacterDeathGlobal;
         }
 
+        private void GlobalEventManager_onCharacterDeathGlobal(DamageReport obj)
+        {
+        }
 
         private void RecalculateStatsAPI_GetStatCoefficients(CharacterBody sender, R2API.RecalculateStatsAPI.StatHookEventArgs args)
         {

@@ -6,7 +6,7 @@ namespace RifterMod.Survivors.Rifter
     {
         public const float blastRadius = 6.75f;
 
-        public const float fractureCoefficient = .8f;
+        public const float fractureCoefficient = .6f;
 
         public const float primaryRiftCoefficient = 5.0f;
 
@@ -14,21 +14,25 @@ namespace RifterMod.Survivors.Rifter
 
         public const float buckshotWeakRiftCoefficient = 1.2f;
 
-        public const float secondaryRiftCoefficient = 3.0f;
+        public const float secondaryRiftCoefficient = 4.6f;
 
-        public const float secondaryRiftCoefficientAlt1 = 3.2f;
-
-        public const float secondaryRiftCoefficientAlt2 = 3.0f;
-
-        public const float riftPrimaryDistance = 52.5f;
+        public const float riftPrimaryDistance = 45f;
 
         public const float riftSecondaryDistance = 25f;
 
+        public const float riftSpecialDistance = 65f;
+
         public const float overchargedCoefficient = 1.2f;
 
-        public const float recursionCoefficient = 3.5f;
+        public const float timelockBlast = 5.0f;
 
-        public const float chainedWorldsCoefficient = 5.0f;
+        public const float portalBlast = 1.5f;
+
+        public const float timelockEnemyMultiplier = 1.2f;
+
+        public const float timelockRadius = 15f;
+
+
 
     }
 }

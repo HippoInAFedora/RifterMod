@@ -35,7 +35,7 @@ namespace RifterMod.Modules
             }
             characterModel.baseRendererInfos = prefab.GetComponentInChildren<CharacterModel>().baseRendererInfos;
 
-            Assets.ConvertAllRenderersToHopooShader(display);
+            MyCharacterAssets.ConvertAllRenderersToHopooShader(display);
 
             return display;
         }
@@ -309,7 +309,7 @@ namespace RifterMod.Modules
 
             characterModel.autoPopulateLightInfos = true;
             characterModel.invisibilityCount = 0;
-            characterModel.temporaryOverlays = new List<TemporaryOverlay>();
+            characterModel.temporaryOverlays = new List<TemporaryOverlayInstance>();
 
             if (!preattached)
             {

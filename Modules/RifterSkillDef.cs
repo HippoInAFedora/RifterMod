@@ -4,6 +4,7 @@ using RoR2.Skills;
 using UnityEngine;
 using JetBrains.Annotations;
 using RifterMod.Characters.Survivors.Rifter.Components;
+using R2API.Utils;
 
 namespace RifterMod.Modules
 {
@@ -16,17 +17,15 @@ namespace RifterMod.Modules
 
         public GenericSkill skillSlot;
 
+        public int maxStockUses;
+
         public bool overcharges;
 
         public bool usesOvercharge;
 
-        public Sprite overchargedIcon;
+        public int usedOvercharge = 0;
 
-        public string overchargedNameToken;
 
-        public string overchargedDescriptionToken;
-
-        public bool lastChargeOvercharge;
 
 
 
@@ -34,7 +33,7 @@ namespace RifterMod.Modules
         {
             return new InstanceData
             {
-                step = skillSlot.GetComponent<RifterOverchargePassive>()
+                step = skillSlot.GetComponent<RifterOverchargePassive>(),
             };
         }
 
@@ -43,65 +42,46 @@ namespace RifterMod.Modules
             base.OnUnassigned(skillSlot);
         }
 
-        public override Sprite GetCurrentIcon([NotNull] GenericSkill skillSlot)
-        {
-            InstanceData instanceData = (InstanceData)skillSlot.skillInstanceData;
-            if (instanceData.step.rifterOverchargePassive > 1 && usesOvercharge)
-            {
-                return overchargedIcon;
-            }
-            return base.GetCurrentIcon(skillSlot);
-        }
-
-        public override string GetCurrentNameToken([NotNull] GenericSkill skillSlot)
-        {
-            InstanceData instanceData = (InstanceData)skillSlot.skillInstanceData;
-            if (instanceData.step.rifterOverchargePassive > 1 && usesOvercharge)
-            {
-                return overchargedNameToken;
-            }
-            return base.GetCurrentNameToken(skillSlot);
-        }
-
-        public override string GetCurrentDescriptionToken([NotNull] GenericSkill skillSlot)
-        {
-            InstanceData instanceData = (InstanceData)skillSlot.skillInstanceData;
-            if (instanceData.step.rifterOverchargePassive > 1 && usesOvercharge)
-            {
-                return overchargedDescriptionToken;
-            }
-            return base.GetCurrentDescriptionToken(skillSlot);
-        }
-
-
-
         public override void OnExecute([NotNull] GenericSkill skillSlot)
         {
             base.OnExecute(skillSlot);
             InstanceData instanceData = (InstanceData)skillSlot.skillInstanceData;
             if (overcharges)
             {
-                if (instanceData.step.rifterOverchargePassive < 1)
-                {
-                    instanceData.step.rifterOverchargePassive = 1;
-                }
-                instanceData.step.rifterOverchargePassive++;
-
+                //instanceData.step.rifterOverchargePassive++;
             }
-            if (usesOvercharge)
-            {
-                instanceData.step.rifterOverchargePassive -= 1;
-            }
-            //if (instanceData.step.rifterOverchargePassive >2)
-            //{
-            //    instanceData.step.rifterOverchargePassive = 2;
-            //}
             if (instanceData.step.rifterOverchargePassive < 0)
             {
                 instanceData.step.rifterOverchargePassive = 0;
             }
+            if (usesOvercharge)
+            {
+                usedOvercharge -= stockToConsume;
+                if (usedOvercharge < 0)
+                {
+                    usedOvercharge = 0;
+                }
+            }
         }
 
-
+        public override void OnFixedUpdate([NotNull] GenericSkill skillSlot, float deltaTime)
+        {
+            base.OnFixedUpdate(skillSlot, deltaTime);
+            InstanceData instanceData = (InstanceData)skillSlot.skillInstanceData;
+            if (instanceData.step.rifterOverchargePassive > 0)
+            {
+                if (usesOvercharge && usedOvercharge < 6)
+                {
+                    skillSlot.AddOneStock();
+                    instanceData.step.rifterOverchargePassive--;
+                    usedOvercharge++;
+                }
+            }
+            if (usesOvercharge)
+            {
+                stockToConsume = (skillSlot.stock >= maxStockUses) ? maxStockUses : skillSlot.stock;
+                instanceData.step.stocksConsumed = stockToConsume;
+            }
+        }
     }
 }

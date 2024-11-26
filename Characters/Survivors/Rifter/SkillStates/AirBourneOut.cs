@@ -2,7 +2,7 @@
 using EntityStates;
 using UnityEngine;
 
-public class AirBourneOut : BaseState
+internal class AirBourneOut : BaseState
 {
     private HurtBoxGroup hurtboxGroup;
 
@@ -29,13 +29,9 @@ public class AirBourneOut : BaseState
         {
             characterMotor.velocity = Vector3.zero;
         }
-        else if ((bool)rigidbodyMotor)
+        if ((bool)rigidbodyMotor)
         {
             rigidbodyMotor.moveVector = Vector3.zero;
-        }
-        else
-        {
-            transform.position = Vector3.zero;
         }
 
         if (stopwatch >= duration && isAuthority)

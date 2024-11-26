@@ -9,7 +9,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace RifterMod.Characters.Survivors.Rifter.SkillStates
+namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
 {
     public class ChainedWorldsChargeupScepter : ChainedWorldsChargeup
     {
@@ -19,15 +19,15 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates
 
             blastRadius = BlastRadius();
             Debug.Log(blastRadius);
-            if (isAuthority && !IsKeyDownAuthority() || base.fixedAge > chargeDuration + 1f)
+            if (isAuthority && !IsKeyDownAuthority() || fixedAge > chargeDuration + 1f)
             {
                 outer.SetNextState(new ChainedWorlds
                 {
                     blastNum = 0,
                     blastMax = 7,
                     blastRadius = blastRadius,
-                    basePosition = base.characterBody.corePosition,
-                    baseDirection = base.GetAimRay().direction
+                    basePosition = characterBody.corePosition,
+                    baseDirection = GetAimRay().direction
                 });
             }
         }

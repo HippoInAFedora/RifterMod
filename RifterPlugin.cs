@@ -63,7 +63,7 @@ namespace RifterMod
             // used when you want to properly set up language folders
             Modules.Language.Init();
 
-            ScepterInstalled = Chainloader.PluginInfos.ContainsKey("com.DestroyedClone.AncientScepter");
+            //ScepterInstalled = Chainloader.PluginInfos.ContainsKey("com.DestroyedClone.AncientScepter");
             riskOfOptionsLoaded = Chainloader.PluginInfos.ContainsKey("com.rune580.riskofoptions");
 
 
@@ -87,9 +87,9 @@ namespace RifterMod
         {       
             if (riskOfOptionsLoaded)
             {
-                ModSettingsManager.AddOption(new CheckBoxOption(RifterConfig.distanceAssist));
-                ModSettingsManager.AddOption(new CheckBoxOption(RifterConfig.HUD));
-                ModSettingsManager.AddOption(new CheckBoxOption(RifterConfig.teleportYourFriends));
+                //ModSettingsManager.AddOption(new CheckBoxOption(RifterConfig.distanceAssist));
+                //ModSettingsManager.AddOption(new CheckBoxOption(RifterConfig.HUD));
+                //ModSettingsManager.AddOption(new CheckBoxOption(RifterConfig.teleportYourFriends));
                 //ModSettingsManager.AddOption(new CheckBoxOption(RifterConfig.cursed));
             }
         }
@@ -97,32 +97,30 @@ namespace RifterMod
         private static void Hook()
         {
             On.RoR2.BodyCatalog.Init += BodyCatalog_Init;
-            //On.RoR2.CharacterBody.RecalculateStats += CharacterBody_RecalculateStats;
             On.RoR2.GlobalEventManager.OnHitEnemy += GlobalEventManager_OnHitEnemy;
-            //On.RoR2.CharacterModel.UpdateOverlays += CharacterModel_UpdateOverlays;
-            On.RoR2.UI.HUD.Awake += HUD_Awake;
-            On.RoR2.UI.HUD.Update += HUD_Update;
+            //On.RoR2.UI.HUD.Awake += HUD_Awake;
+            //On.RoR2.UI.HUD.Update += HUD_Update;
         }
 
-        private static void BodyCatalog_Init(On.RoR2.BodyCatalog.orig_Init orig)
-        {
-            orig();
+        private static System.Collections.IEnumerator BodyCatalog_Init(On.RoR2.BodyCatalog.orig_Init orig)
+        {           
+            yield return orig();
             rifterIndex = BodyCatalog.FindBodyIndex("RifterBody(Clone)");
         }
 
-        private static void HUD_Update(On.RoR2.UI.HUD.orig_Update orig, RoR2.UI.HUD self)
-        {
-            orig(self);
-            CharacterBody body = self.targetBodyObject.GetComponent<CharacterBody>();
-            if (RifterConfig.HUD.Value == true && body && body.bodyIndex == rifterIndex)
-            {
-                hudInstance.SetActive(true);
-            }
-            else
-            {
-                hudInstance.SetActive(false);
-            }
-        }
+        //private static void HUD_Update(On.RoR2.UI.HUD.orig_Update orig, RoR2.UI.HUD self)
+        //{
+        //    orig(self);
+        //    CharacterBody body = self.targetBodyObject.GetComponent<CharacterBody>();
+        //    if (RifterConfig.HUD.Value == true && body && body.bodyIndex == rifterIndex)
+        //    {
+        //        hudInstance.SetActive(true);
+        //    }
+        //    else
+        //    {
+        //        hudInstance.SetActive(false);
+        //    }
+        //}
 
         private static void GlobalEventManager_OnHitEnemy(On.RoR2.GlobalEventManager.orig_OnHitEnemy orig, GlobalEventManager self, DamageInfo damageInfo, GameObject victim)
         {
@@ -153,43 +151,22 @@ namespace RifterMod
             }
         }
 
-        private void OnDestroy()
-        {
-            On.RoR2.CharacterBody.RecalculateStats -= CharacterBody_RecalculateStats;
-            On.RoR2.CharacterModel.UpdateOverlays -= CharacterModel_UpdateOverlays;
-            On.RoR2.UI.HUD.Update -= HUD_Update;
-            On.RoR2.UI.HUD.Awake -= HUD_Awake;
-        }
 
-        
+        //private static void HUD_Awake(On.RoR2.UI.HUD.orig_Awake orig, RoR2.UI.HUD self)
+        //{
+        //    orig(self);
+        //    hudInstance = Object.Instantiate(RifterAssets.overchargeHUD);
+        //    hudInstance.transform.SetParent(self.mainContainer.transform);
+        //    RectTransform component = hudInstance.GetComponent<RectTransform>();
+        //    //component.anchorMin = new Vector2(.5f, .5f);
+        //    //component.anchorMax = new Vector2(.5f, .5f);
+        //    //component.sizeDelta = Vector2.zero;
+        //    //component.localScale = Vector2.zero;
+        //    component.anchoredPosition = new Vector2(50, 0);
+        //    OverchargeMeter.fill = hudInstance.GetComponent<Image>();
+        //    OverchargeMeter.counter = hudInstance.transform.GetChild(0).transform.GetChild(0).GetComponent<Text>();
+        //}
 
-
-
-        private static void HUD_Awake(On.RoR2.UI.HUD.orig_Awake orig, RoR2.UI.HUD self)
-        {
-            orig(self);
-            hudInstance = Object.Instantiate(RifterAssets.overchargeHUD);
-            hudInstance.transform.SetParent(self.mainContainer.transform);
-            RectTransform component = hudInstance.GetComponent<RectTransform>();
-            //component.anchorMin = new Vector2(.5f, .5f);
-            //component.anchorMax = new Vector2(.5f, .5f);
-            //component.sizeDelta = Vector2.zero;
-            //component.localScale = Vector2.zero;
-            component.anchoredPosition = new Vector2(50, 0);
-            OverchargeMeter.fill = hudInstance.GetComponent<Image>();
-            OverchargeMeter.counter = hudInstance.transform.GetChild(0).transform.GetChild(0).GetComponent<Text>();         
-        }
-
-        private static void CharacterModel_UpdateOverlays(On.RoR2.CharacterModel.orig_UpdateOverlays orig, CharacterModel self)
-        {
-            orig(self);
-            if (self && self.body)
-            {
-                CharacterBody body = self.body;
-                ShatterOverlay component = body.gameObject.GetComponent<ShatterOverlay>();               
-            }
-            
-        }
 
         private static void CharacterBody_RecalculateStats(On.RoR2.CharacterBody.orig_RecalculateStats orig, CharacterBody self)
         {
@@ -220,7 +197,6 @@ namespace RifterMod
         public static void AddBodyToBlacklist(string bodyName)
         {
             BodyIndex bodyIndex = BodyCatalog.FindBodyIndex(bodyName);
-            TeamComponent teamComponent = BodyCatalog.FindBodyPrefab(bodyName).GetComponent<CharacterBody>().teamComponent;
 
             if (bodyIndex != BodyIndex.None)
             {

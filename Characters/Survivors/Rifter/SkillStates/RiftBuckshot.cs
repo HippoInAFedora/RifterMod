@@ -13,38 +13,90 @@ using RifterMod.Characters.Survivors.Rifter.Components;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
-    public class RiftBuckshot : RiftGauntletBase
+    public class RiftBuckshot : RiftBase
     {
-        private float buckshotMax = 8.5f;
+        private float buckshotMax = 5f;
 
-        public float duration = .5f;
-
-        public bool hasOvercharge;
-        public int overchargedBuckshots = 3;
-
-        //public float buckshotNum;
+        public BlastAttack[] buckshotBlasts;
+        public float[] durations;
+        public EffectData[] effectData;
+        public bool[] flag;
 
         public override void OnEnter()
         {
+            usesOvercharge = false;
             shouldBuckshot = true;
-            //buckshotNum = 1;
+            baseDuration = .5f;
             base.OnEnter();
+            Ray aimRay = base.GetAimRay();
+            base.OnEnter();
+            GetPosition(aimRay, out Vector3 position);
+            GetDistance(aimRay, position, out float distance);
+            if (base.isAuthority)
+            {
+                if (blast)
+                {
+                    Blast(aimRay, position, distance);
+                    if (shouldBuckshot)
+                    {
+                        Buckshot(position);
+                    }
+                }
+                Fracture(aimRay, distance, LayerIndex.noCollision);
+            }
+            TeleportEnemies();
+        }
 
-           
+        public override void FixedUpdate()
+        {
+            base.FixedUpdate();
+            for (int i = 0; i < durations.Length - 1; i++)
+            {
+                if (base.fixedAge > durations[i] && base.isAuthority && !flag[i])
+                {              
+                    buckshotBlasts[i].Fire();
+                    effectData[i] = new EffectData();
+                    effectData[i].origin = buckshotBlasts[i].position;
+                    effectData[i].scale = BlastRadius() / 10f * .5f;
+                    EffectManager.SpawnEffect(blastEffectPrefab, effectData[i], transmit: true);
+                    flag[i] = true;
+                }
+            }
+
         }
 
         public override float RiftDistance()
         {
+            if (inputBank.skill2.down)
+            {
+                return RifterStaticValues.riftSecondaryDistance;
+            }
             return RifterStaticValues.riftPrimaryDistance;
         }
 
         public override float BlastRadius()
         {
+            if (hitTimelock)
+            {
+                return RifterStaticValues.timelockRadius;
+            }
+            if (inputBank.skill2.down)
+            {
+                return RifterStaticValues.blastRadius * .5f;
+            }
             return RifterStaticValues.blastRadius * .6f;
         }
 
         public override float BlastDamage()
         {
+            if (hitTimelock)
+            {
+                return base.characterBody.damage * RifterStaticValues.timelockBlast + (base.characterBody.damage * RifterStaticValues.timelockEnemyMultiplier * hitEnemies);
+            }
+            if (inputBank.skill2.down)
+            {
+                return characterBody.damage * RifterStaticValues.buckshotRiftCoefficient * .8f;
+            }
             return characterBody.damage * RifterStaticValues.buckshotRiftCoefficient;
         }
 
@@ -53,20 +105,21 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             return InterruptPriority.Skill;
         }
 
-        public override void RunDistanceAssist(Vector3 vector, BlastAttack.Result result)
-        {
-            return;
-        }
-
         public override void Buckshot(Vector3 origin)
         {
             base.Buckshot(origin);
             Ray aimRay = base.GetAimRay();
-            float[] floats = new float[5 + (IsOvercharged()? overchargedBuckshots : 0)];
-            Vector3[] angles = new Vector3[5 + (IsOvercharged() ? overchargedBuckshots : 0)];
+            float[] floats = new float[5];
+            Vector3[] angles = new Vector3[5];
+            buckshotBlasts = new BlastAttack[5];
+            durations = new float[5];
+            effectData = new EffectData[5];
+            flag = new bool[5];
 
             for (int i = 0; i < floats.Length - 1; i++)
             {
+                flag[i] = false;
+                durations[i] = UnityEngine.Random.Range(0, duration * .5f);
                 floats[i] = UnityEngine.Random.Range(5f, buckshotMax);
                 angles[i] = UnityEngine.Random.onUnitSphere;
                 Ray newRay = new Ray();
@@ -81,56 +134,18 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 }
 
 
-                BlastAttack buckshotBlast = new BlastAttack();
-                buckshotBlast.attacker = gameObject;
-                buckshotBlast.inflictor = gameObject;
-                buckshotBlast.teamIndex = TeamIndex.Player;
-                buckshotBlast.radius = BlastRadius() * .5f;
-                buckshotBlast.falloffModel = BlastAttack.FalloffModel.None;
-                buckshotBlast.baseDamage = base.characterBody.damage * RifterStaticValues.buckshotWeakRiftCoefficient;
-                buckshotBlast.crit = RollCrit();
-                buckshotBlast.procCoefficient = .8f;
-                buckshotBlast.canRejectForce = false;
-                buckshotBlast.position = vector;
-                buckshotBlast.attackerFiltering = AttackerFiltering.NeverHitSelf;
-                //buckshotBlast.AddModdedDamageType(RifterDamage.riftDamage);
-                var result = buckshotBlast.Fire();
-
-                
-
-                EffectData effectData = new EffectData();
-                effectData.origin = vector;
-                effectData.scale = BlastRadius() / 10f * .5f ;
-                if (!IsOvercharged())
-                {
-                    //blastEffectPrefab.transform.GetChild(0).localScale = Vector3.one * BlastRadius() / 7.5f;
-                    //blastEffectPrefab.transform.GetChild(1).localScale = Vector3.one * BlastRadius() / 7.5f;
-                    //blastEffectPrefab.transform.GetChild(2).localScale = Vector3.one * BlastRadius() / 7.5f;
-                    EffectManager.SpawnEffect(blastEffectPrefab, effectData, transmit: true);
-                }
-                else
-                {
-                    //overchargedEffectPrefab.transform.GetChild(0).localScale = Vector3.one * BlastRadius() / 7.5f;
-                    //overchargedEffectPrefab.transform.GetChild(1).localScale = Vector3.one * BlastRadius() / 7.5f;
-                    //overchargedEffectPrefab.transform.GetChild(2).localScale = Vector3.one * BlastRadius() / 7.5f;
-                    EffectManager.SpawnEffect(overchargedEffectPrefab, effectData, transmit: true);
-                }
-
-                foreach (var hit in result.hitPoints)
-                {
-                    if (hit.hurtBox != null)
-                    {
-                        if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
-                        {
-                            if (IsOvercharged() && hurtBox.healthComponent.alive)
-                            {
-                                BlastOvercharge(result);
-                                Debug.Log("buckshot overcharge");
-                            }
-                        }
-
-                    }
-                };
+                buckshotBlasts[i] = new BlastAttack();
+                buckshotBlasts[i].attacker = gameObject;
+                buckshotBlasts[i].inflictor = gameObject;
+                buckshotBlasts[i].teamIndex = TeamIndex.Player;
+                buckshotBlasts[i].radius = BlastRadius() * .5f;
+                buckshotBlasts[i].falloffModel = BlastAttack.FalloffModel.None;
+                buckshotBlasts[i].baseDamage = base.characterBody.damage * RifterStaticValues.buckshotWeakRiftCoefficient;
+                buckshotBlasts[i].crit = RollCrit();
+                buckshotBlasts[i].procCoefficient = .8f;
+                buckshotBlasts[i].canRejectForce = false;
+                buckshotBlasts[i].position = vector;
+                buckshotBlasts[i].attackerFiltering = AttackerFiltering.NeverHitSelf;
             }
         }
     }

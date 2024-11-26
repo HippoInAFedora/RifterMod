@@ -10,13 +10,15 @@
 
         public const string fracturePrefix = "<style=cIsUtility>Fracture</style>";
 
-        public static string overchargedKeyword = KeywordText("Overcharged", "Enemies hit are teleported to Rifter's primary-rift distance.");
+        public static string overchargedKeyword = KeywordText("Overcharged", "Enemies hit are teleported to Rifter's primary-rift distance OR placed Timelock.");
 
         public static string overchargedChainedKeyword = KeywordText("Overcharged", "Enemies hit are teleported to the next Rift.");
 
+        public static string crushingKeyword = KeywordText("Crushing", "Damage increased by <style=cIsDamage>140%</style> per enemy hit.");
+
         //public static string stuntingKeyword = KeywordText("Inverse Falloff", "Rift is weaker the closer it is to Rifter.");
 
-        public static string fractureKeyword = KeywordText("Fracture", "Rift weakens the closer it is to Rifter. A fracture line connects between Rifter and the rift, dealing <style=cIsDamage>80% damage</style>. Fracture lines cannot crit or activate item effects.");
+        public static string fractureKeyword = KeywordText("Fracture", "Fracture lines cannot crit or activate item effects.");
 
         public static string DamageText(string text)
         {

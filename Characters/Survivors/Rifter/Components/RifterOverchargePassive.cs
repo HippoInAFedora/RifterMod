@@ -1,8 +1,6 @@
-﻿using On.RoR2;
-using RifterMod.Modules;
-using RifterMod.Survivors.Rifter;
-using RoR2.UI;
+﻿using RoR2;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace RifterMod.Characters.Survivors.Rifter.Components
 {
@@ -10,6 +8,9 @@ namespace RifterMod.Characters.Survivors.Rifter.Components
     {
         public int rifterOverchargePassive;
 
-        public bool rapidfireShot;
+        public int stocksConsumed;
+
+        public List<Vector3> deployedList = new List<Vector3>();
+
     }
 }

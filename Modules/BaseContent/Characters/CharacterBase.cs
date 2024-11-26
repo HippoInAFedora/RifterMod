@@ -30,7 +30,7 @@ namespace RifterMod.Modules.Characters
         public virtual void Initialize()
         {
             instance = this as T;
-            assetBundle = Assets.LoadAssetBundle(assetBundleName);
+            assetBundle = MyCharacterAssets.LoadAssetBundle(assetBundleName);
 
             InitializeCharacter();
         }

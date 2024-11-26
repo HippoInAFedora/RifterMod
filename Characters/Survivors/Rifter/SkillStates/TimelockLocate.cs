@@ -1,37 +1,49 @@
 ﻿using EntityStates;
-using IL.RoR2.Skills;
-using RifterMod.Survivors.Rifter;
 using RoR2;
 using UnityEngine;
 using UnityEngine.Networking;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
-    public class RiftRiderLocate : BaseState
+    internal class TimelockLocate : BaseSkillState
     {
-        //This is deprecated. Still exists solely for EntanglementLocate to work correctly
+
         public static GameObject teleportLocatorPrefab = global::EntityStates.Huntress.ArrowRain.areaIndicatorPrefab;
         public static GameObject teleportLocatorInstance;
+
+        public Animator modelAnimator;
+
+        private int specialStateHash = Animator.StringToHash("Special Start");
+        private int specialPlaybackHash = Animator.StringToHash("Special.playbackRate");
+
+        private int inTimelock = Animator.StringToHash("inTimelock");
+
+
 
         public override void OnEnter()
         {
             base.OnEnter();
+            modelAnimator = GetModelAnimator();
+            
+            if (modelAnimator)
+            {
+                modelAnimator.SetBool(inTimelock, true);
+                PlayCrossfade("Gesture, Override", specialStateHash, specialPlaybackHash, .1f, .1f);
+            }
             if ((bool)teleportLocatorPrefab)
             {
                 teleportLocatorInstance = Object.Instantiate(teleportLocatorPrefab);
-                teleportLocatorInstance.transform.localScale = new Vector3(7f, 7f, 7f);
+                teleportLocatorInstance.transform.localScale = new Vector3(10f, 10f, 10f);
             }
-
         }
-
         public override void FixedUpdate()
         {
             base.FixedUpdate();
             if (isAuthority && (bool)inputBank)
             {
-                if (inputBank.skill3.justReleased)
+                if (inputBank.skill4.justReleased)
                 {
-                    outer.SetNextState(new RiftRider());
+                    outer.SetNextState(new TimelockDrop());
                 }
             }
 
@@ -47,9 +59,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             if ((bool)teleportLocatorInstance)
             {
-                float maxDistance = RifterStaticValues.riftPrimaryDistance;
+                float maxDistance = RifterStaticValues.riftSpecialDistance;
                 teleportLocatorInstance.transform.position = GetAimRay().GetPoint(maxDistance);
-                if (Physics.Raycast(GetAimRay(), out var hitInfo, maxDistance, LayerIndex.world.mask))
+                if (Physics.Raycast(GetAimRay(), out var hitInfo, maxDistance, LayerIndex.CommonMasks.bullet))
                 {
                     teleportLocatorInstance.transform.position = hitInfo.point;
                 }
@@ -62,6 +74,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 Destroy(teleportLocatorInstance);
             }
+            if (modelAnimator)
+            {
+                modelAnimator.SetBool(inTimelock, false);
+            }
+            
             base.OnExit();
         }
 
@@ -70,8 +87,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             return InterruptPriority.Frozen;
         }
+
     }
-
 }
-
-

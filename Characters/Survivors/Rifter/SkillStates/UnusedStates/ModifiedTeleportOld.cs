@@ -7,10 +7,9 @@ using System.Diagnostics;
 using RifterMod.Survivors.Rifter;
 using UnityEngine.UIElements;
 
-public class ModifiedTeleport : BaseState
+public class ModifiedTeleportOld : BaseState
 {
     public Vector3 initialPosition;
-    public Vector3 currentPosition;
     public Vector3 targetFootPosition;
 
     public GameObject attackerAndInflictor;
@@ -20,12 +19,6 @@ public class ModifiedTeleport : BaseState
     private CharacterModel characterModel;
 
     private HurtBoxGroup hurtboxGroup;
-
-    private float duration;
-
-    private bool hasSnapped;
-
-    public bool isPortalTeleport;
 
     GameObject inEffect = RifterAssets.slipstreamInEffect;
     GameObject outEffect = RifterAssets.slipstreamOutEffect;
@@ -43,7 +36,7 @@ public class ModifiedTeleport : BaseState
 
     public override void OnEnter()
     {
-        base.OnEnter();      
+        base.OnEnter();
         initialPosition = characterBody.corePosition;
         modelTransform = GetModelTransform();
         if ((bool)modelTransform)
@@ -61,11 +54,12 @@ public class ModifiedTeleport : BaseState
             int hurtBoxesDeactivatorCounter = hurtBoxGroup.hurtBoxesDeactivatorCounter + 1;
             hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
         }
-        CalculateSnapDestination();
-        if (isPortalTeleport && NetworkServer.active)
+
+        if (base.characterBody.hasEffectiveAuthority)
         {
-            base.characterBody.AddTimedBuff(RifterBuffs.postTeleport, 2f);
+            TeleportHelper.TeleportBody(characterBody, targetFootPosition);
         }
+       
 
         if (!showEffect)
         {
@@ -89,20 +83,27 @@ public class ModifiedTeleport : BaseState
 
     }
 
-        public override void FixedUpdate()
+    public override void FixedUpdate()
     {
         base.FixedUpdate();
-        if ((bool)base.characterMotor)
+        stopwatch += Time.fixedDeltaTime;
+
+
+        if ((bool)characterMotor)
         {
-            base.characterMotor.velocity = Vector3.zero;
+            characterMotor.velocity = Vector3.zero;
         }
-        if (!hasSnapped)
+        if ((bool)rigidbodyMotor)
         {
-            SetPosition(Vector3.Lerp(currentPosition, targetFootPosition, base.fixedAge / duration));
+            rigidbodyMotor.moveVector = Vector3.zero;
         }
-        if (base.fixedAge >= duration && base.isAuthority)
+        //else
+        //{
+        //    transform.position = Vector3.zero;
+        //}
+
+        if (base.isAuthority && stopwatch >= teleportWaitDuration)
         {
-            hasSnapped = true;
             outer.SetNextStateToMain();
         }
     }
@@ -134,23 +135,23 @@ public class ModifiedTeleport : BaseState
             hurtBoxGroup.hurtBoxesDeactivatorCounter = hurtBoxesDeactivatorCounter;
         }
 
-        //if (base.isAuthority)
-        //{
-        //    BlastAttack blastAttack = new BlastAttack();
-        //    blastAttack.attacker = attackerAndInflictor;
-        //    blastAttack.inflictor = attackerAndInflictor;
-        //    blastAttack.teamIndex = TeamIndex.Player;
-        //    blastAttack.radius = base.characterBody.radius;
-        //    blastAttack.falloffModel = BlastAttack.FalloffModel.None;
-        //    blastAttack.baseDamage = damageOutput;
-        //    blastAttack.crit = RollCrit();
-        //    blastAttack.procCoefficient = .8f;
-        //    blastAttack.canRejectForce = false;
-        //    blastAttack.position = base.transform.position;
-        //    blastAttack.attackerFiltering = AttackerFiltering.AlwaysHitSelf;
-        //    blastAttack.AddModdedDamageType(RifterDamage.riftDamage);
-        //    BlastAttack.Result result = blastAttack.Fire();
-        //}
+        if (base.isAuthority)
+        {
+            BlastAttack blastAttack = new BlastAttack();
+            blastAttack.attacker = attackerAndInflictor;
+            blastAttack.inflictor = attackerAndInflictor;
+            blastAttack.teamIndex = TeamIndex.Player;
+            blastAttack.radius = base.characterBody.radius;
+            blastAttack.falloffModel = BlastAttack.FalloffModel.None;
+            blastAttack.baseDamage = damageOutput;
+            blastAttack.crit = RollCrit();
+            blastAttack.procCoefficient = .8f;
+            blastAttack.canRejectForce = false;
+            blastAttack.position = base.transform.position;
+            blastAttack.attackerFiltering = AttackerFiltering.AlwaysHitSelf;
+            blastAttack.AddModdedDamageType(RifterDamage.riftDamage);
+            BlastAttack.Result result = blastAttack.Fire();
+        }
 
         if (!showEffect)
         {
@@ -167,47 +168,6 @@ public class ModifiedTeleport : BaseState
     public override InterruptPriority GetMinimumInterruptPriority()
     {
         return InterruptPriority.Frozen;
-    }
-
-    private void SetPosition(Vector3 newPosition)
-    {
-        if ((bool)base.characterMotor)
-        {
-            base.characterMotor.Motor.SetPositionAndRotation(newPosition, Quaternion.identity);
-        }
-        if ((bool)base.rigidbodyMotor)
-        {
-            base.rigidbodyMotor.transform.SetPositionAndRotation(newPosition, Quaternion.identity);
-        }
-    }
-
-    private void CalculateSnapDestination()
-    {
-            if (base.characterBody.footPosition != null)
-            {
-                currentPosition = base.characterBody.footPosition;
-            }
-            else
-            {
-                currentPosition = base.characterBody.corePosition;
-            }
-            duration = (currentPosition - targetFootPosition).magnitude;
-            duration = Util.Remap(duration, 0f, 100f, 0.1f, .25f);
-            base.characterDirection.forward = targetFootPosition;
-    }
-
-    public override void OnSerialize(NetworkWriter writer)
-    {
-        base.OnSerialize(writer);
-        writer.Write(targetFootPosition);
-        writer.Write(currentPosition);
-    }
-
-    public override void OnDeserialize(NetworkReader reader)
-    {
-        base.OnDeserialize(reader);
-        targetFootPosition = reader.ReadVector3();
-        currentPosition = reader.ReadVector3();
     }
 }
 
