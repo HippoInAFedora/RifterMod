@@ -24,7 +24,7 @@ namespace RifterMod.Survivors.Rifter
             string desc = "The Rifter utilizes strategic positioning to create devestating rifts in reality.<color=#CCD3E0>" + Environment.NewLine + Environment.NewLine
              + "<!> Rifts are significantly stronger than fracture lines - positioning is key!" + Environment.NewLine + Environment.NewLine
              + "<!> Utilizing your primary's long-range and mid-range capabilities allow you to mix up your positions." + Environment.NewLine + Environment.NewLine
-             + "<!> Fracture lines are weak and unable to crit or activate items, but their ability to use overcharge allows you to keep enemies at bay." + Environment.NewLine + Environment.NewLine
+             + "<!> Certain skills can teleport enemies, while some are conditional. Using this power can keep enemies at bay." + Environment.NewLine + Environment.NewLine
              + "<!> Timelock can be a powerful tool for gathering enemies and blasting them all at once!" + Environment.NewLine + Environment.NewLine;
 
             string outro = "..and so he left a fractured world behind.";
@@ -34,7 +34,7 @@ namespace RifterMod.Survivors.Rifter
 
             Language.Add(prefix + "NAME", "Rifter");
             Language.Add(prefix + "DESCRIPTION", desc);
-            Language.Add(prefix + "SUBTITLE", "The Un-Whole");
+            Language.Add(prefix + "SUBTITLE", "The Fractured One");
             Language.Add(prefix + "LORE", lore);
             Language.Add(prefix + "OUTRO_FLAVOR", outro);
             Language.Add(prefix + "OUTRO_FAILURE", outroFailure);
@@ -44,50 +44,49 @@ namespace RifterMod.Survivors.Rifter
             #endregion
 
             #region Passive
-            Language.Add(prefix + "PASSIVE_RIFT_BOOST", "Imperfection");
-            Language.Add(prefix + "PASSIVE_RIFT_BOOST_DESCRIPTION", "Rifts have the chance to <style=cIsUtility>Cripple</style> enemies. The chance increases each time an enemy is hit.");
+            Language.Add(prefix + "PASSIVE_RIFT_BOOST", "Shatter");
+            Language.Add(prefix + "PASSIVE_RIFT_BOOST_DESCRIPTION", "Slows by 10% and reduces armor by 5. Stacks linearly.");
 
 
             Language.Add(prefix + "PASSIVE_RIFT_FRACTURE", "Rift/Fracture");
-            Language.Add(prefix + "PASSIVE_RIFT_FRACTURE_DESCRIPTION", "Rifts weaken the closer they are to rifter. Ranged rifts are connected by weaker Fracture Lines that deal <style=cIsDamage>80% damage</style> that are  <style=cIsHealth>unable to activate item effects</style>.");
-
+            Language.Add(prefix + "PASSIVE_RIFT_FRACTURE_DESCRIPTION", "Rifts and fracture lines weaken the closer they are to rifter.");
             #endregion
 
             #region Primary
             Language.Add(prefix + "PRIMARY_GAUNTLET_RANGED", "Focused Rift");
-            Language.Add(prefix + "PRIMARY_GAUNTLET_RANGED_DESCRIPTION", $"<style=cIsUtility>Fracture</style>. Shoot a far-ranged rift for <style=cIsDamage>{100f * RifterStaticValues.primaryRiftCoefficient}% damage</style>. If secondary skill is held, shoot a mid-range rift for <style=cIsDamage>{100f * RifterStaticValues.primaryRiftCoefficient * .8}%</style>.");
+            Language.Add(prefix + "PRIMARY_GAUNTLET_RANGED_DESCRIPTION", $"<style=cIsUtility>Fracture</style>. Shoot a far-ranged rift for <style=cIsDamage>{100f * RifterStaticValues.primaryRiftCoefficient}% damage</style>, dealing up to 5 shatter. If secondary skill is held, shoot a mid-range rift for <style=cIsDamage>{100f * RifterStaticValues.primaryRiftCoefficient * .8}%</style>.");
 
             Language.Add(prefix + "PRIMARY_BUCKSHOT", "Scattered Rifts");
-            Language.Add(prefix + "PRIMARY_BUCKSHOT_DESCRIPTION", $"<style=cIsUtility>Fracture</style>. Shoot a rift for <style=cIsDamage>280% damage</style> that ripples for <style=cIsDamage>5x120% damage</style>. If secondary skill is held, shoot at mid-range.");
+            Language.Add(prefix + "PRIMARY_BUCKSHOT_DESCRIPTION", $"<style=cIsUtility>Fracture</style>. Shoot a rift for <style=cIsDamage>{100 * RifterStaticValues.buckshotRiftCoefficient} damage</style> that ripples for <style=cIsDamage>5 x {100f * RifterStaticValues.buckshotWeakRiftCoefficient}% damage</style>. Deals 5 shatter. If secondary skill is held, shoot at mid-range.");
             #endregion
 
             #region Secondary
-            Language.Add(prefix + "SECONDARY_CHAINED_WORLDS", "Chained Worlds");
-            Language.Add(prefix + "SECONDARY_CHAINED_WORLDS_DESCRIPTION", $"Shoot up to 5 rifts in a line, dealing <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style> per rift. Rifts <style=cIsUtility>teleport enemies to the next</style>.");
-
             Language.Add(prefix + "SECONDARY_FRACTURE", "Fracture Shot");
-            Language.Add(prefix + "SECONDARY_FRACTURE_DESCRIPTION", $"<style=cIsUtility>Overcharged</style>. Shoot <style=cIsDamage>3x{100f * RifterStaticValues.fractureCoefficient}% damage</style> non-piercing fracture shots.");
+            Language.Add(prefix + "SECONDARY_FRACTURE_DESCRIPTION", $"Shoot <style=cIsDamage>3 x {100f * RifterStaticValues.fractureCoefficient}% damage</style> piercing fracture shots.");
 
-            Language.Add(prefix + "SECONDARY_FAULT_LINE", "Fault Line");
-            Language.Add(prefix + "SECONDARY_FAULT_LINE_DESCRIPTION", $"<style=cIsUtility>Overcharged</style>. Shoot a piercing fracture shot for <style=cIsDamage>{100f * RifterStaticValues.fractureCoefficient}% damage</style>.");
+            Language.Add(prefix + "SECONDARY_FAULT_LINE", "Wandering Rift");
+            Language.Add(prefix + "SECONDARY_FAULT_LINE_DESCRIPTION", $"Throw out a slow, dormant rift. Rift will activate for <style=cIsDamage>{100f * RifterStaticValues.wRiftOnPrimaryBlastCoefficient}% damage</style> when another rift activates. On impact it will explode for <style=cIsDamage>{100f * RifterStaticValues.wanderingRiftCoefficient}% damage</style> and apply 10 stacks of shatter. Cannot teleport.");
             #endregion
 
             #region Utility
             Language.Add(prefix + "UTILITY_SLIPSTREAM", "Slipstream");
-            Language.Add(prefix + "UTILITY_SLIPSTREAM_DESCRIPTION", "<style=cIsUtility>Teleport</style> a short distance, <style=cIsUtility>cleansing all debuffs</style>. Replenishes secondary skill stock.");
+            Language.Add(prefix + "UTILITY_PRESTIGE_SLIPSTREAM", "Prestige Slipstream");
+            Language.Add(prefix + "UTILITY_SLIPSTREAM_DESCRIPTION", "<style=cIsUtility>Teleport</style> a short distance. Replenishes secondary skill stock.");
 
-            Language.Add(prefix + "UTILITY_QUANTUM_RIFT", "Quantum Portals - HOST ONLY");
+            Language.Add(prefix + "UTILITY_QUANTUM_RIFT", "Quantum Portals");
             Language.Add(prefix + "UTILITY_QUANTUM_RIFT_DESCRIPTION", "<style=cIsUtility>Fracture</style>. Dash back and create two portals, each blasting for <style=cIsDamage>150% damage</style> per second. Portals <style=cIsUtility>teleport</style> to each other.");
 
-            Language.Add(prefix + "UTILITY_RIFT_RIDER", "Rift Rider");
-            Language.Add(prefix + "UTILITY_RIFT_RIDER_DESCRIPTION", "Travel through a long-range Fracture Line, cleansing all debuffs. Each hit enemy is <style=cIsUtility>teleported to your previous location</style> and adds <style=cIsUtility>overcharge</style>.");
+            Language.Add(prefix + "UTILITY_CHAINED_WORLDS", "Chained Worlds");
+            Language.Add(prefix + "UTILITY_CHAINED_WORLDS_DESCRIPTION", $"Shoot 5 rifts in a line, dealing <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style> per rift. Rifts <style=cIsUtility>teleport enemies to the next</style>.");
+
+            //Language.Add(prefix + "UTILITY_RIFT_RIDER", "Rift Rider");
+            //Language.Add(prefix + "UTILITY_RIFT_RIDER_DESCRIPTION", "Travel through a long-range Fracture Line, cleansing all debuffs. Each hit enemy is <style=cIsUtility>teleported to your previous location</style> and adds <style=cIsUtility>overcharge</style>.");
             #endregion
 
             #region Special
             Language.Add(prefix + "SPECIAL_TIMELOCK", "Timelock");
-            Language.Add(prefix + "SPECIAL_TIMELOCK_DESCRIPTION", $"<style=cIsUtility>Crushing</style>. Create a field that <style=cIsVoid>roots</style> and directs rift teleportation to itself. <style=cIsUtility>Hitting it with a rift</style> collapses the timelock for <style=cIsDamage>500% damage</style>.");
-
-           
+            Language.Add(prefix + "SPECIAL_TIMELOCK_DESCRIPTION", $"<style=cIsHealth>Crushing</style>. Create a field that deals 10 shatter and causes rifts to teleport to itself. <style=cIsUtility>Hitting it with a rift</style> collapses the timelock for <style=cIsDamage>500% damage</style>.");
+        
             #endregion
 
             #region Scepter
@@ -103,7 +102,7 @@ namespace RifterMod.Survivors.Rifter
             Language.Add(Tokens.GetAchievementDescriptionToken(RifterMasteryAchievement.identifier), "As rifter, beat the game or obliterate on monsoon.");
 
             Language.Add(Tokens.GetAchievementNameToken(BuckshotAchievement.identifier), "Rifter: tangling reality");
-            Language.Add(Tokens.GetAchievementDescriptionToken(BuckshotAchievement.identifier), "Teleport 10 or more enemies in a single move.");
+            Language.Add(Tokens.GetAchievementDescriptionToken(BuckshotAchievement.identifier), "Teleport 10 or more enemies in at once!");
             #endregion
         }
     }

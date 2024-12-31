@@ -7,6 +7,7 @@ namespace RifterMod.Survivors.Rifter
     {
         // armor buff gained during roll
         public static BuffDef shatterDebuff;
+        public static BuffDef superShatterDebuff;
 
         public static BuffDef postTeleport;
 
@@ -21,10 +22,17 @@ namespace RifterMod.Survivors.Rifter
                 shatterIcon,
                 Color.white,
                 true,
-                false);
-            shatterDebuff.isHidden = true;
+                true);
+            shatterDebuff.isHidden = false;
 
-            postTeleport = Modules.Content.CreateAndAddBuff("Post Teleport",
+            superShatterDebuff = Modules.Content.CreateAndAddBuff("SuperShatter",
+                shatterIcon,
+                Color.white,
+                false,
+                false);
+            superShatterDebuff.isHidden = true;
+
+            postTeleport = Modules.Content.CreateAndAddBuff("PostTeleport",
                null,
                Color.white,
                true,

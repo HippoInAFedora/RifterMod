@@ -22,17 +22,17 @@ namespace RifterMod.Survivors.Rifter
 
             Modules.Content.AddEntityState(typeof(PortalBaseState));
 
-            Modules.Content.AddEntityState(typeof(PortalMainDrop));
+            Modules.Content.AddEntityState(typeof(PortalLocate));
 
-            Modules.Content.AddEntityState(typeof(PortalAuxLocate));
-
-            Modules.Content.AddEntityState(typeof(PortalAuxDrop));
+            Modules.Content.AddEntityState(typeof(PortalDrop));
 
             Modules.Content.AddEntityState(typeof(ModifiedTeleport));
 
             Modules.Content.AddEntityState(typeof(FractureShot));
 
             Modules.Content.AddEntityState(typeof(FaultLine));
+
+            Modules.Content.AddEntityState(typeof(FireRiftProjectile));
 
             Modules.Content.AddEntityState(typeof(ChainedWorlds));
 

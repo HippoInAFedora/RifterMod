@@ -19,6 +19,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             usesOvercharge = false;
             shouldBuckshot = true;
+            blastPulls = true;
             Ray aimRay = base.GetAimRay();
             base.OnEnter();
             GetPosition(aimRay, out Vector3 position);
@@ -27,13 +28,13 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 if (blast)
                 {
-                    Blast(aimRay, position, distance);
+                    Blast(aimRay, position, distance, DamageSource.Primary);
                     if (shouldBuckshot)
                     {
                         Buckshot(position);
                     }
                 }
-                Fracture(aimRay, distance, LayerIndex.noCollision);
+                Fracture(aimRay, distance, LayerIndex.noCollision, DamageSource.Primary);
             }
             TeleportEnemies();
         }

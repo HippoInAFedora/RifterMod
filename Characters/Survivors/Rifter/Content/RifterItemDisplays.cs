@@ -270,7 +270,7 @@ namespace RifterMod.Survivors.Rifter
                     "Head",
                     new Vector3(-0.02658F, 0.153F, 0.01027F),
                     new Vector3(90F, 0F, 0F),
-                    new Vector3(-0.06835F, -0.06835F, -0.06835F)
+                    new Vector3(-0.04076F, -0.04076F, -0.04076F)
                     )
                 ));
             itemDisplayRules.Add(ItemDisplays.CreateDisplayRuleGroupWithRules(ItemDisplays.KeyAssets["ElementalRingVoid"],
@@ -278,7 +278,7 @@ namespace RifterMod.Survivors.Rifter
                     "LowerArmR",
                     new Vector3(-0.00385F, 0.21718F, -0.00129F),
                     new Vector3(90F, 270F, 0F),
-                    new Vector3(0.59449F, 0.59449F, 0.59449F)
+                    new Vector3(0.29175F, 0.29175F, 0.29175F)
                     )
                 ));
             itemDisplayRules.Add(ItemDisplays.CreateDisplayRuleGroupWithRules(ItemDisplays.KeyAssets["EmpowerAlways"],
@@ -395,7 +395,7 @@ namespace RifterMod.Survivors.Rifter
                     "LowerArmL",
                     new Vector3(-0.00306F, 0.18361F, 0.00956F),
                     new Vector3(90F, 0F, 0F),
-                    new Vector3(1F, 1F, 1F)
+                    new Vector3(0.31277F, 0.31277F, 0.31277F)
                     )
                 ));
             itemDisplayRules.Add(ItemDisplays.CreateDisplayRuleGroupWithRules(ItemDisplays.KeyAssets["Firework"],
@@ -524,7 +524,7 @@ namespace RifterMod.Survivors.Rifter
                     "HandL",
                     new Vector3(0F, 0F, 0F),
                     new Vector3(90F, 0F, 0F),
-                    new Vector3(1F, 1F, 1F)
+                    new Vector3(0.33666F, 0.33666F, 0.33666F)
                     )
                 ));
             itemDisplayRules.Add(ItemDisplays.CreateDisplayRuleGroupWithRules(ItemDisplays.KeyAssets["Icicle"],
@@ -790,10 +790,10 @@ namespace RifterMod.Survivors.Rifter
                 ));
             itemDisplayRules.Add(ItemDisplays.CreateDisplayRuleGroupWithRules(ItemDisplays.KeyAssets["Pearl"],
                 ItemDisplays.CreateDisplayRule(ItemDisplays.LoadDisplay("DisplayPearl"),
-                    "Chest",
+                    "Pelvis",
                     new Vector3(0F, 0F, 0F),
                     new Vector3(90F, 0F, 0F),
-                    new Vector3(0.25032F, 0.25032F, 0.25032F)
+                    new Vector3(0.25F, 0.25F, 0.25F)
                     )
                 ));
             itemDisplayRules.Add(ItemDisplays.CreateDisplayRuleGroupWithRules(ItemDisplays.KeyAssets["PermanentDebuffOnHit"],
@@ -916,10 +916,10 @@ namespace RifterMod.Survivors.Rifter
                 ));
             itemDisplayRules.Add(ItemDisplays.CreateDisplayRuleGroupWithRules(ItemDisplays.KeyAssets["ShinyPearl"],
                 ItemDisplays.CreateDisplayRule(ItemDisplays.LoadDisplay("DisplayShinyPearl"),
-                    "Chest",
+                    "Pelvis",
                     new Vector3(0F, 0F, 0F),
-                    new Vector3(90F, 0F, 0F),
-                    new Vector3(0.5F, 0.5F, 0.5F)
+                    new Vector3(90F, 180F, 0F),
+                    new Vector3(0.25F, 0.25F, 0.25F)
                     )
                 ));
             itemDisplayRules.Add(ItemDisplays.CreateDisplayRuleGroupWithRules(ItemDisplays.KeyAssets["ShockNearby"],

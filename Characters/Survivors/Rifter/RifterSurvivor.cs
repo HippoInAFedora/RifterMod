@@ -69,20 +69,20 @@ namespace RifterMod.Survivors.Rifter
                 },
                 new CustomRendererInfo
                 {
-                    childName = "GlassArm", dontHotpoo = true
+                    childName = "GlassArm"
                 },
                 new CustomRendererInfo
                 {
-                    childName = "GlassLeg", dontHotpoo = true
+                    childName = "GlassLeg"
                 },
                 new CustomRendererInfo
                 {
                     childName = "MainBody",
                 },
-                new CustomRendererInfo
-                {
-                    childName = "BackVentTransparent", dontHotpoo = true
-                }
+                //new CustomRendererInfo
+                //{
+                //    childName = "BackVentTransparent"
+                //}
         };
 
         public override UnlockableDef characterUnlockableDef => RifterUnlockables.characterUnlockableDef;
@@ -156,7 +156,7 @@ namespace RifterMod.Survivors.Rifter
             bodyPrefab.AddComponent<OverchargeMeter>();
             bodyPrefab.GetComponent<OverchargeMeter>().passive = bodyPrefab.GetComponent<RifterOverchargePassive>();
             bodyPrefab.AddComponent<RifterTracker>();
-            bodyPrefab.AddComponent<PortalInstanceTracker>();
+            //bodyPrefab.AddComponent<PortalInstanceTracker>();
         }
 
         public void AddHitboxes()
@@ -212,7 +212,7 @@ namespace RifterMod.Survivors.Rifter
         {
             SkillDef primarySkillDef1 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
                 (
-                    "Focused Rifts",
+                    "FocusedRifts",
                     Rifter_PREFIX + "PRIMARY_GAUNTLET_RANGED",
                     Rifter_PREFIX + "PRIMARY_GAUNTLET_RANGED_DESCRIPTION",
                     assetBundle.LoadAsset<Sprite>("texFocusedRiftFinal"),
@@ -225,7 +225,7 @@ namespace RifterMod.Survivors.Rifter
 
             SkillDef primarySkillDef2 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
                (
-                   "Gauntlet Range 50, Buckshot",
+                   "GauntletBuckshot",
                    Rifter_PREFIX + "PRIMARY_BUCKSHOT",
                    Rifter_PREFIX + "PRIMARY_BUCKSHOT_DESCRIPTION",
                    assetBundle.LoadAsset<Sprite>("texScatteredRiftFinal"),
@@ -243,11 +243,11 @@ namespace RifterMod.Survivors.Rifter
 
             SkillDef secondarySkillDef1 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
             {
-                skillName = "Fracture Shot",
+                skillName = "FractureShot",
                 skillNameToken = Rifter_PREFIX + "SECONDARY_FRACTURE",
                 skillDescriptionToken = Rifter_PREFIX + "SECONDARY_FRACTURE_DESCRIPTION",
                 skillIcon = assetBundle.LoadAsset<Sprite>("texFractureFinal"),
-                keywordTokens = new[] { Tokens.fractureKeyword, Tokens.overchargedKeyword },
+                keywordTokens = new[] { Tokens.fractureKeyword},
                 activationState = new EntityStates.SerializableEntityStateType(typeof(FractureShot)),
                 activationStateMachineName = "Weapon",
                 interruptPriority = InterruptPriority.Any,
@@ -270,18 +270,18 @@ namespace RifterMod.Survivors.Rifter
 
             SkillDef secondarySkillDef2 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
             {
-                skillName = "Fault Line",
+                skillName = "WanderingRift",
                 skillNameToken = Rifter_PREFIX + "SECONDARY_FAULT_LINE",
                 skillDescriptionToken = Rifter_PREFIX + "SECONDARY_FAULT_LINE_DESCRIPTION",
-                skillIcon = assetBundle.LoadAsset<Sprite>("texFractureFinal"),
-                keywordTokens = new[] { Tokens.overchargedChainedKeyword },
-                activationState = new EntityStates.SerializableEntityStateType(typeof(FaultLine)),
+                skillIcon = assetBundle.LoadAsset<Sprite>("texWanderRift"),
+                //keywordTokens = new[] { Tokens.overchargedChainedKeyword },
+                activationState = new EntityStates.SerializableEntityStateType(typeof(FireRiftProjectile)),
                 activationStateMachineName = "Weapon",
                 interruptPriority = InterruptPriority.Any,
 
                 baseMaxStock = 1,
 
-                baseRechargeInterval = 4f,
+                baseRechargeInterval = 7f,
 
                 mustKeyPress = false,
 
@@ -300,15 +300,15 @@ namespace RifterMod.Survivors.Rifter
             RifterSkillDef utilitySkillDef1 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
             {
                 skillName = "Slipstream",
-                skillNameToken = Rifter_PREFIX + "UTILITY_SLIPSTREAM",
+                skillNameToken = Rifter_PREFIX + (RifterConfig.cursed.Value == true ? "UTILITY_PRESTIGE_SLIPSTREAM" : "UTILITY_SLIPSTREAM"),
                 skillDescriptionToken = Rifter_PREFIX + "UTILITY_SLIPSTREAM_DESCRIPTION",
-                skillIcon = assetBundle.LoadAsset<Sprite>("texSlipstreamFinal"),
+                skillIcon = RifterConfig.cursed.Value == true ? assetBundle.LoadAsset<Sprite>("texPrestigeSlipstream") : assetBundle.LoadAsset<Sprite>("texSlipstreamFinal"),
 
                 activationState = new EntityStates.SerializableEntityStateType(typeof(Slipstream)),
                 //setting this to the "weapon2" EntityStateMachine allows us to cast this skill at the same time primary, which is set to the "weapon" EntityStateMachine
                 activationStateMachineName = "Body",
                 interruptPriority = InterruptPriority.PrioritySkill,
-                keywordTokens = new[] { Tokens.overchargedKeyword },
+                //keywordTokens = new[] {},
                 baseMaxStock = 3,
                 baseRechargeInterval = 4f,
 
@@ -323,18 +323,18 @@ namespace RifterMod.Survivors.Rifter
             utilitySkillDef1.overcharges = true;
             utilitySkillDef1.usesOvercharge = false;
 
-            SkillDef utilitySkillDef2 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
+            SkillDef utilitySkillDef3 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
             {
-                skillName = "Quantum Gates",
+                skillName = "QuantumGates",
                 skillNameToken = Rifter_PREFIX + "UTILITY_QUANTUM_RIFT",
                 skillDescriptionToken = Rifter_PREFIX + "UTILITY_QUANTUM_RIFT_DESCRIPTION",
                 skillIcon = assetBundle.LoadAsset<Sprite>("texPortalUtilityFinal"),
 
-                activationState = new EntityStates.SerializableEntityStateType(typeof(PortalMainDrop)),
+                activationState = new EntityStates.SerializableEntityStateType(typeof(PortalLocate)),
                 //setting this to the "weapon2" EntityStateMachine allows us to cast this skill at the same time primary, which is set to the "weapon" EntityStateMachine
                 activationStateMachineName = "Body",
                 interruptPriority = InterruptPriority.PrioritySkill,
-                keywordTokens = new[] { Tokens.overchargedKeyword },
+                //keywordTokens = new[] { Tokens.overchargedKeyword },
                 baseMaxStock = 1,
                 baseRechargeInterval = 20f,
 
@@ -346,7 +346,31 @@ namespace RifterMod.Survivors.Rifter
                 mustKeyPress = true,
                 beginSkillCooldownOnSkillEnd = true
             });
-            Skills.AddUtilitySkills(bodyPrefab, utilitySkillDef1, utilitySkillDef2);
+
+            SkillDef utilitySkillDef2 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
+            {
+                skillName = "ChainedWorlds",
+                skillNameToken = Rifter_PREFIX + "UTILITY_CHAINED_WORLDS",
+                skillDescriptionToken = Rifter_PREFIX + "UTILITY_CHAINED_WORLDS_DESCRIPTION",
+                skillIcon = assetBundle.LoadAsset<Sprite>("texChainRift"),
+
+                activationState = new EntityStates.SerializableEntityStateType(typeof(ChainedWorldsStartup)),
+                //setting this to the "weapon2" EntityStateMachine allows us to cast this skill at the same time primary, which is set to the "weapon" EntityStateMachine
+                activationStateMachineName = "Weapon",
+                interruptPriority = InterruptPriority.Skill,
+                //keywordTokens = new[] { Tokens.overchargedKeyword },
+                baseMaxStock = 1,
+                baseRechargeInterval = 15f,
+
+                stockToConsume = 1,
+
+                forceSprintDuringState = true,
+                canceledFromSprinting = false,
+                isCombatSkill = false,
+                mustKeyPress = true,
+                beginSkillCooldownOnSkillEnd = true
+            });
+            Skills.AddUtilitySkills(bodyPrefab, utilitySkillDef1, utilitySkillDef2, utilitySkillDef3);
 
         }
 
@@ -359,7 +383,7 @@ namespace RifterMod.Survivors.Rifter
                 skillNameToken = Rifter_PREFIX + "SPECIAL_TIMELOCK",
                 skillDescriptionToken = Rifter_PREFIX + "SPECIAL_TIMELOCK_DESCRIPTION",
                 skillIcon = assetBundle.LoadAsset<Sprite>("texTimelockFinal"),
-                keywordTokens = new[] { Tokens.overchargedKeyword, Tokens.crushingKeyword},
+                keywordTokens = new[] {Tokens.crushingKeyword},
                 activationState = new EntityStates.SerializableEntityStateType(typeof(TimelockLocate)),
                 activationStateMachineName = "Weapon",
                 interruptPriority = InterruptPriority.PrioritySkill,
@@ -383,11 +407,11 @@ namespace RifterMod.Survivors.Rifter
         {
             RifterSkillDef scepterSkillDef1 = Skills.CreateSkillDef<RifterSkillDef>(new SkillDefInfo
             {
-                skillName = "To Singularity",
+                skillName = "ToSingularity",
                 skillNameToken = Rifter_PREFIX + "SPECIAL_RECURSION_SCEPTER",
                 skillDescriptionToken = Rifter_PREFIX + "SPECIAL_RECURSION_DESCRIPTION_SCEPTER",
                 skillIcon = assetBundle.LoadAsset<Sprite>("texSpecialIcon"),
-                keywordTokens = new[] { Tokens.overchargedKeyword},
+                //keywordTokens = new[] { Tokens.overchargedKeyword},
                 //activationState = new EntityStates.SerializableEntityStateType(typeof(RecursionLocateScepter)),
                 activationStateMachineName = "Weapon2",
                 interruptPriority = InterruptPriority.PrioritySkill,

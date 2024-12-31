@@ -48,7 +48,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             }
             if (NetworkServer.active)
             {
-                Debug.Log("position is " + position + " and rotation is " + rotation);
                 timelockInstance = Object.Instantiate(timelockPrefab, position, base.transform.rotation);
 
                 DestroyOnRift destroyOnRift = timelockInstance.GetComponent<DestroyOnRift>();
@@ -60,7 +59,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 buffWard = timelockInstance.GetComponent<BuffWard>();
                 if (buffWard)
                 {
-                    buffWard.buffDef = RoR2Content.Buffs.Nullified;
+                    buffWard.buffDef = RifterBuffs.superShatterDebuff;
                     buffWard.Networkradius = radius;
                 }
 

@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 
 namespace RifterMod.Characters.Survivors.Rifter.Components
 {
-    internal class PortalInstanceTracker : MonoBehaviour
+    internal class PortalInstanceTracker : NetworkBehaviour
     { 
 
         public GameObject owner;
@@ -26,8 +26,18 @@ namespace RifterMod.Characters.Survivors.Rifter.Components
             owner = GetComponent<GameObject>();
         }
 
+        public void Start()
+        {
+
+        }
+
+
         public void FixedUpdate()
         {
+            if (!base.hasAuthority)
+            {
+                return;
+            }
             if (portalMain == null)
             {
                 duration = 0;

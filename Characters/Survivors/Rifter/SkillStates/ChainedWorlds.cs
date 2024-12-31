@@ -2,6 +2,7 @@
 using EntityStates;
 using Newtonsoft.Json.Utilities;
 using R2API;
+using RifterMod.Characters.Survivors.Rifter.Components;
 using RifterMod.Modules;
 using RifterMod.Survivors.Rifter;
 using RoR2;
@@ -30,6 +31,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public float recursionDamage;
         public int blastNum;
         public int blastMax;
+        public RifterOverchargePassive riftPassive;
 
         Ray aimRay;
 
@@ -40,8 +42,10 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public override void OnEnter()
         {
+            shouldAnimate = blastNum == 0 ? true : false;
             base.OnEnter();
             usesOvercharge = true;
+            riftPassive = base.GetComponent<RifterOverchargePassive>();
             aimRay = new Ray(basePosition, baseDirection);
             duration = 1.75f;
             blastNum++;
@@ -52,6 +56,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         private Vector3 GetNumPosition(int num)
         {
+            
             float num2 = RiftDistance() / 6 * (num) + 10f ;
             Vector3 location = aimRay.GetPoint(num2);
             Vector3 position = location;
@@ -69,6 +74,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     Search2(position);
                 }
             }
+            
             return position;
         }
 
@@ -188,6 +194,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 blastAttack.canRejectForce = false;
                 blastAttack.position = GetNumPosition(blastNum);
                 blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
+                blastAttack.damageType.damageSource = DamageSource.Utility;
                 blastAttack.AddModdedDamageType(RifterDamage.riftDamage);
                 var result = blastAttack.Fire();
 
@@ -237,7 +244,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public virtual float ProcCoefficient()
         {
-            return blastNum / (blastMax + 1);
+            return 1f;
         }
 
         public override void OnSerialize(NetworkWriter writer)

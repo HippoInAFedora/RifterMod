@@ -14,6 +14,7 @@ public class FractureShot : RiftBase
 
     public override void OnEnter()
     {
+        fractureHitCallback = false;
         isPrimary = false;
         usesOvercharge = true;
         shouldBuckshot = false;
@@ -22,7 +23,7 @@ public class FractureShot : RiftBase
         base.OnEnter();
         if (base.isAuthority)
         {
-            Fracture(aimRay, RiftDistance(), LayerIndex.entityPrecise);
+            Fracture(aimRay, RiftDistance(), LayerIndex.noCollision, DamageSource.Secondary);
         }
         TeleportEnemies();
         shotNum++;

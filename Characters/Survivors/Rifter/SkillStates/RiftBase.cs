@@ -14,6 +14,10 @@ using System.Security.Cryptography;
 using HG;
 using UnityEngine.UIElements;
 using System.Linq;
+using System.Reflection;
+using R2API.Networking.Interfaces;
+using R2API.Networking;
+using RifterMod.Modules.Networking;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
@@ -26,11 +30,14 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public bool shot = false;
         public bool shouldDistanceAssist = false;
         float isRiftHitGround;
+        public bool fractureHitCallback = true;
         public bool shouldBuckshot = false;
         public bool blast = true;
+        public bool blastPulls = false;
 
         public bool hitTimelock;
         public Collider hitTimelockCollider;
+        public Collider hitRiftProjectileCollider;
         public int hitEnemies;
 
         public RifterOverchargePassive rifterStep;
@@ -40,15 +47,18 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         public static GameObject tracerEffectPrefab = RifterAssets.fractureLineTracer;
         public static GameObject tracerEffectPrefabOvercharged = RifterAssets.fractureLineTracerOvercharged;
-        public GameObject tracer;
+        public static GameObject tracer;
 
-        public GameObject hitEffectPrefab = FireBarrage.hitEffectPrefab;
+        public static GameObject hitEffectPrefab = RifterAssets.hitEffect;
+        public static GameObject muzzleEffectPrefab = RifterAssets.muzzleEffect;
 
         public CharacterBody enemyHit;
         public Vector3 originalPosition;
         public Vector3 enemyTeleportTo;
 
         public static event Action<List<CharacterBody>> onTeleportEnemies;
+
+        public static event Action<GameObject> onPrimaryShot;
 
         List<GameObject> ignoreList1 = new List<GameObject>();
         //List<GameObject> ignoreList2 = new List<GameObject>();
@@ -68,6 +78,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         private int secondaryFracturePlaybackHash = Animator.StringToHash("Secondary.playbackRate");
 
         public bool isPrimary = true;
+        public bool shouldAnimate = true;
         //public bool playAnim = true;
 
         public override void OnEnter()
@@ -76,11 +87,16 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             tracer = IsOvercharged() ? tracerEffectPrefabOvercharged : tracerEffectPrefab;
             rifterStep = GetComponent<RifterOverchargePassive>();
 
+            if (NetworkServer.active && isPrimary)
+            {
+                onPrimaryShot?.Invoke(base.gameObject);
+            }
+
             this.duration = baseDuration / attackSpeedStat;
             Ray aimRay = GetAimRay();
             StartAimMode(aimRay, 2f, false);
             modelAnimator = GetModelAnimator();
-            if (modelAnimator)
+            if (modelAnimator && shouldAnimate)
             {
                 PlayCrossfade("Gesture, Override", primaryRiftStateHash, primaryRiftPlaybackHash, .2f, .1f);
                 //else
@@ -91,9 +107,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             //base.PlayAnimation("Gesture Additive, Right", "FirePistol, Right");
             Util.PlaySound(FireBarrage.fireBarrageSoundString, gameObject);
             AddRecoil(-0.6f, 0.6f, -0.6f, 0.6f);
-            if (FireBarrage.effectPrefab)
+            if ((bool)muzzleEffectPrefab && shouldAnimate)
             {
-                EffectManager.SimpleMuzzleFlash(FireBarrage.effectPrefab, gameObject, "Muzzle", false);
+                EffectManager.SimpleMuzzleFlash(muzzleEffectPrefab, gameObject, "Muzzle", false);
             }
            
 
@@ -151,20 +167,20 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             search.mask = LayerIndex.defaultLayer.mask;
             search.queryTriggerInteraction = QueryTriggerInteraction.Collide;
             List<Collider> list = CollectionPool<Collider, List<Collider>>.RentCollection();
-                search.RefreshCandidates().FilterCandidatesByColliderEntities().FilterCandidatesByDistinctColliderEntities()
-                .GetColliders(list);
-                for (int i = 0; i < list.Count; i++)
+            search.RefreshCandidates().FilterCandidatesByColliderEntities().FilterCandidatesByDistinctColliderEntities()
+            .GetColliders(list);
+            for (int i = 0; i < list.Count; i++)
+            {
+                DestroyOnRift component = list[i].GetComponent<EntityLocator>().entity.GetComponent<DestroyOnRift>();
+                if (component)
                 {
-                    DestroyOnRift component = list[i].GetComponent<EntityLocator>().entity.GetComponent<DestroyOnRift>();
-                    if (component)
-                    {
-                        hitTimelock = true;
-                        hitTimelockCollider = list[i];
-                        component.destroying = true;
-                        break;
-                    }
+                    hitTimelock = true;
+                    hitTimelockCollider = list[i];
+                    component.destroying = true;
+                    break;
                 }
-                CollectionPool<Collider, List<Collider>>.ReturnCollection(list);
+            }
+            CollectionPool<Collider, List<Collider>>.ReturnCollection(list);
 
         }
 
@@ -187,22 +203,24 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             vectorDistance = Vector3.Distance(aimRay.origin, position);
         }
 
-        public void Blast(Ray aimRay, Vector3 position, float distance)
+        public void Blast(Ray aimRay, Vector3 position, float distance, DamageSource damageSource)
         {
             bool flag = false;
 
-            if (distance < RiftDistance() * 2 / 3)
-            {
-                float float1 = RiftDistance() - distance + 1.1f;
-                decimal dec = new decimal(float1);
-                double d = (double)dec;
-                double isRiftHitGroundDouble = 1 / Math.Log(d, 3.5);
-                isRiftHitGround = (float)isRiftHitGroundDouble;
-            }
-            else
-            {
-                isRiftHitGround = 1f;
-            }
+            isRiftHitGround = CalcDistanceFalloff(distance);
+
+            //if (distance < RiftDistance() * 2 / 3)
+            //{
+            //    float float1 = RiftDistance() - distance + 1.1f;
+            //    decimal dec = new decimal(float1);
+            //    double d = (double)dec;
+            //    double isRiftHitGroundDouble = 1 / Math.Log(d, 3.5);
+            //    isRiftHitGround = (float)isRiftHitGroundDouble;
+            //}
+            //else
+            //{
+            //    isRiftHitGround = 1f;
+            //}
             if (distance >= RiftDistance() - BlastRadius() && !hitTimelock)
             {
                 flag = true;
@@ -221,11 +239,13 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             blastAttack.falloffModel = BlastAttack.FalloffModel.None;
             blastAttack.baseDamage = BlastDamage() * isRiftHitGround;
             blastAttack.crit = RollCrit();
-            blastAttack.procCoefficient = .8f;
+            blastAttack.baseForce = blastPulls ? -250f : 0f;
+            blastAttack.procCoefficient = 1f;
             blastAttack.canRejectForce = false;
             blastAttack.position = position;
             blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
             blastAttack.AddModdedDamageType(RifterDamage.riftDamage);
+            blastAttack.damageType.damageSource = damageSource;
             BlastAttack.Result result = blastAttack.Fire();
 
             EffectData effectData = new EffectData();
@@ -249,6 +269,13 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     {
                         ignoreList1.AddDistinct(hurtBox.healthComponent.gameObject);
                         //ignoreList2.AddDistinct(hurtBox.healthComponent.gameObject);
+                        EffectData effectData2 = new EffectData();
+                        effectData2.scale = hurtBox.healthComponent.body.radius;
+                        effectData2.origin = hit.hitPosition;
+                        if (hitEffectPrefab)
+                        {
+                            EffectManager.SpawnEffect(hitEffectPrefab, effectData2, transmit: true);
+                        }
 
                         if (IsOvercharged() && hurtBox.healthComponent.alive || hitTimelock && hurtBox.healthComponent.alive || rifterStep.deployedList.Count > 0)
                         {
@@ -258,15 +285,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
                 }
             };
-
-            //if (shouldDistanceAssist && flag)
-            //{
-            //    RunDistanceAssist(position, result);
-            //}
-
         }
 
-        public void Fracture(Ray aimRay, float vectorDistance, LayerIndex index)
+        public void Fracture(Ray aimRay, float vectorDistance, LayerIndex index, DamageSource damageSource)
         {
             BulletAttack bulletAttack = new BulletAttack();
             bulletAttack.owner = gameObject;
@@ -275,19 +296,28 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             bulletAttack.aimVector = aimRay.direction;
             bulletAttack.minSpread = 0f;
             bulletAttack.maxSpread = characterBody.spreadBloomAngle;
-            bulletAttack.damage = characterBody.damage * RifterStaticValues.fractureCoefficient;
+            bulletAttack.damage = base.characterBody.damage * RifterStaticValues.fractureCoefficient;
             bulletAttack.bulletCount = 1U;
-            bulletAttack.procCoefficient = 0f;
+            bulletAttack.procCoefficient = 1f;
             bulletAttack.falloffModel = BulletAttack.FalloffModel.None;
             bulletAttack.radius = .75f;
             bulletAttack.tracerEffectPrefab = tracer;
             bulletAttack.muzzleName = "MuzzleRight";
-            bulletAttack.hitEffectPrefab = this.hitEffectPrefab;
+            bulletAttack.hitEffectPrefab = hitEffectPrefab;
             bulletAttack.isCrit = false;
             bulletAttack.HitEffectNormal = false;
             bulletAttack.stopperMask = index.mask;
             bulletAttack.smartCollision = true;
             bulletAttack.maxDistance = vectorDistance;
+            bulletAttack.damageType.damageSource = damageSource;
+
+            bulletAttack.hitCallback = fractureHitCallback ? delegate (BulletAttack _bulletAttack, ref BulletAttack.BulletHit hitInfo)
+            {
+                float distance = Vector3.Distance(_bulletAttack.origin, hitInfo.point);
+                float distanceMultiplier = CalcDistanceFalloff(distance);
+                _bulletAttack.damage = RifterStaticValues.fractureCoefficientMax * distanceMultiplier;
+                return BulletAttack.DefaultHitCallbackImplementation(_bulletAttack, ref hitInfo);
+            } : BulletAttack.defaultHitCallback;
 
             bulletAttack.modifyOutgoingDamageCallback = delegate (BulletAttack _bulletAttack, ref BulletAttack.BulletHit hitInfo, DamageInfo damageInfo) //changed to _bulletAttack
             {
@@ -295,7 +325,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 {
                     if (hitInfo.hitHurtBox.TryGetComponent(out HurtBox hurtBox))
                     {
-
                         if (IsOvercharged() && hurtBox.healthComponent.alive || rifterStep.deployedList.Count > 0)
                         {
                             Overcharge(hitInfo, hurtBox);
@@ -319,6 +348,24 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             bulletAttack.Fire();
         }
 
+
+        private float CalcDistanceFalloff(float distance)
+        {
+            //if (distance < RiftDistance() * 2 / 3)
+            //{
+            //    float float1 = RiftDistance() - distance + 1.1f;
+            //    decimal dec = new decimal(float1);
+            //    double d = (double)dec;
+            //    double isRiftHitGroundDouble = 1 / Math.Log(d, 3.5);
+            //    isRiftHitGround = (float)isRiftHitGroundDouble;
+            //}
+            //else
+            //{
+            //    isRiftHitGround = 1f;
+            //}
+            float multiplier = 0.6f + Mathf.Clamp01(Mathf.InverseLerp(RiftDistance(), RiftDistance() * .3f, RiftDistance() - distance)) * .4f;
+            return multiplier;
+        }
 
         //private void RunDistanceAssist(Vector3 vector, BlastAttack.Result result)
         //{
@@ -488,7 +535,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 {
                     array[i].SetNextStateToMain();
                 };
-
             }
             InvokeTeleportAction();
         }
@@ -521,15 +567,8 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 float distance1 = Vector3.Distance(body.corePosition, location1);
                 if (Physics.SphereCast(body.corePosition, 0.05f, direction1, out raycastHit1, distance1, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
                 {
-                    bool normalPlacement = Vector3.Angle(Vector3.up, raycastHit1.normal) < maxSlopeAngle;
-                    if (normalPlacement)
-                    {
+                    //bool normalPlacement = Vector3.Angle(Vector3.up, raycastHit1.normal) < maxSlopeAngle;
                         position1 = raycastHit1.point + raycastHit1.normal;
-                    }
-                    if (!normalPlacement)
-                    {
-                        position1 = raycastHit1.point - direction1.normalized;
-                    }
                 }
                 return position1;
             }
@@ -557,15 +596,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             float distance = Vector3.Distance(body.corePosition, location);
             if (Physics.SphereCast(base.GetAimRay().origin, 0.05f, direction, out raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask, QueryTriggerInteraction.Collide))
             {
-                bool normalPlacement = Vector3.Angle(Vector3.up, raycastHit.normal) < maxSlopeAngle;
-                if (normalPlacement)
-                {
-                    position = raycastHit.point + Vector3.up * .5f;
-                }
-                if (!normalPlacement)
-                {
-                    position = raycastHit.point - direction.normalized;
-                }
+
+                position = raycastHit.point - raycastHit.normal;
+                
             }
             return position;
         }

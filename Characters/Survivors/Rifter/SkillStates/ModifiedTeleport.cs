@@ -2,10 +2,7 @@
 using EntityStates;
 using UnityEngine;
 using UnityEngine.Networking;
-using R2API;
-using System.Diagnostics;
 using RifterMod.Survivors.Rifter;
-using UnityEngine.UIElements;
 
 public class ModifiedTeleport : BaseState
 {
@@ -183,17 +180,26 @@ public class ModifiedTeleport : BaseState
 
     private void CalculateSnapDestination()
     {
-            if (base.characterBody.footPosition != null)
-            {
-                currentPosition = base.characterBody.footPosition;
-            }
-            else
-            {
-                currentPosition = base.characterBody.corePosition;
-            }
-            duration = (currentPosition - targetFootPosition).magnitude;
-            duration = Util.Remap(duration, 0f, 100f, 0.1f, .25f);
+        if (base.characterDirection != null)
+        {
             base.characterDirection.forward = targetFootPosition;
+        }
+        else
+        {
+            base.transform.rotation = Util.QuaternionSafeLookRotation(targetFootPosition);
+        }
+
+        if (base.characterBody.footPosition != null)
+        {
+            currentPosition = base.characterBody.footPosition;
+        }
+        else
+        {
+            currentPosition = base.characterBody.corePosition;
+        }
+        duration = (currentPosition - targetFootPosition).magnitude;
+        duration = Util.Remap(duration, 0f, 100f, 0.1f, .25f);
+        base.characterDirection.forward = targetFootPosition;
     }
 
     public override void OnSerialize(NetworkWriter writer)

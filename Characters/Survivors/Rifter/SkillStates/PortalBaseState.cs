@@ -15,6 +15,10 @@ using RoR2.Projectile;
 using System.Collections.Generic;
 using Newtonsoft.Json.Utilities;
 using UnityEngine.UIElements;
+using System.Linq;
+using R2API.Networking.Interfaces;
+using R2API.Networking;
+using RifterMod.Modules.Networking;
 
 namespace RifterMod.Survivors.Rifter.SkillStates
 {
@@ -22,16 +26,19 @@ namespace RifterMod.Survivors.Rifter.SkillStates
     {
         public static GameObject tracerEffectPrefabOvercharged = RifterAssets.fractureLineTracerOvercharged;
 
-        public GameObject hitEffectPrefab = FireBarrage.hitEffectPrefab;
+        public GameObject hitEffectPrefab = RifterAssets.hitEffect;
 
         public List<CharacterBody> teleportBodies = new List<CharacterBody>();
+        public List<CharacterBody> teleportA = new List<CharacterBody>();
 
         public GameObject owner;
 
         public PortalController portalController;
-        public GameObject blastEffectPrefab = RifterAssets.slipstreamOutEffect;
 
-        public GameObject otherPortal;
+        public Vector3 pointAPosition;
+        public Vector3 pointBPosition;
+
+        public GameObject blastEffectPrefab = RifterAssets.slipstreamOutEffect;
 
         public static float stopwatch;
 
@@ -46,15 +53,18 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
             fireChecker++;
             portalController = GetComponent<PortalController>();
-            otherPortal = portalController.otherPortal;
-            owner = portalController.owner;
-            if (Util.HasEffectiveAuthority(base.gameObject))
+            pointAPosition = portalController.pointATransform.position;
+            pointBPosition = portalController.pointBTransform.position;
+            owner = GetComponent<GenericOwnership>().ownerObject;
+            if (NetworkServer.active)
             {
-                CheckPortal();
+                CheckPortal(pointAPosition, pointBPosition);
+                CheckPortal(pointBPosition, pointAPosition);
                 if (fireChecker >= 5)
                 {
                     fireChecker = 0;
-                    Fracture();
+                    Fracture(pointAPosition, true);
+                    Fracture(pointBPosition, false);
                 }
             }         
             Teleport();
@@ -72,53 +82,53 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             }
         }
 
-        private void CheckPortal()
+        private void CheckPortal(Vector3 pointPosition, Vector3 otherPosition)
         {
-            bool flag = false;
-            float distance = Vector3.Distance(owner.transform.position, base.transform.position);
-            if (distance < 5f)
+            SphereSearch sphereSearch = new SphereSearch
             {
-                flag = true;
-            }
-
-            BlastAttack blastAttack = new BlastAttack();
-            blastAttack.attacker = portalController.owner;
-            blastAttack.teamIndex = TeamIndex.None;
-            blastAttack.radius = 5f;
-            blastAttack.falloffModel = BlastAttack.FalloffModel.None;
-            blastAttack.baseDamage = 0f;
-            blastAttack.procCoefficient = 0f;
-            blastAttack.canRejectForce = false;
-            blastAttack.position = base.transform.position;
-            blastAttack.attackerFiltering = flag? AttackerFiltering.AlwaysHitSelf : AttackerFiltering.NeverHitSelf;
-            BlastAttack.Result result = blastAttack.Fire();
-            foreach (var hit in result.hitPoints)
+                origin = pointPosition,
+                radius = 5f,
+                mask = LayerIndex.entityPrecise.mask
+            };
+            List<HurtBox> list = new List<HurtBox>();
+            sphereSearch.RefreshCandidates().FilterCandidatesByDistinctHurtBoxEntities().GetHurtBoxes(list);
+            foreach (HurtBox item in list)
             {
-                if (hit.hurtBox != null)
+                if (!(item.healthComponent?.body != null))
                 {
-                    if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
-                    {
-                        CharacterBody body2 = hurtBox.healthComponent.body;
-                        if (!body2.HasBuff(RifterBuffs.postTeleport))
-                        {
-                            teleportBodies.AddDistinct(body2);
-                        }
-
-                    }
+                    continue;
                 }
+                if (item.healthComponent.body.HasBuff(RifterBuffs.postTeleport))
+                {
+                    break;
+                }
+                if (item.healthComponent.body.teamComponent.teamIndex == TeamIndex.Player)
+                {
+                    EntityStateMachine[] components = item.healthComponent.body.GetComponents<EntityStateMachine>();
+                    EntityStateMachine[] array = components;
+                    foreach (EntityStateMachine entityStateMachine in array)
+                    {
+                        if (entityStateMachine.state.GetType() != typeof(Idle))
+                        {
+                            entityStateMachine.SetNextState(new Idle());
+                        }
+                    }
+                    NetMessageExtensions.Send((INetMessage)(object)new TeleportOnBodyRequest(item.healthComponent.body.masterObjectId, item.healthComponent.body.corePosition, otherPosition, true), NetworkDestination.Clients);
+                };
             }
         }
 
-        public void Fracture()
+        public void Fracture(Vector3 pointPosition, bool shouldFracture)
         {
             CharacterBody body = owner.GetComponent<CharacterBody>();
-            if (portalController.isMain)
+            if (shouldFracture)
             {
                 BulletAttack bulletAttack = new BulletAttack();
-                bulletAttack.owner = portalController.owner;
-                bulletAttack.weapon = base.gameObject;
-                bulletAttack.origin = base.transform.position;
-                bulletAttack.aimVector = (portalController.otherPortal.transform.position - base.transform.position).normalized;
+                bulletAttack.owner = owner;
+                bulletAttack.weapon = portalController.pointATransform.gameObject;
+                bulletAttack.muzzleName = portalController.pointATransform.name;
+                bulletAttack.origin = pointPosition;
+                bulletAttack.aimVector = pointBPosition - pointAPosition;
                 bulletAttack.minSpread = 0f;
                 bulletAttack.damage = body.damage * RifterStaticValues.fractureCoefficient;
                 bulletAttack.bulletCount = 1U;
@@ -126,12 +136,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 bulletAttack.falloffModel = BulletAttack.FalloffModel.None;
                 bulletAttack.radius = .75f;
                 bulletAttack.tracerEffectPrefab = tracerEffectPrefabOvercharged;
-                bulletAttack.hitEffectPrefab = this.hitEffectPrefab;
+                bulletAttack.hitEffectPrefab = hitEffectPrefab;
                 bulletAttack.isCrit = false;
                 bulletAttack.HitEffectNormal = false;
                 bulletAttack.stopperMask = LayerIndex.noCollision.mask;
-                bulletAttack.smartCollision = true;
-                bulletAttack.maxDistance = Vector3.Distance(base.transform.position, portalController.otherPortal.transform.position);
+                bulletAttack.smartCollision = false;
+                bulletAttack.maxDistance = Vector3.Distance(pointAPosition, pointBPosition);
                 bulletAttack.Fire();
 
                 bulletAttack.modifyOutgoingDamageCallback = delegate (BulletAttack _bulletAttack, ref BulletAttack.BulletHit hitInfo, DamageInfo damageInfo) //changed to _bulletAttack
@@ -152,14 +162,14 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             }
 
             BlastAttack blastAttack = new BlastAttack();
-            blastAttack.attacker = portalController.owner;
+            blastAttack.attacker = owner;
             blastAttack.teamIndex = TeamIndex.Player;
             blastAttack.radius = 10f;
             blastAttack.falloffModel = BlastAttack.FalloffModel.None;
             blastAttack.baseDamage = body.damage * RifterStaticValues.portalBlast;
             blastAttack.procCoefficient = .8f;
             blastAttack.canRejectForce = false;
-            blastAttack.position = base.transform.position;
+            blastAttack.position = pointPosition;
             blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
             BlastAttack.Result result = blastAttack.Fire();
             foreach (var hit in result.hitPoints)
@@ -173,7 +183,10 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                         {
                             teleportBodies.AddDistinct(body2);
                         }
-
+                        if (shouldFracture)
+                        {
+                            teleportA.AddDistinct(body2);
+                        }
                     }
                 }
             }
@@ -194,7 +207,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     ModifiedTeleport modifiedTeleport = new ModifiedTeleport();
                     modifiedTeleport.targetFootPosition = teleportToPosition;
                     modifiedTeleport.teleportWaitDuration = .25f;
-                    modifiedTeleport.attackerAndInflictor = portalController.owner;
+                    modifiedTeleport.attackerAndInflictor = owner;
                     modifiedTeleport.isPortalTeleport = true;
                     setStateOnHurt.targetStateMachine.SetInterruptState(modifiedTeleport, InterruptPriority.Frozen);
                 }
@@ -203,22 +216,20 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 {
                     array[i].SetNextStateToMain();
                 };
-
             }
         }
 
         public virtual void Teleport()
         {
             for (int i = 0; i < teleportBodies.Count; i++)
-            {
-                Vector3 position = otherPortal.transform.position + Vector3.up * .5f;
+            {               
                 CharacterBody body = teleportBodies[i];
+                Vector3 position = teleportA.Contains(body) ? portalController.pointBTransform.position : portalController.pointATransform.position;
                 if (body)
                 {
                     TryTeleport(body,position);
                 }
             }
-
         }
 
         public override InterruptPriority GetMinimumInterruptPriority()
@@ -231,6 +242,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             base.OnExit();
             teleportBodies.RemoveAll(x => x != null);
+            teleportA.RemoveAll(x => x != null);
         }
 
         public override void OnSerialize(NetworkWriter writer)
@@ -239,6 +251,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             for (int i = 0; i < teleportBodies.Count; i++)
             {
                 writer.Write(teleportBodies[i].netId);
+                writer.Write(teleportA[i].netId);
             }
 
         }
@@ -249,6 +262,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             while (reader.Position < reader.Length)
             {
                 teleportBodies.Add(Util.FindNetworkObject(reader.ReadNetworkId()).GetComponent<CharacterBody>());
+                teleportA.Add(Util.FindNetworkObject(reader.ReadNetworkId()).GetComponent<CharacterBody>());
             }
 
         }

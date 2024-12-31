@@ -15,7 +15,7 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
     public class ChainedWorldsChargeup : RiftBase
     {
         public static GameObject areaIndicatorPrefab = EntityStates.Huntress.ArrowRain.areaIndicatorPrefab;
-        public static GameObject areaIndicatorInstance;
+        public static GameObject[] areaIndicatorInstance = new GameObject[5];
         public float stopwatch;
         public float blastWatch;
 
@@ -39,17 +39,20 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
             body = characterBody;
             if ((bool)areaIndicatorPrefab)
             {
-
-                areaIndicatorInstance = UnityEngine.Object.Instantiate(areaIndicatorPrefab);
-                areaIndicatorInstance.transform.localScale = new Vector3(BlastRadius(), BlastRadius(), BlastRadius());
+                for (int i = 0; i < areaIndicatorInstance.Length; i++)
+                {
+                    areaIndicatorInstance[i] = UnityEngine.Object.Instantiate(areaIndicatorPrefab);
+                    areaIndicatorInstance[i].transform.localScale = new Vector3(BlastRadius(), BlastRadius(), BlastRadius());
+                }
+                
             }
         }
 
-        public override void Update()
-        {
-            base.Update();
-            UpdateAreaIndicator();
-        }
+        //public override void Update()
+        //{
+        //    base.Update();
+        //    UpdateAreaIndicator();
+        //}
 
         //private Vector3 GetNumPosition(int num)
         //{
@@ -63,18 +66,18 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
         //    return position;
         //}
 
-        private void UpdateAreaIndicator()
-        {
-            if ((bool)areaIndicatorInstance)
-            {
-                areaIndicatorInstance.transform.position = GetAimRay().GetPoint(RifterStaticValues.riftPrimaryDistance);
-                if (Physics.SphereCast(characterBody.corePosition, 0.05f, GetAimRay().direction, out var raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask))
-                {
-                    areaIndicatorInstance.transform.position = raycastHit.point;
-                }
-                areaIndicatorInstance.transform.localScale = new Vector3(blastRadius, blastRadius, blastRadius);
-            }
-        }
+        //private void UpdateAreaIndicator()
+        //{
+        //    if ((bool)areaIndicatorInstance)
+        //    {
+        //        areaIndicatorInstance.transform.position = GetAimRay().GetPoint(RifterStaticValues.riftPrimaryDistance);
+        //        if (Physics.SphereCast(characterBody.corePosition, 0.05f, GetAimRay().direction, out var raycastHit, RifterStaticValues.riftPrimaryDistance, LayerIndex.world.mask))
+        //        {
+        //            areaIndicatorInstance.transform.position = raycastHit.point;
+        //        }
+        //        areaIndicatorInstance.transform.localScale = new Vector3(blastRadius, blastRadius, blastRadius);
+        //    }
+        //}
 
         public void OLDFixedUpdate()
         {
@@ -131,14 +134,14 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
                 });
             }
         }
-        public override void OnExit()
-        {
-            if ((bool)areaIndicatorInstance)
-            {
-                Destroy(areaIndicatorInstance.gameObject);
-            }
-            base.OnExit();
-        }
+        //public override void OnExit()
+        //{
+        //    if ((bool)areaIndicatorInstance)
+        //    {
+        //        Destroy(areaIndicatorInstance.gameObject);
+        //    }
+        //    base.OnExit();
+        //}
 
         public override float BlastRadius()
         {

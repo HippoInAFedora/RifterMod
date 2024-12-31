@@ -86,7 +86,7 @@ namespace RifterMod.Characters.Survivors.Rifter.Components
                         if (hit > RifterStaticValues.riftSecondaryDistance + 5f)
                         {
                             position = aimRay.GetPoint(hit);
-                        }                       
+                        }
                     }
                     SearchForTarget(aimRay, position);
                     indicator.targetTransform = (trackingTarget ? trackingTarget.transform : null);
@@ -150,43 +150,38 @@ namespace RifterMod.Characters.Survivors.Rifter.Components
 
             void SearchForTarget(Ray aimRay, Vector3 position)
             {
-                search.Reset();
-                TeamMask allButNeutral = TeamMask.allButNeutral;
+                var allButNeutral = TeamMask.allButNeutral;
                 allButNeutral.RemoveTeam(teamComponent.teamIndex);
+
+                search.Reset();
                 search.teamMaskFilter = allButNeutral;
                 search.filterByLoS = true;
                 search.searchOrigin = aimRay.origin;
                 search.searchDirection = aimRay.direction;
                 search.sortMode = BullseyeSearch.SortMode.Distance;
-                search.maxDistanceFilter = RifterStaticValues.riftPrimaryDistance + RifterStaticValues.blastRadius + 5f;
+                search.maxDistanceFilter = 56.75f;
                 search.maxAngleFilter = 5f;
+
                 search.RefreshCandidates();
+                search.FilterCandidatesByHealthFraction(Mathf.Epsilon);
                 search.FilterOutGameObject(base.gameObject);
-                List<HurtBox> hurtBoxes = new List<HurtBox>();
-                hurtBoxes = search.GetResults().ToList();
-                foreach(HurtBox hurtBox in hurtBoxes)
+
+                HurtBox result = null;
+                float distance = 0f;
+
+                foreach (var hitbox in search.GetResults())
                 {
-                    if (!hurtBox.healthComponent.alive)
+                    var other = (hitbox.transform.position - position).sqrMagnitude;
+                    if (distance < other)
                     {
-                        hurtBoxes.Remove(hurtBox);
+                        result = hitbox;
+                        distance = other;
                     }
                 }
-                HurtBox[] hurtBoxes1 = new HurtBox[hurtBoxes.Count];
-                float[] distances = new float[hurtBoxes.Count];
-                if (hurtBoxes.Count > 0)
-                {
-                    for (int i = 0; i < hurtBoxes.Count; i++)
-                    {
-                        distances[i] = Vector3.Distance(hurtBoxes[i].gameObject.transform.position, position);
-                    }
-                    distances.OrderBy(x => x).Reverse();
-                    Array.Sort(distances, hurtBoxes1);
-                    trackingTarget = (hurtBoxes[0] ? hurtBoxes[0].gameObject : null);
-                }
-
-
+                trackingTarget = result ? result.gameObject : null;
             }
-        }
 
+
+        }
     }
 }

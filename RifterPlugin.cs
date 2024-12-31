@@ -14,6 +14,10 @@ using RifterMod.Characters.Survivors.Rifter.Components;
 using BepInEx.Bootstrap;
 using System.Runtime.CompilerServices;
 using RiskOfOptions;
+using EmotesAPI;
+using TMPro;
+using R2API.Networking;
+using RifterMod.Modules.Networking;
 
 
 [module: UnverifiableCode]
@@ -28,6 +32,7 @@ namespace RifterMod
     [BepInDependency("com.weliveinasociety.CustomEmotesAPI", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.rune580.riskofoptions", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.DestroyedClone.AncientScepter", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(NetworkingAPI.PluginGUID)]
     public class RifterPlugin : BaseUnityPlugin
     {
         // if you do not change this, you are giving permission to deprecate the mod-
@@ -64,9 +69,12 @@ namespace RifterMod
             Modules.Language.Init();
 
             //ScepterInstalled = Chainloader.PluginInfos.ContainsKey("com.DestroyedClone.AncientScepter");
-            riskOfOptionsLoaded = Chainloader.PluginInfos.ContainsKey("com.rune580.riskofoptions");
+            if (Chainloader.PluginInfos.ContainsKey("com.rune580.riskofoptions"))
+            {
+                riskOfOptionsLoaded = true;
+            }
 
-
+            NetworkingAPI.RegisterMessageType<TeleportOnBodyRequest>();
             // character initialization
             new RifterSurvivor().Initialize();
 
@@ -87,10 +95,8 @@ namespace RifterMod
         {       
             if (riskOfOptionsLoaded)
             {
-                //ModSettingsManager.AddOption(new CheckBoxOption(RifterConfig.distanceAssist));
-                //ModSettingsManager.AddOption(new CheckBoxOption(RifterConfig.HUD));
                 //ModSettingsManager.AddOption(new CheckBoxOption(RifterConfig.teleportYourFriends));
-                //ModSettingsManager.AddOption(new CheckBoxOption(RifterConfig.cursed));
+                ModSettingsManager.AddOption(new CheckBoxOption(RifterConfig.cursed));
             }
         }
 
@@ -98,8 +104,99 @@ namespace RifterMod
         {
             On.RoR2.BodyCatalog.Init += BodyCatalog_Init;
             On.RoR2.GlobalEventManager.OnHitEnemy += GlobalEventManager_OnHitEnemy;
+            On.RoR2.CharacterBody.RecalculateStats += CharacterBody_RecalculateStats;
+            On.RoR2.CharacterBody.OnBuffFinalStackLost += CharacterBody_OnBuffFinalStackLost;            
+            On.RoR2.CharacterBody.UpdateAllTemporaryVisualEffects += CharacterBody_UpdateAllTemporaryVisualEffects;
+            if (Chainloader.PluginInfos.ContainsKey("com.weliveinasociety.CustomEmotesAPI"))
+            {
+                On.RoR2.SurvivorCatalog.Init += SurvivorCatalog_Init;
+            }
             //On.RoR2.UI.HUD.Awake += HUD_Awake;
             //On.RoR2.UI.HUD.Update += HUD_Update;
+        }
+
+        private static void CharacterBody_UpdateAllTemporaryVisualEffects(On.RoR2.CharacterBody.orig_UpdateAllTemporaryVisualEffects orig, CharacterBody self)
+        {
+            orig(self);
+            TemporaryVisualEffect tempEffect = null;
+            self.UpdateSingleTemporaryVisualEffect(ref tempEffect, RifterAssets.shatterStackVisual, self.radius, self.HasBuff(RifterBuffs.superShatterDebuff));
+            //bool active = self.HasBuff(RifterBuffs.superShatterDebuff);
+            //bool flag = tempEffect != null;
+            //if (flag == active)
+            //{
+            //    return;
+            //}
+            //if (active)
+            //{
+            //    if (flag)
+            //    {
+            //        return ;
+            //    }
+            //    GameObject gameObject = Object.Instantiate(RifterAssets.shatterStackVisual, self.corePosition, Quaternion.identity);
+            //    tempEffect = gameObject.GetComponent<TemporaryVisualEffect>();
+            //    tempEffect.parentTransform = self.coreTransform;
+            //    tempEffect.visualState = TemporaryVisualEffect.VisualState.Enter;
+            //    tempEffect.healthComponent = self.healthComponent;
+            //    tempEffect.radius = self.radius;
+            //    LocalCameraEffect component = gameObject.GetComponent<LocalCameraEffect>();
+            //    if ((bool)component)
+            //    {
+            //        component.targetCharacter = self.gameObject;
+            //    }
+            //}
+            //else if (tempEffect)
+            //{
+            //    tempEffect.visualState = TemporaryVisualEffect.VisualState.Exit;
+            //}
+        }
+
+        private static void SurvivorCatalog_Init(On.RoR2.SurvivorCatalog.orig_Init orig)
+        {
+            orig();
+            foreach (var item in SurvivorCatalog.allSurvivorDefs)
+            {
+                if (item.bodyPrefab.name == "RifterBody")
+                {
+                    var skele = RifterAssets.emoteSkele;
+                    CustomEmotesAPI.ImportArmature(item.bodyPrefab, skele);
+                }
+            }
+        }
+
+        private static void CharacterBody_OnBuffFinalStackLost(On.RoR2.CharacterBody.orig_OnBuffFinalStackLost orig, CharacterBody self, BuffDef buffDef)
+        {
+            orig(self, buffDef);
+            if (buffDef == RifterBuffs.superShatterDebuff && !self.isFlying)
+            {
+                self.characterMotor.useGravity = true;
+            }
+        }
+
+        private static void CharacterBody_RecalculateStats(On.RoR2.CharacterBody.orig_RecalculateStats orig, CharacterBody self)
+        {
+            orig(self);
+            if (!self)
+            {
+                return;
+            }
+            if (self.HasBuff(RifterBuffs.superShatterDebuff))
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    self.AddTimedBuff(RifterBuffs.shatterDebuff, i + 1f, 10);
+                }
+                CharacterMotor motor = self.characterMotor;
+                if (motor)
+                {
+                    motor.useGravity = false;
+                }
+            }
+            if (self.HasBuff(RifterBuffs.shatterDebuff))
+            {
+                int shatterStacks = self.GetBuffCount(RifterBuffs.shatterDebuff);
+                self.moveSpeed *= 1 - shatterStacks / 10;
+                self.armor -= shatterStacks * 5;
+            }
         }
 
         private static System.Collections.IEnumerator BodyCatalog_Init(On.RoR2.BodyCatalog.orig_Init orig)
@@ -131,21 +228,18 @@ namespace RifterMod
             }
             CharacterBody body = damageInfo.attacker ? damageInfo.attacker.GetComponent<CharacterBody>() : null;
             CharacterBody victimBody = victim.GetComponent<CharacterBody>();
+            
             if (body && body.bodyIndex == rifterIndex)
             {
                 if (victimBody != null && DamageAPI.HasModdedDamageType(damageInfo, RifterDamage.riftDamage))
                 {
-                    victimBody.AddBuff(RifterBuffs.shatterDebuff);
-
-                    bool crippling = Util.CheckRoll(20f + 2.5f * victimBody.GetBuffCount(RifterBuffs.shatterDebuff));
-                    if (crippling)
+                    if (victimBody.GetBuffCount(RifterBuffs.shatterDebuff) <= 5)
                     {
-                        victimBody.AddBuff(RoR2Content.Buffs.Cripple);
-                        int buffCount = victimBody.GetBuffCount(RifterBuffs.shatterDebuff);
-                        for (int i = 0; i < buffCount; i++)
+                        victimBody.ClearTimedBuffs(RifterBuffs.shatterDebuff);
+                        for (int i = 0; i < 5; i++)
                         {
-                            victimBody.RemoveBuff(RifterBuffs.shatterDebuff);
-                        }
+                            victimBody.AddTimedBuff(RifterBuffs.shatterDebuff, i + 1f, 5);
+                        }                      
                     }
                 }
             }
@@ -166,33 +260,6 @@ namespace RifterMod
         //    OverchargeMeter.fill = hudInstance.GetComponent<Image>();
         //    OverchargeMeter.counter = hudInstance.transform.GetChild(0).transform.GetChild(0).GetComponent<Text>();
         //}
-
-
-        private static void CharacterBody_RecalculateStats(On.RoR2.CharacterBody.orig_RecalculateStats orig, CharacterBody self)
-        {
-            orig(self);
-            if (!self)
-            {
-                return;
-            }
-            if (self.HasBuff(RifterBuffs.shatterDebuff))
-            {
-                int shatterStacks = self.GetBuffCount(RifterBuffs.shatterDebuff);
-                self.cursePenalty += shatterStacks * 5f / 100f;
-                if (shatterStacks < 5)
-                {
-                    self.armor -= shatterStacks * 1f;
-                }
-                if (5 <= shatterStacks && shatterStacks < 10)
-                {
-                    self.armor -= shatterStacks * 2f;
-                }
-                if (shatterStacks >= 10)
-                {
-                    self.armor -= shatterStacks * 4f;
-                }
-            }
-        }
 
         public static void AddBodyToBlacklist(string bodyName)
         {

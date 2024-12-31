@@ -12,6 +12,7 @@ public class FaultLine : RiftBase
 
     public override void OnEnter()
     {
+        fractureHitCallback = false;
         isPrimary = false;
         usesOvercharge = true;
         shouldBuckshot = false;
@@ -20,7 +21,7 @@ public class FaultLine : RiftBase
         base.OnEnter();
         if (base.isAuthority)
         {
-            Fracture(aimRay, RiftDistance(), LayerIndex.defaultLayer);
+            Fracture(aimRay, RiftDistance(), LayerIndex.defaultLayer, DamageSource.Secondary);
         }
         TeleportEnemies();
     }
