@@ -75,6 +75,7 @@ namespace RifterMod
             }
 
             NetworkingAPI.RegisterMessageType<TeleportOnBodyRequest>();
+            NetworkingAPI.RegisterMessageType<AddGameObjectOnRequest>();
             // character initialization
             new RifterSurvivor().Initialize();
 
@@ -120,34 +121,6 @@ namespace RifterMod
             orig(self);
             TemporaryVisualEffect tempEffect = null;
             self.UpdateSingleTemporaryVisualEffect(ref tempEffect, RifterAssets.shatterStackVisual, self.radius, self.HasBuff(RifterBuffs.superShatterDebuff));
-            //bool active = self.HasBuff(RifterBuffs.superShatterDebuff);
-            //bool flag = tempEffect != null;
-            //if (flag == active)
-            //{
-            //    return;
-            //}
-            //if (active)
-            //{
-            //    if (flag)
-            //    {
-            //        return ;
-            //    }
-            //    GameObject gameObject = Object.Instantiate(RifterAssets.shatterStackVisual, self.corePosition, Quaternion.identity);
-            //    tempEffect = gameObject.GetComponent<TemporaryVisualEffect>();
-            //    tempEffect.parentTransform = self.coreTransform;
-            //    tempEffect.visualState = TemporaryVisualEffect.VisualState.Enter;
-            //    tempEffect.healthComponent = self.healthComponent;
-            //    tempEffect.radius = self.radius;
-            //    LocalCameraEffect component = gameObject.GetComponent<LocalCameraEffect>();
-            //    if ((bool)component)
-            //    {
-            //        component.targetCharacter = self.gameObject;
-            //    }
-            //}
-            //else if (tempEffect)
-            //{
-            //    tempEffect.visualState = TemporaryVisualEffect.VisualState.Exit;
-            //}
         }
 
         private static void SurvivorCatalog_Init(On.RoR2.SurvivorCatalog.orig_Init orig)
@@ -241,6 +214,10 @@ namespace RifterMod
                             victimBody.AddTimedBuff(RifterBuffs.shatterDebuff, i + 1f, 5);
                         }                      
                     }
+                }
+                if (victimBody != null && DamageAPI.HasModdedDamageType(damageInfo, RifterDamage.riftSuperDamage))
+                {
+                    victimBody.AddTimedBuff(RifterBuffs.superShatterDebuff, 1f);
                 }
             }
         }

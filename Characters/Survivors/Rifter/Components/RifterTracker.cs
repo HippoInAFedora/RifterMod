@@ -105,11 +105,15 @@ namespace RifterMod.Characters.Survivors.Rifter.Components
                             t = 1;
                         }
                         Color color = Lerp.Interpolate(fullColor, nullColor, t);
-                        indicator.visualizerInstance.transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>().color = color;
-                        indicator.visualizerInstance.transform.GetChild(1).transform.GetChild(0).transform.GetChild(0).GetComponent<SpriteRenderer>().color = color;
-                        indicator.visualizerInstance.transform.GetChild(1).transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>().color = color;
-                        indicator.visualizerInstance.transform.GetChild(1).transform.GetChild(2).transform.GetChild(0).GetComponent<SpriteRenderer>().color = color;
-                        indicator.visualizerInstance.transform.GetChild(2).gameObject.GetComponent<SpriteRenderer>().color = color;
+                        if (indicator.visualizerInstance)
+                        {
+                            indicator.visualizerInstance.transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>().color = color;
+                            indicator.visualizerInstance.transform.GetChild(1).transform.GetChild(0).transform.GetChild(0).GetComponent<SpriteRenderer>().color = color;
+                            indicator.visualizerInstance.transform.GetChild(1).transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>().color = color;
+                            indicator.visualizerInstance.transform.GetChild(1).transform.GetChild(2).transform.GetChild(0).GetComponent<SpriteRenderer>().color = color;
+                            indicator.visualizerInstance.transform.GetChild(2).gameObject.GetComponent<SpriteRenderer>().color = color;
+                        }
+                        
                     }
                 }
                 if (indicatorMid.active)
@@ -139,11 +143,15 @@ namespace RifterMod.Characters.Survivors.Rifter.Components
                             t = 1;
                         }
                         Color color = Lerp.Interpolate(fullColorMid, nullColor, t);
-                        indicatorMid.visualizerInstance.transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>().color = color;
-                        indicatorMid.visualizerInstance.transform.GetChild(1).transform.GetChild(0).transform.GetChild(0).GetComponent<SpriteRenderer>().color = color;
-                        indicatorMid.visualizerInstance.transform.GetChild(1).transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>().color = color;
-                        indicatorMid.visualizerInstance.transform.GetChild(1).transform.GetChild(2).transform.GetChild(0).GetComponent<SpriteRenderer>().color = color;
-                        indicatorMid.visualizerInstance.transform.GetChild(2).gameObject.GetComponent<SpriteRenderer>().color = color;
+                        if (indicatorMid.visualizerInstance)
+                        {
+                            indicatorMid.visualizerInstance.transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>().color = color;
+                            indicatorMid.visualizerInstance.transform.GetChild(1).transform.GetChild(0).transform.GetChild(0).GetComponent<SpriteRenderer>().color = color;
+                            indicatorMid.visualizerInstance.transform.GetChild(1).transform.GetChild(1).transform.GetChild(0).GetComponent<SpriteRenderer>().color = color;
+                            indicatorMid.visualizerInstance.transform.GetChild(1).transform.GetChild(2).transform.GetChild(0).GetComponent<SpriteRenderer>().color = color;
+                            indicatorMid.visualizerInstance.transform.GetChild(2).gameObject.GetComponent<SpriteRenderer>().color = color;
+                        }
+                        
                     }
                 }
             }
@@ -180,8 +188,6 @@ namespace RifterMod.Characters.Survivors.Rifter.Components
                 }
                 trackingTarget = result ? result.gameObject : null;
             }
-
-
         }
     }
 }

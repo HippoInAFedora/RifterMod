@@ -4,6 +4,7 @@ using RifterMod.Modules.Achievements;
 using System.Collections.Generic;
 using RoR2.Achievements;
 using UnityEngine;
+using RifterMod.Characters.Survivors.Rifter.Components;
 
 namespace RifterMod.Survivors.Rifter.Achievements
 {

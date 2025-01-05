@@ -257,7 +257,6 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
             for (int i = 0; i < enemyBodies.Count; i++)
             {
                 writer.Write(enemyBodies[i].netId);
-                Debug.Log("serialized enemy body count " + enemyBodies.Count);
             }
 
         }
@@ -270,7 +269,6 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
             while (reader.Position < reader.Length)
             {
                 enemyBodies.Add(Util.FindNetworkObject(reader.ReadNetworkId()).GetComponent<CharacterBody>());
-                Debug.Log("enemy body count " + enemyBodies.Count);
             }
 
         }

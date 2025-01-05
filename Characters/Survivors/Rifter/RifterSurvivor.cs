@@ -144,19 +144,16 @@ namespace RifterMod.Survivors.Rifter
 
             AdditionalBodySetup();
             
-            AddHooks();
         }
 
         private void AdditionalBodySetup()
         {
             AddHitboxes();
-            bodyPrefab.AddComponent<RifterWeaponComponent>();
             bodyPrefab.AddComponent<RifterOverchargePassive>();
             bodyPrefab.AddComponent<RiftAndFracture>();
-            bodyPrefab.AddComponent<OverchargeMeter>();
-            bodyPrefab.GetComponent<OverchargeMeter>().passive = bodyPrefab.GetComponent<RifterOverchargePassive>();
+            //bodyPrefab.AddComponent<OverchargeMeter>();
+            //bodyPrefab.GetComponent<OverchargeMeter>().passive = bodyPrefab.GetComponent<RifterOverchargePassive>();
             bodyPrefab.AddComponent<RifterTracker>();
-            //bodyPrefab.AddComponent<PortalInstanceTracker>();
         }
 
         public void AddHitboxes()
@@ -323,7 +320,7 @@ namespace RifterMod.Survivors.Rifter
             utilitySkillDef1.overcharges = true;
             utilitySkillDef1.usesOvercharge = false;
 
-            SkillDef utilitySkillDef3 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
+            SkillDef utilitySkillDef2 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
             {
                 skillName = "QuantumGates",
                 skillNameToken = Rifter_PREFIX + "UTILITY_QUANTUM_RIFT",
@@ -347,30 +344,8 @@ namespace RifterMod.Survivors.Rifter
                 beginSkillCooldownOnSkillEnd = true
             });
 
-            SkillDef utilitySkillDef2 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
-            {
-                skillName = "ChainedWorlds",
-                skillNameToken = Rifter_PREFIX + "UTILITY_CHAINED_WORLDS",
-                skillDescriptionToken = Rifter_PREFIX + "UTILITY_CHAINED_WORLDS_DESCRIPTION",
-                skillIcon = assetBundle.LoadAsset<Sprite>("texChainRift"),
-
-                activationState = new EntityStates.SerializableEntityStateType(typeof(ChainedWorldsStartup)),
-                //setting this to the "weapon2" EntityStateMachine allows us to cast this skill at the same time primary, which is set to the "weapon" EntityStateMachine
-                activationStateMachineName = "Weapon",
-                interruptPriority = InterruptPriority.Skill,
-                //keywordTokens = new[] { Tokens.overchargedKeyword },
-                baseMaxStock = 1,
-                baseRechargeInterval = 15f,
-
-                stockToConsume = 1,
-
-                forceSprintDuringState = true,
-                canceledFromSprinting = false,
-                isCombatSkill = false,
-                mustKeyPress = true,
-                beginSkillCooldownOnSkillEnd = true
-            });
-            Skills.AddUtilitySkills(bodyPrefab, utilitySkillDef1, utilitySkillDef2, utilitySkillDef3);
+            
+            Skills.AddUtilitySkills(bodyPrefab, utilitySkillDef1, utilitySkillDef2);
 
         }
 
@@ -397,7 +372,31 @@ namespace RifterMod.Survivors.Rifter
                 cancelSprintingOnActivation = true,
             });
             specialSkillDef1.usesOvercharge = false;
-            Skills.AddSpecialSkills(bodyPrefab, specialSkillDef1);
+
+            SkillDef specialSkillDef2 = Skills.CreateSkillDef<SkillDef>(new SkillDefInfo
+            {
+                skillName = "ChainedWorlds",
+                skillNameToken = Rifter_PREFIX + "UTILITY_CHAINED_WORLDS",
+                skillDescriptionToken = Rifter_PREFIX + "UTILITY_CHAINED_WORLDS_DESCRIPTION",
+                skillIcon = assetBundle.LoadAsset<Sprite>("texChainRift"),
+
+                activationState = new EntityStates.SerializableEntityStateType(typeof(ChainedWorldsStartup)),
+                //setting this to the "weapon2" EntityStateMachine allows us to cast this skill at the same time primary, which is set to the "weapon" EntityStateMachine
+                activationStateMachineName = "Weapon",
+                interruptPriority = InterruptPriority.Skill,
+                //keywordTokens = new[] { Tokens.overchargedKeyword },
+                baseMaxStock = 1,
+                baseRechargeInterval = 12f,
+
+                stockToConsume = 1,
+
+                forceSprintDuringState = true,
+                canceledFromSprinting = false,
+                isCombatSkill = false,
+                mustKeyPress = true,
+                beginSkillCooldownOnSkillEnd = true
+            });
+            Skills.AddSpecialSkills(bodyPrefab, specialSkillDef1, specialSkillDef2);
 
            
         }
@@ -517,23 +516,5 @@ namespace RifterMod.Survivors.Rifter
             //assetBundle.LoadMaster(bodyPrefab, masterName);
         }
 
-        private void AddHooks()
-        {
-            R2API.RecalculateStatsAPI.GetStatCoefficients += RecalculateStatsAPI_GetStatCoefficients;
-            RoR2.GlobalEventManager.onCharacterDeathGlobal += GlobalEventManager_onCharacterDeathGlobal;
-        }
-
-        private void GlobalEventManager_onCharacterDeathGlobal(DamageReport obj)
-        {
-        }
-
-        private void RecalculateStatsAPI_GetStatCoefficients(CharacterBody sender, R2API.RecalculateStatsAPI.StatHookEventArgs args)
-        {
-
-            //if (sender.HasBuff(RifterBuffs.fractureDebuff))
-            //{
-            //    args.armorAdd += 300;
-            //}
-        }
     }
 }

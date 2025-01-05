@@ -50,19 +50,21 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            for (int i = 0; i < durations.Length - 1; i++)
+            if (base.isAuthority)
             {
-                if (base.fixedAge > durations[i] && base.isAuthority && !flag[i])
-                {              
-                    buckshotBlasts[i].Fire();
-                    effectData[i] = new EffectData();
-                    effectData[i].origin = buckshotBlasts[i].position;
-                    effectData[i].scale = BlastRadius() / 10f * .5f;
-                    EffectManager.SpawnEffect(blastEffectPrefab, effectData[i], transmit: true);
-                    flag[i] = true;
+                for (int i = 0; i < durations.Length - 1; i++)
+                {
+                    if (base.fixedAge > durations[i] && !flag[i])
+                    {
+                        buckshotBlasts[i].Fire();
+                        effectData[i] = new EffectData();
+                        effectData[i].origin = buckshotBlasts[i].position;
+                        effectData[i].scale = BlastRadius() / 10f * .5f;
+                        EffectManager.SpawnEffect(blastEffectPrefab, effectData[i], transmit: true);
+                        flag[i] = true;
+                    }
                 }
             }
-
         }
 
         public override float RiftDistance()

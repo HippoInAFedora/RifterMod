@@ -10,7 +10,7 @@ namespace RifterMod.Characters.Survivors.Rifter.Components
 
         public int stocksConsumed;
 
-        public List<Vector3> deployedList = new List<Vector3>();
+        public List<GameObject> deployedList = new List<GameObject>();
 
     }
 }

@@ -199,7 +199,6 @@ public class ModifiedTeleport : BaseState
         }
         duration = (currentPosition - targetFootPosition).magnitude;
         duration = Util.Remap(duration, 0f, 100f, 0.1f, .25f);
-        base.characterDirection.forward = targetFootPosition;
     }
 
     public override void OnSerialize(NetworkWriter writer)

@@ -18,7 +18,6 @@ namespace RifterMod.Characters.Survivors.Rifter.SkillStates.UnusedStates
             base.FixedUpdate();
 
             blastRadius = BlastRadius();
-            Debug.Log(blastRadius);
             if (isAuthority && !IsKeyDownAuthority() || fixedAge > chargeDuration + 1f)
             {
                 outer.SetNextState(new ChainedWorlds

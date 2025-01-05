@@ -47,7 +47,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 fireProjectileInfo.damage = base.characterBody.damage * RifterStaticValues.wanderingRiftCoefficient;
                 fireProjectileInfo.force = 0f;
                 fireProjectileInfo.crit = Util.CheckRoll(critStat, base.characterBody.master);
-                fireProjectileInfo.speedOverride = base.attackSpeedStat * 10f;
+                fireProjectileInfo.speedOverride = base.attackSpeedStat * 10f + 5f;
                 fireProjectileInfo.damageTypeOverride = DamageSource.Secondary;
                 ProjectileManager.instance.FireProjectile(fireProjectileInfo);
             }

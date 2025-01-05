@@ -32,6 +32,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public int blastNum;
         public int blastMax;
         public RifterOverchargePassive riftPassive;
+        public DamageAPI.ModdedDamageType damageType;
 
         Ray aimRay;
 
@@ -43,15 +44,16 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void OnEnter()
         {
             shouldAnimate = blastNum == 0 ? true : false;
+            damageType = blastNum == blastMax - 1 ? RifterDamage.riftSuperDamage : RifterDamage.riftDamage;
             base.OnEnter();
             usesOvercharge = true;
             riftPassive = base.GetComponent<RifterOverchargePassive>();
             aimRay = new Ray(basePosition, baseDirection);
-            duration = 1.75f;
-            blastNum++;
+            duration = 1.75f;         
             numPosition = GetNumPosition(blastNum);
-            Fire();
-            TeleportEnemies();         
+            Fire();           
+            TeleportEnemies();
+            blastNum++;
         }
 
         private Vector3 GetNumPosition(int num)
@@ -64,7 +66,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 position = raycastHit.point;
             }
-            Debug.Log(position + "position and num2 is " + num2);
             if (base.isAuthority)
             {
                 Search(position);
@@ -126,7 +127,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             if (rifterStep.deployedList.Count > 0 && blastNum == blastMax)
             {
-                Vector3 position2 = rifterStep.deployedList.FirstOrDefault();
+                Vector3 position2 = rifterStep.deployedList.FirstOrDefault().transform.position;
                 return position2;
             }
             Vector3 position = GetNumPosition(blastNum + 1);
@@ -142,12 +143,10 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     enemyHit = hurtBox.healthComponent.body;
                     if (enemyHit == null)
                     {
-                        Debug.Log("null");
                         return;
                     }
                     if (RifterPlugin.blacklistBodyNames.Contains(enemyHit.name))
                     {
-                        Debug.Log("notgettingteleported");
                         //Add Effect here later
                         return;
                     }
@@ -195,7 +194,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 blastAttack.position = GetNumPosition(blastNum);
                 blastAttack.attackerFiltering = AttackerFiltering.NeverHitSelf;
                 blastAttack.damageType.damageSource = DamageSource.Utility;
-                blastAttack.AddModdedDamageType(RifterDamage.riftDamage);
+                blastAttack.AddModdedDamageType(damageType);
                 var result = blastAttack.Fire();
 
                 EffectData effectData = new EffectData();
@@ -209,7 +208,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     {
                         if (hit.hurtBox.TryGetComponent(out HurtBox hurtBox))
                         {
-
                             if (IsOvercharged() && hurtBox.healthComponent.alive)
                             {
                                 BlastOvercharge(result);

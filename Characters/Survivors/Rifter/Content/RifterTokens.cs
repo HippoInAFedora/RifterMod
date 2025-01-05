@@ -77,7 +77,7 @@ namespace RifterMod.Survivors.Rifter
             Language.Add(prefix + "UTILITY_QUANTUM_RIFT_DESCRIPTION", "<style=cIsUtility>Fracture</style>. Dash back and create two portals, each blasting for <style=cIsDamage>150% damage</style> per second. Portals <style=cIsUtility>teleport</style> to each other.");
 
             Language.Add(prefix + "UTILITY_CHAINED_WORLDS", "Chained Worlds");
-            Language.Add(prefix + "UTILITY_CHAINED_WORLDS_DESCRIPTION", $"Shoot 5 rifts in a line, dealing <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style> per rift. Rifts <style=cIsUtility>teleport enemies to the next</style>.");
+            Language.Add(prefix + "UTILITY_CHAINED_WORLDS_DESCRIPTION", $"Shoot 5 rifts in a line, dealing <style=cIsDamage>{100f * RifterStaticValues.secondaryRiftCoefficient}% damage</style> and 5 shatter per rift. Rifts <style=cIsUtility>teleport enemies to the next</style>. Last Rift applies 10 shatter.");
 
             //Language.Add(prefix + "UTILITY_RIFT_RIDER", "Rift Rider");
             //Language.Add(prefix + "UTILITY_RIFT_RIDER_DESCRIPTION", "Travel through a long-range Fracture Line, cleansing all debuffs. Each hit enemy is <style=cIsUtility>teleported to your previous location</style> and adds <style=cIsUtility>overcharge</style>.");

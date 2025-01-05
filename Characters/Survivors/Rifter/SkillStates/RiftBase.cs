@@ -34,6 +34,10 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public bool shouldBuckshot = false;
         public bool blast = true;
         public bool blastPulls = false;
+        public Vector3 timelockInstancePosition;
+        public GameObject timelockInstanceGameObject;
+        public NetworkIdentity timelockInstanceGameObjectNetID;
+
 
         public bool hitTimelock;
         public Collider hitTimelockCollider;
@@ -85,8 +89,12 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         {
             base.OnEnter();
             tracer = IsOvercharged() ? tracerEffectPrefabOvercharged : tracerEffectPrefab;
-            rifterStep = GetComponent<RifterOverchargePassive>();
-
+            rifterStep = base.GetComponent<RifterOverchargePassive>();
+            if (rifterStep.deployedList.Count > 0 )
+            {
+                timelockInstanceGameObject = rifterStep.deployedList.First();
+                timelockInstancePosition = timelockInstanceGameObject.transform.position;
+            }         
             if (NetworkServer.active && isPrimary)
             {
                 onPrimaryShot?.Invoke(base.gameObject);
@@ -191,6 +199,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             search.radius = BlastRadius();
             search.mask = LayerIndex.entityPrecise.mask;
             search.queryTriggerInteraction = QueryTriggerInteraction.Collide;
+
             List<HurtBox> listH = CollectionPool<HurtBox, List<HurtBox>>.RentCollection();
             search.RefreshCandidates().FilterCandidatesByHurtBoxTeam(TeamMask.AllExcept(TeamIndex.Player)).FilterCandidatesByDistinctHurtBoxEntities().GetHurtBoxes(listH);
             hitEnemies = listH.Count;
@@ -277,7 +286,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                             EffectManager.SpawnEffect(hitEffectPrefab, effectData2, transmit: true);
                         }
 
-                        if (IsOvercharged() && hurtBox.healthComponent.alive || hitTimelock && hurtBox.healthComponent.alive || rifterStep.deployedList.Count > 0)
+                        if (IsOvercharged() && hurtBox.healthComponent.alive || hitTimelock && hurtBox.healthComponent.alive || timelockInstanceGameObject != null)
                         {
                             BlastOvercharge(result);
                         }
@@ -315,7 +324,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             {
                 float distance = Vector3.Distance(_bulletAttack.origin, hitInfo.point);
                 float distanceMultiplier = CalcDistanceFalloff(distance);
-                _bulletAttack.damage = RifterStaticValues.fractureCoefficientMax * distanceMultiplier;
+                _bulletAttack.damage = base.characterBody.damage * RifterStaticValues.fractureCoefficientMax * distanceMultiplier;
                 return BulletAttack.DefaultHitCallbackImplementation(_bulletAttack, ref hitInfo);
             } : BulletAttack.defaultHitCallback;
 
@@ -325,7 +334,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 {
                     if (hitInfo.hitHurtBox.TryGetComponent(out HurtBox hurtBox))
                     {
-                        if (IsOvercharged() && hurtBox.healthComponent.alive || rifterStep.deployedList.Count > 0)
+                        if (IsOvercharged() && hurtBox.healthComponent.alive || timelockInstanceGameObject != null)
                         {
                             Overcharge(hitInfo, hurtBox);
                         }
@@ -482,7 +491,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                     enemyHit = enemyHitHealthbox.body;
                     if (RifterPlugin.blacklistBodyNames.Contains(enemyHit.name))
                     {
-                        Debug.Log("notgettingteleported");
                         //Add Effect here later
                         return;
                     }
@@ -573,9 +581,9 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 return position1;
             }
 
-            if (rifterStep.deployedList.Count > 0)
+            if (timelockInstanceGameObject != null)
             {
-                Vector3 position2 = rifterStep.deployedList.FirstOrDefault() + Vector3.up * .5f;
+                Vector3 position2 = timelockInstancePosition + Vector3.up * .5f;
                 return position2;
             }
 
@@ -606,6 +614,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void OnSerialize(NetworkWriter writer)
         {
             base.OnSerialize(writer);
+            //writer.Write(timelockInstanceGameObjectNetID.netId);
             writer.Write(enemyTeleportTo);
             for (int i = 0; i < enemyBodies.Count; i++)
             {
@@ -614,9 +623,11 @@ namespace RifterMod.Survivors.Rifter.SkillStates
 
         }
 
+
         public override void OnDeserialize(NetworkReader reader)
         {
             base.OnDeserialize(reader);
+            //Util.FindNetworkObject(reader.ReadNetworkId());
             enemyTeleportTo = reader.ReadVector3();
             while (reader.Position < reader.Length)
             {

@@ -70,7 +70,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (base.isAuthority && inputBank.skill3.justReleased)
+            if (base.isAuthority && inputBank.skill4.justReleased)
             {
                 basePosition = base.GetAimRay().origin;
                 baseDirection = base.GetAimRay().direction.normalized;

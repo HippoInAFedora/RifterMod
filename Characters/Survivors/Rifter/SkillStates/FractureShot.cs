@@ -79,7 +79,7 @@ public class FractureShot : RiftBase
 
         if (rifterStep.deployedList.Count > 0)
         {
-            Vector3 position2 = rifterStep.deployedList.FirstOrDefault() + Vector3.up * .5f;
+            Vector3 position2 = rifterStep.deployedList.FirstOrDefault().transform.position + Vector3.up * .5f;
             return position2;
         }
 

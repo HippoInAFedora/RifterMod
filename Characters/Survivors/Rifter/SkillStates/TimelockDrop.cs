@@ -34,7 +34,6 @@ namespace RifterMod.Survivors.Rifter.SkillStates
             base.OnEnter();
             float maxDistance = RifterStaticValues.riftSpecialDistance;
             modelAnimator = GetModelAnimator();
-
             if (modelAnimator)
             {
                 modelAnimator.SetBool(inTimelock, false);
@@ -60,6 +59,7 @@ namespace RifterMod.Survivors.Rifter.SkillStates
                 if (buffWard)
                 {
                     buffWard.buffDef = RifterBuffs.superShatterDebuff;
+                    buffWard.buffDuration = 1f;
                     buffWard.Networkradius = radius;
                 }
 
